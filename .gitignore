@@ -1,0 +1,47 @@
+# ========== Qt 自动生成文件 ==========
+build/
+build-*
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+.qmake.stash
+.qtc/
+.qt/
+bin/
+
+# ========== CMake 生成文件 ==========
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+install_manifest.txt
+*/CMakeFiles
+*/cmake_install.cmake
+compile_commands.json
+
+# ========== 编译输出 ==========
+*.o
+*.obj
+*.so
+*.so.*
+*.dll
+*.dylib
+*.exe
+*.out
+*.app
+*.lib
+*.a
+
+# ========== 编辑器/IDE ==========
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ========== 日志/临时文件 ==========
+*.log
+*.tmp
+*.temp

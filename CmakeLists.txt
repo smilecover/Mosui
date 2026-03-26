@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.16)
+
+project(Mosui)
+
+option(BUILD_MOSUI_STATIC_LIBRARY "将 Mosui 构建为静态库。" OFF)
+option(BUILD_MOSUI_ON_DESKTOP_PLATFORM "将 Mosui 构建在桌面平台上（移动平台设置为 OFF）。" ON)
+option(INSTALL_MOSUI_IN_DEFAULT_LOCATION "将 Mosui 安装在默认位置[QtSDK 目录]。" ON)
+
+#设置 Mosui 输出目录
+set(MOSUI_HEADER_OUTPUT_DIRECTORY "" CACHE PATH "Mosui 头部输出目录。")
+set(MOSUI_LIBRARY_OUTPUT_DIRECTORY "" CACHE PATH "Mosui 库输出目录。")
+set(MOSUI_PLUGIN_OUTPUT_DIRECTORY "" CACHE PATH "Mosui 插件输出目录（必须以 [Mosui/Basic] 结尾）。")
+set(MOSUI_INSTALL_DIRECTORY "" CACHE PATH "Mosui 安装目录。")
+
+set(QT_SILENCE_MISSING_DEPENDENCY_TARGET_WARNING ON) # 禁止 Qt 相关的警告
+# MAC OS 平台设置
+set(MACOS FALSE)
+if(APPLE)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set(MACOS TRUE)
+    else()
+        set(MACOS FALSE)
+    endif()
+endif()
+
+if(WIN32 OR MACOS OR LINUX)
+    set(BUILD_MOSUI_ON_DESKTOP_PLATFORM ON) # 在 Windows、MacOS 和 Linux 平台上构建 Mosui
+else()
+    set(BUILD_MOSUI_ON_DESKTOP_PLATFORM OFF) # 在其他平台上不构建 Mosui
+endif()
+# 设置 Mosui 版本
+set(MOSUI_VERSION_MAJOR 0)
+set(MOSUI_VERSION_MINOR 5)
+set(MOSUI_VERSION_PATCH 9)
+set(MOSUI_VERSION_TWEAK 0)
+set(MOSUI_VERSION ${MOSUI_VERSION_MAJOR}.${MOSUI_VERSION_MINOR}.${MOSUI_VERSION_PATCH}.${MOSUI_VERSION_TWEAK})
+# 设置安装目录
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/HuskarUI" CACHE PATH "" FORCE)
+endif()
+
+
+# add_subdirectory(Mosuisrc)
+# add_subdirectory(Mosuiqml)
+add_subdirectory(Mosuiapp)
