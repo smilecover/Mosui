@@ -11,4 +11,10 @@ Window {
     MosCard{
         anchors.centerIn: parent
     }
+    // 运行时运行
+    Component.onCompleted :{
+        // 输出
+        console.log(MosApp.libName())
+        console.log(MosApp.libVersion())
+    }
 }

@@ -2,6 +2,9 @@
 #include <QQmlApplicationEngine>
 #include <QDebug>
 
+#include "Mosapp.h"
+
+
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
@@ -15,6 +18,8 @@ int main(int argc, char *argv[]) {
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     engine.loadFromModule("Mosuiapp", "Main");
+    qDebug() << MosApp::libName() << MosApp::libVersion();
+
 
     return app.exec();
 }

@@ -28,6 +28,8 @@ qt_add_qml_module(
     QML_FILES ${QML_FILES}
     SOURCES
         Mosglobal.h
+        Mosapp.h
+        Mosapp.cpp
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     QMLDIR_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qmldir"
