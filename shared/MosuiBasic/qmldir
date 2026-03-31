@@ -1,0 +1,8 @@
+module MosuiBasic
+linktarget MosuiBasicplugin
+optional plugin MosuiBasicplugin
+classname MosuiBasicPlugin
+typeinfo MosuiBasic.qmltypes
+prefer :/qt/qml/MosuiBasic/
+MosCard 1.0 qml/MosCard.qml
+

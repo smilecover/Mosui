@@ -1,19 +1,25 @@
 cmake_minimum_required(VERSION 3.16)
-
 project(Mosui)
-
+set(CMAKE_AUTOGEN_SOURCE_GROUP OFF)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
 set(QT_SILENCE_MISSING_DEPENDENCY_TARGET_WARNING ON) # 禁止 Qt 相关的警告
-
+# 设置动态库文件输出目录
+set(LIBRARY_SHARED_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/shared CACHE PATH "动态库文件输出目录" FORCE)
+# 设置静态库文件输出目录
+set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静态库文件输出目录" FORCE)
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick)
+qt_standard_project_setup(REQUIRES 6.5)
+qt_policy(SET QTP0004 NEW)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
 # 设置 Mosui 版本
 set(MOSUI_VERSION_MAJOR 1)
 set(MOSUI_VERSION_MINOR 0)
 set(MOSUI_VERSION_PATCH 0)
 set(MOSUI_VERSION ${MOSUI_VERSION_MAJOR}.${MOSUI_VERSION_MINOR}.${MOSUI_VERSION_PATCH})
-# 为 IntelliSense 提供 MOSUI_VERSION 宏定义
-add_compile_definitions(MOSUI_VERSION="${MOSUI_VERSION}")
 
 
-# add_subdirectory(Mosuisrc)
-# add_subdirectory(MosuiBasic)
+add_subdirectory(MosuiBasic)
 
-# add_subdirectory(Mosuiapp)
+add_subdirectory(Mosuiapp)

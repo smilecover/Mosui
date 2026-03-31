@@ -1,0 +1,5 @@
+module Mosuiapp
+typeinfo Mosuiapp.qmltypes
+prefer :/qt/qml/Mosuiapp/
+Main 1.0 Main.qml
+

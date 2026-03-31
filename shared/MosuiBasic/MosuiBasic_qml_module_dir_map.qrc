@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/">
+    <file alias="/qt/qml/MosuiBasic">E:/QtWork/Mosui/shared/MosuiBasic</file>
+
+  </qresource>
+</RCC>
