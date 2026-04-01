@@ -10,6 +10,8 @@ Window {
     title: "MosUI"
     MosCard{
         anchors.centerIn: parent
+        MosButton{
+        }
     }
     // 运行时运行
     Component.onCompleted :{
@@ -18,4 +20,5 @@ Window {
         console.log(MosApp.libVersion())
         console.log(MosTheme.ceshi())
     }
+
 }

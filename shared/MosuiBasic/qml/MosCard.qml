@@ -1,11 +1,14 @@
 import QtQuick
+// import QtQuick.Templates as T
 
-Rectangle {
+Item {
     id: root
-    width: 200
-    height: 300
-    color: "Red"
-    radius: 10
-    border.color: "lightgray"
-    border.width: 1
+    Rectangle {
+        width: 200
+        height: 300
+        color: "Red"
+        radius: 10
+        border.color: "lightgray"
+        border.width: 1
+    }
 }

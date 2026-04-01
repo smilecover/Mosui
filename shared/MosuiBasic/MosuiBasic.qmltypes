@@ -27,6 +27,5 @@ Module {
         isCreatable: false
         isSingleton: true
         exportMetaObjectRevisions: [256]
-        Method { name: "ceshi"; type: "QString" }
     }
 }

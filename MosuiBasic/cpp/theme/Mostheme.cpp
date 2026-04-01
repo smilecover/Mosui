@@ -8,7 +8,6 @@ MosTheme *MosTheme::instance()
 {
     static MosTheme *theme = new MosTheme;
 
-    theme->ceshi();
 
     return theme;
 }
