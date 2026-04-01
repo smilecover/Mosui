@@ -16,5 +16,6 @@ Window {
         // 输出
         console.log(MosApp.libName())
         console.log(MosApp.libVersion())
+        console.log(MosTheme.ceshi())
     }
 }

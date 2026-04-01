@@ -18,4 +18,15 @@ Module {
         Method { name: "libName"; type: "QString" }
         Method { name: "libVersion"; type: "QString" }
     }
+    Component {
+        file: "Mostheme.h"
+        name: "MosTheme"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosTheme 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method { name: "ceshi"; type: "QString" }
+    }
 }

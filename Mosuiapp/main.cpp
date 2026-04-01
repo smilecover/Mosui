@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "Mosapp.h"
+// #include "Mostheme.h"
 
 
 int main(int argc, char *argv[]) {
@@ -19,6 +20,7 @@ int main(int argc, char *argv[]) {
         Qt::QueuedConnection);
     engine.loadFromModule("Mosuiapp", "Main");
     qDebug() << MosApp::libName() << MosApp::libVersion();
+
 
 
     return app.exec();

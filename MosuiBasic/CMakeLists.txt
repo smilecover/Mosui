@@ -17,6 +17,10 @@ if(NOT EXISTS ${QT_QML_OUTPUT_DIRECTORY}/MosuiBasic)
 endif()
 
 file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "qml/*.qml")
+file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
+    "cpp/*.cpp" "cpp/*.h"
+    "cpp/theme/*.cpp" "cpp/theme/*.h"
+)
 
 # 动态库
 qt_add_library(${PROJECT_NAME} SHARED)
@@ -27,9 +31,7 @@ qt_add_qml_module(
     VERSION ${MOSUI_VERSION}
     QML_FILES ${QML_FILES}
     SOURCES
-        Mosglobal.h
-        Mosapp.h
-        Mosapp.cpp
+        ${CPP_FILES}
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     QMLDIR_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qmldir"
@@ -75,4 +77,7 @@ target_compile_definitions(${PROJECT_NAME}
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/theme
+)
