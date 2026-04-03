@@ -3,23 +3,12 @@ import QtQuick.Templates as T
 
 T.Button {
     id: root
-    width: 120
-    height: 40
-    text: "自定义按钮"
-    background: Rectangle {
-        color: root.pressed ? "#2c3e50" : "#3498db"  // 按下/正常 两种颜色
-        radius: 6  // 圆角
-        border.color: "#2980b9"
-        border.width: 1
+    enum Type{
+        Type_Default = 0 // 默认按钮类型
     }
-    contentItem: Text {
-        text: root.text
-        color: "white"
-        font.pixelSize: 14
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+    enum Shape{
+        Shape_Default = 0,// 默认形状（矩形）
+        Shape_Circle = 1
     }
-    onClicked: {
-        console.log("按钮被点击了！")
-    }
+    flat: true
 }

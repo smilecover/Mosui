@@ -27,5 +27,55 @@ Module {
         isCreatable: false
         isSingleton: true
         exportMetaObjectRevisions: [256]
+        Enum {
+            name: "DarkMode"
+            isScoped: true
+            values: ["Light", "Dark"]
+        }
+        Property {
+            name: "isDark"
+            type: "bool"
+            read: "isDark"
+            notify: "isDarkChanged"
+            index: 0
+            isReadonly: true
+        }
+        Property {
+            name: "darkMode"
+            type: "DarkMode"
+            read: "darkMode"
+            write: "setDarkMode"
+            notify: "darkModeChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "Primary"
+            type: "QVariantMap"
+            read: "Primary"
+            notify: "PrimaryChanged"
+            index: 2
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "PrimaryChanged" }
+        Signal { name: "darkModeChanged" }
+        Signal { name: "isDarkChanged" }
+        Method { name: "reloadTheme" }
+        Method { name: "isDark"; type: "bool" }
+        Method {
+            name: "setDarkMode"
+            Parameter { name: "darkMode"; type: "DarkMode" }
+        }
+        Method { name: "darkMode"; type: "DarkMode" }
+    }
+    Component {
+        file: "Moswindowagent.h"
+        name: "MosWindowAgent"
+        accessSemantics: "reference"
+        prototype: "QQmlParserStatus"
+        interfaces: ["QQmlParserStatus"]
+        exports: ["MosuiBasic/MosWindowAgent 1.0"]
+        exportMetaObjectRevisions: [256]
     }
 }

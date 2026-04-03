@@ -1,0 +1,17 @@
+{
+    "__init__": {
+        "__base__": {
+            "colorTextBase": "#000000|#f3f3f3",
+            "colorBgBase": "#f5f5f5|#181818"    
+        },
+        "__vars__": {
+
+        }
+    },
+    "__style__": {
+
+    },
+    "__component__": {
+
+    }
+}
