@@ -3,6 +3,12 @@ import QtQuick.Templates as T
 
 T.Button {
     id: root
+    width: 100
+    height: 30
+    // 背景
+    property color buttoncolor: "cyan"
+    // 圆角
+    property real buttonradius: 5
     enum Type{
         Type_Default = 0 // 默认按钮类型
     }
@@ -11,4 +17,8 @@ T.Button {
         Shape_Circle = 1
     }
     flat: true
+    background: MosRectangle{
+        color: buttoncolor
+        radius: buttonradius
+    }
 }

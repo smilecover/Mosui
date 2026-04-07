@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/theme">
         <file>theme/main.json</file>
+        <file>theme/MosButton.json</file>
     </qresource>
 </RCC>

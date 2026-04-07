@@ -1,0 +1,214 @@
+/*
+ * HuskarUI
+ *
+ * Copyright (C) mengps (MenPenS) (MIT License)
+ * https://github.com/mengps/HuskarUI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ * - The above copyright notice and this permission notice shall be included in
+ *   all copies or substantial portions of the Software.
+ * - The Software is provided "as is", without warranty of any kind, express or
+ *   implied, including but not limited to the warranties of merchantability,
+ *   fitness for a particular purpose and noninfringement. In no event shall the
+ *   authors or copyright holders be liable for any claim, damages or other
+ *   liability, whether in an action of contract, tort or otherwise, arising from,
+ *   out of or in connection with the Software or the use or other dealings in the
+ *   Software.
+ */
+
+#include "Mossystemthemehelper.h"
+
+#include <QtCore/QBasicTimer>
+#include <QtCore/QLibrary>
+#include <QtCore/QSettings>
+
+#ifdef QT_WIDGETS_LIB
+# include <QtWidgets/QWidget>
+#endif //QT_WIDGETS_LIB
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+# include <QtGui/QGuiApplication>
+# include <QtGui/QStyleHints>
+#endif
+
+#ifdef Q_OS_WIN
+# include <Windows.h>
+
+using DwmSetWindowAttributeFunc = HRESULT(WINAPI *)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+
+static DwmSetWindowAttributeFunc pDwmSetWindowAttribute = nullptr;
+
+static inline bool initializeFunctionPointers() {
+    static bool initialized = false;
+    if (!initialized) {
+        HMODULE module = LoadLibraryW(L"dwmapi.dll");
+        if (module) {
+            if (!pDwmSetWindowAttribute) {
+                pDwmSetWindowAttribute = reinterpret_cast<DwmSetWindowAttributeFunc>(
+                    GetProcAddress(module, "DwmSetWindowAttribute"));
+                if (!pDwmSetWindowAttribute) {
+                    return false;
+                }
+            }
+            initialized = true;
+        }
+    }
+    return initialized;
+}
+
+#else //Q_OS_LINUX
+# include <QPalette>
+#endif //Q_OS_WIN
+
+class MosSystemThemeHelperPrivate
+{
+public:
+    MosSystemThemeHelperPrivate(MosSystemThemeHelper *q) : q_ptr(q) { }
+
+    Q_DECLARE_PUBLIC(MosSystemThemeHelper);
+
+    void _updateAccentColor() {
+        Q_Q(MosSystemThemeHelper);
+
+        auto nowAccentColor = q->getAccentColor();
+        if (nowAccentColor != m_accentColor) {
+            m_accentColor = nowAccentColor;
+            emit q->accentColorChanged(nowAccentColor);
+        }
+    }
+
+    void _updateColorScheme() {
+        Q_Q(MosSystemThemeHelper);
+
+        auto nowColorScheme = q->getColorScheme() ;
+        if (nowColorScheme != m_colorScheme) {
+            m_colorScheme = nowColorScheme;
+            emit q->colorSchemeChanged(nowColorScheme);
+        }
+    }
+
+    MosSystemThemeHelper *q_ptr;
+    QColor m_accentColor;
+    MosSystemThemeHelper::ColorScheme m_colorScheme = MosSystemThemeHelper::ColorScheme::None;
+
+    QBasicTimer m_timer;
+#ifdef Q_OS_WIN
+    QSettings m_accentColorSettings { QSettings::UserScope, "Microsoft", "Windows\\DWM" };
+    QSettings m_colorSchemeSettings { QSettings::UserScope, "Microsoft", "Windows\\CurrentVersion\\Themes\\Personalize" };
+#endif
+};
+
+MosSystemThemeHelper::MosSystemThemeHelper(QObject *parent)
+    : QObject{ parent }
+    , d_ptr(new MosSystemThemeHelperPrivate(this))
+{
+    Q_D(MosSystemThemeHelper);
+
+    d->m_accentColor = getAccentColor();
+    d->m_colorScheme = getColorScheme();
+
+    d->m_timer.start(200, this);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, this, [this](Qt::ColorScheme scheme){
+        emit colorSchemeChanged(scheme == Qt::ColorScheme::Dark ? ColorScheme::Dark : ColorScheme::Light);
+    });
+#endif
+
+#ifdef Q_OS_WIN
+    initializeFunctionPointers();
+#endif
+}
+
+MosSystemThemeHelper::~MosSystemThemeHelper()
+{
+
+}
+
+QColor MosSystemThemeHelper::getAccentColor() const
+{
+    Q_D(const MosSystemThemeHelper);
+
+#ifdef Q_OS_WIN
+    return QColor::fromRgb(d->m_accentColorSettings.value("ColorizationColor").toUInt());
+#else
+# if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+    return QPalette().color(QPalette::Accent);
+# else
+    return QPalette().color(QPalette::Highlight);
+# endif
+#endif
+}
+
+MosSystemThemeHelper::ColorScheme MosSystemThemeHelper::getColorScheme() const
+{
+    Q_D(const MosSystemThemeHelper);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    const auto scheme = QGuiApplication::styleHints()->colorScheme();
+    return scheme == Qt::ColorScheme::Dark ? ColorScheme::Dark : ColorScheme::Light;
+#else
+#ifdef Q_OS_WIN
+    /*! 0：深色 - 1：浅色 */
+    return !d->m_colorSchemeSettings.value("AppsUseLightTheme").toBool() ? ColorScheme::Dark : ColorScheme::Light;
+#else //linux
+    const QPalette defaultPalette;
+    const auto text = defaultPalette.color(QPalette::WindowText);
+    const auto window = defaultPalette.color(QPalette::Window);
+    return text.lightness() > window.lightness() ? ColorScheme::Dark : ColorScheme::Light;
+#endif // Q_OS_WIN
+#endif // QT_VERSION
+}
+
+QColor MosSystemThemeHelper::accentColor()
+{
+    Q_D(MosSystemThemeHelper);
+
+    d->_updateAccentColor();
+
+    return d->m_accentColor;
+}
+
+MosSystemThemeHelper::ColorScheme MosSystemThemeHelper::colorScheme()
+{
+    Q_D(MosSystemThemeHelper);
+
+    d->_updateColorScheme();
+
+    return d->m_colorScheme;
+}
+
+bool MosSystemThemeHelper::setWindowTitleBarMode(QWindow *window, bool isDark)
+{
+#ifdef Q_OS_WIN
+    return bool(pDwmSetWindowAttribute ? !pDwmSetWindowAttribute(HWND(window->winId()), 20, &isDark, sizeof(BOOL)) : false);
+#else
+    return false;
+#endif //Q_OS_WIN
+}
+
+#ifdef QT_WIDGETS_LIB
+bool MosSystemThemeHelper::setWindowTitleBarMode(QWidget *window, bool isDark)
+{
+#ifdef Q_OS_WIN
+    return bool(pDwmSetWindowAttribute ? !pDwmSetWindowAttribute(HWND(window->winId()), 20, &isDark, sizeof(BOOL)) : false);
+#else
+    return false;
+#endif //Q_OS_WIN
+}
+#endif //QT_WIDGETS_LIB
+
+void MosSystemThemeHelper::timerEvent(QTimerEvent *)
+{
+    Q_D(MosSystemThemeHelper);
+
+    d->_updateAccentColor();
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
+    d->_updateColorScheme();
+#endif
+}

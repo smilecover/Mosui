@@ -2,11 +2,32 @@
 #define MOSTTHEME_P_H
 
 #include "Mostheme.h"
+#include "Mossystemthemehelper.h"
 #include <QtCore>
 // 哈希表类
 #include <QtCore/QHash>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
+
+enum class Function : uint16_t
+{
+    GenColor,
+    GenFontFamily,
+    GenFontSize,
+    GenFontLineHeight,
+    GenRadius,
+
+    Darker,
+    Lighter,
+    Brightness,
+    Alpha,
+    OnBackground,
+
+    Multiply
+};
+
+using ComponentPropertyHash = QHash<QString, QVariantMap*>;
+Q_GLOBAL_STATIC(ComponentPropertyHash, g_componentTable);
 // 定义哈希表的键值对类型
 struct ThemeData
 {
@@ -19,6 +40,7 @@ struct ThemeData
     QObject *themeObject = nullptr;
     QMap<QString, Component> componentMap;
 };
+
 
 class MosThemePrivate
 {
@@ -35,8 +57,32 @@ public:
     QMap<QString, QVariant> m_mainTokenTable; // 处理
     QMap<QObject *, ThemeData> m_defaultTheme; // 默认主题
 
+
     // 主题重新加载
     void reloadMainTheme();
+    // 组件默认主题重新加载
+    void reloadDefaultComponentTheme();
+    // 组件主题重新加载
+    void reloadComponentTheme(const QMap<QObject *, ThemeData> &dataMap);
+    // 组件文件
+    void reloadComponentThemeFile(QObject *themeObject, const QString &componentName,const ThemeData::Component &componentTheme);
+    // 组件文件重新加载
+    bool reloadComponentImport(QJsonObject &style, const QString &componentName);
+    // 主题变量var处理
+    void parseIndexExpr(const QString &tokenName, const QString &expr);
+    // 初始化组件哈希列表
+    void initializeComponentPropertyHash();
+    // 注册默认组件主题
+    void registerDefaultComponentTheme(const QString &componentName, const QString &themePath);
+    void registerComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap,const QString &themePath, QMap<QObject *, ThemeData> &dataMap);
+    // 组件变量var处理
+    void parseComponentExpr(QVariantMap *tokenMapPtr, const QString &tokenName, const QString &expr);
+    // 组件变量var处理
+    void parse(QMap<QString, QVariant> &out, const QString &tokenName, const QString &expr);
+
+    QColor colorFromIndexTable(const QString &tokenName);
+
+    qreal numberFromIndexTable(const QString &tokenName);
 
 
 

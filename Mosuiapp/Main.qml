@@ -8,8 +8,10 @@ MosWindow{
     height: 800
     color: MosTheme.Primary.colorBgBase
     title: "MosUI"
-    Button{
+    MosButton{
         text: "lianganqiehuan"
+        width: 100
+        height: 30
         anchors.centerIn: parent
         onClicked: {
             MosTheme.darkMode = MosTheme.isDark ? MosTheme.DarkMode.Light : MosTheme.DarkMode.Dark

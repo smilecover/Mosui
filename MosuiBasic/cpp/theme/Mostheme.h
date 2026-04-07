@@ -6,6 +6,7 @@
 #include "Mosglobal.h"
 #include "Mosdefinitions.h"
 
+
 QT_FORWARD_DECLARE_CLASS(MosThemePrivate)
 class MOSUIBASIC_EXPORT MosTheme : public QObject
 {
@@ -17,6 +18,7 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     Q_PROPERTY(DarkMode darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged FINAL)
 
     MOSUI_PROPERTY_READONLY(QVariantMap, Primary);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosButton);
 
 
 public:
