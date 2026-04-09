@@ -22,7 +22,7 @@ QList<qreal> MosSizeGenerator::generateFontSize(qreal fontSizeBase)
         const auto baseSize = fontSizeBase * std::pow(M_E, i / 5.0);
         const auto intSize = (i + 1) > 1 ? std::floor(baseSize) : std::ceil(baseSize);
         // Convert to even
-        fontSizes[index] = std::floor(intSize / 2) * 2;
+        fontSizes[index] = std::floor(intSize / 2) * 2; 
     }
     fontSizes[1] = fontSizeBase;
 

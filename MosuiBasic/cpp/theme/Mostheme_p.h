@@ -26,8 +26,7 @@ enum class Function : uint16_t
     Multiply
 };
 
-using ComponentPropertyHash = QHash<QString, QVariantMap*>;
-Q_GLOBAL_STATIC(ComponentPropertyHash, g_componentTable);
+
 // 定义哈希表的键值对类型
 struct ThemeData
 {
@@ -50,18 +49,26 @@ public:
     MosTheme *q_ptr { nullptr };
     MosTheme::DarkMode m_darkMode = MosTheme::DarkMode::Dark;
 
+    MosSystemThemeHelper *m_helper { nullptr };
+
 
     // json主题处理
     QString m_themeMainPath = ":/theme/theme/main.json"; // 主题主文件路径
     QJsonObject m_mainObject; // json对象
     QMap<QString, QVariant> m_mainTokenTable; // 处理
     QMap<QObject *, ThemeData> m_defaultTheme; // 默认主题
+    QMap<QObject *, ThemeData> m_customTheme; // 自定义主题
 
 
+    // 主题重新加载（仅重新计算 Token，不重读文件）
+    void applyTheme();
     // 主题重新加载
     void reloadMainTheme();
     // 组件默认主题重新加载
     void reloadDefaultComponentTheme();
+    // 组件自定义主题重新加载
+    void reloadCustomComponentTheme();
+    
     // 组件主题重新加载
     void reloadComponentTheme(const QMap<QObject *, ThemeData> &dataMap);
     // 组件文件
@@ -74,7 +81,9 @@ public:
     void initializeComponentPropertyHash();
     // 注册默认组件主题
     void registerDefaultComponentTheme(const QString &componentName, const QString &themePath);
+
     void registerComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap,const QString &themePath, QMap<QObject *, ThemeData> &dataMap);
+    
     // 组件变量var处理
     void parseComponentExpr(QVariantMap *tokenMapPtr, const QString &tokenName, const QString &expr);
     // 组件变量var处理
@@ -83,15 +92,6 @@ public:
     QColor colorFromIndexTable(const QString &tokenName);
 
     qreal numberFromIndexTable(const QString &tokenName);
-
-
-
-
-
-signals:
-
-
-
 };
 
 

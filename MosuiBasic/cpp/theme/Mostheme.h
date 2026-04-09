@@ -17,8 +17,12 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     Q_PROPERTY(bool isDark READ isDark NOTIFY isDarkChanged)
     Q_PROPERTY(DarkMode darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged FINAL)
 
+    MOSUI_PROPERTY_INIT(bool, animationEnabled, setAnimationEnabled, true); // 是否启用动画效果
+
+
     MOSUI_PROPERTY_READONLY(QVariantMap, Primary);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosButton);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCard);
 
 
 public:
@@ -28,7 +32,7 @@ public:
     enum class DarkMode {
     Light = 0,
     Dark,
-
+    System,
     };
     Q_ENUM(DarkMode)
 
@@ -40,7 +44,9 @@ public:
     Q_INVOKABLE void setDarkMode(DarkMode darkMode);
     // 获取暗色|亮色
     Q_INVOKABLE DarkMode darkMode() const;
-
+        // 注册自定义组件主题
+    Q_INVOKABLE void registerCustomComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap, const QString &themePath);
+    Q_INVOKABLE void installComponentToken(const QString &component, const QString &token, const QString &value);
 
 
 

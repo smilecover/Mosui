@@ -8,7 +8,7 @@ Window{
     visible: true
     Component.onCompleted: {
         windowAgent.setup(root)
-        windowAgent.setWindowAttribute("dark-mode", true)
+        windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
         if (root.showWhenReady) {
             root.visible = true
         }   
@@ -18,11 +18,16 @@ Window{
     }
     MosCaptionbar{
         id: captionbar
-        // targetWindow: root
-        // windowAgent: windowAgent
         width: root.width
         height: 32
         Component.onCompleted: windowAgent.setTitleBar(captionbar)
     }
 
+    // 跟随主题系统同步标题栏暗色模式
+    Connections {
+        target: MosTheme
+        function onIsDarkChanged() {
+            windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
+        }
+    }
 }

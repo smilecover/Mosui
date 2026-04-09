@@ -19,6 +19,173 @@ Module {
         Method { name: "libVersion"; type: "QString" }
     }
     Component {
+        file: "Moscolorgenerator.h"
+        name: "MosColorGenerator"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosColorGenerator 1.0"]
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "Preset"
+            isScoped: true
+            values: [
+                "Preset_Red",
+                "Preset_Volcano",
+                "Preset_Orange",
+                "Preset_Gold",
+                "Preset_Yellow",
+                "Preset_Lime",
+                "Preset_Green",
+                "Preset_Cyan",
+                "Preset_Blue",
+                "Preset_Geekblue",
+                "Preset_Purple",
+                "Preset_Magenta",
+                "Preset_Grey"
+            ]
+        }
+        Method {
+            name: "reverseColor"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "presetToColor"
+            type: "QColor"
+            Parameter { name: "color"; type: "QString" }
+        }
+        Method {
+            name: "presetToColor"
+            type: "QColor"
+            Parameter { name: "color"; type: "MosColorGenerator::Preset" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            Parameter { name: "color"; type: "MosColorGenerator::Preset" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "MosColorGenerator::Preset" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "MosColorGenerator::Preset" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "generate"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+    }
+    Component {
+        file: "Mosradiusgenerator.h"
+        name: "MosRadiusGenerator"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosRadiusGenerator 1.0"]
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "generateRadius"
+            type: "int"
+            isList: true
+            Parameter { name: "radiusBase"; type: "int" }
+        }
+    }
+    Component {
+        file: "Mossizegenerator.h"
+        name: "MosSizeGenerator"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosSizeGenerator 1.0"]
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "generateFontSize"
+            type: "double"
+            isList: true
+            Parameter { name: "fontSizeBase"; type: "double" }
+        }
+        Method {
+            name: "generateFontLineHeight"
+            type: "double"
+            isList: true
+            Parameter { name: "fontSizeBase"; type: "double" }
+        }
+    }
+    Component {
+        file: "Mossystemthemehelper.h"
+        name: "MosSystemThemeHelper"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosSystemThemeHelper 1.0"]
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "ColorScheme"
+            isScoped: true
+            values: ["None", "Light", "Dark"]
+        }
+        Property {
+            name: "accentColor"
+            type: "QColor"
+            read: "accentColor"
+            notify: "accentColorChanged"
+            index: 0
+            isReadonly: true
+        }
+        Property {
+            name: "colorScheme"
+            type: "MosSystemThemeHelper::ColorScheme"
+            read: "colorScheme"
+            notify: "colorSchemeChanged"
+            index: 1
+            isReadonly: true
+        }
+        Signal {
+            name: "accentColorChanged"
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Signal {
+            name: "colorSchemeChanged"
+            Parameter { name: "scheme"; type: "MosSystemThemeHelper::ColorScheme" }
+        }
+        Method { name: "getAccentColor"; type: "QColor" }
+        Method { name: "getColorScheme"; type: "MosSystemThemeHelper::ColorScheme" }
+        Method {
+            name: "setWindowTitleBarMode"
+            type: "bool"
+            Parameter { name: "window"; type: "QWindow"; isPointer: true }
+            Parameter { name: "isDark"; type: "bool" }
+        }
+    }
+    Component {
         file: "Mostheme.h"
         name: "MosTheme"
         accessSemantics: "reference"
@@ -30,7 +197,7 @@ Module {
         Enum {
             name: "DarkMode"
             isScoped: true
-            values: ["Light", "Dark"]
+            values: ["Light", "Dark", "System"]
         }
         Property {
             name: "isDark"
@@ -50,15 +217,45 @@ Module {
             isFinal: true
         }
         Property {
+            name: "animationEnabled"
+            type: "bool"
+            read: "animationEnabled"
+            write: "setAnimationEnabled"
+            notify: "animationEnabledChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
             name: "Primary"
             type: "QVariantMap"
             read: "Primary"
             notify: "PrimaryChanged"
-            index: 2
+            index: 3
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosButton"
+            type: "QVariantMap"
+            read: "MosButton"
+            notify: "MosButtonChanged"
+            index: 4
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosCard"
+            type: "QVariantMap"
+            read: "MosCard"
+            notify: "MosCardChanged"
+            index: 5
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
+        Signal { name: "MosButtonChanged" }
+        Signal { name: "MosCardChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Method { name: "reloadTheme" }
@@ -68,6 +265,198 @@ Module {
             Parameter { name: "darkMode"; type: "DarkMode" }
         }
         Method { name: "darkMode"; type: "DarkMode" }
+        Method {
+            name: "registerCustomComponentTheme"
+            Parameter { name: "themeObject"; type: "QObject"; isPointer: true }
+            Parameter { name: "component"; type: "QString" }
+            Parameter { name: "themeMap"; type: "QVariantMap"; isPointer: true }
+            Parameter { name: "themePath"; type: "QString" }
+        }
+        Method {
+            name: "installComponentToken"
+            Parameter { name: "component"; type: "QString" }
+            Parameter { name: "token"; type: "QString" }
+            Parameter { name: "value"; type: "QString" }
+        }
+    }
+    Component {
+        file: "Mosthemefunctions.h"
+        name: "MosThemeFunctions"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosThemeFunctions 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            Parameter { name: "preset"; type: "int" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "preset"; type: "int" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "preset"; type: "int" }
+        }
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "genColor"
+            type: "QColor"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "genColorString"
+            type: "QString"
+            isList: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "genColorString"
+            type: "QString"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "genColorString"
+            type: "QString"
+            isList: true
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "genFontSize"
+            type: "double"
+            isList: true
+            Parameter { name: "fontSizeBase"; type: "double" }
+        }
+        Method {
+            name: "genFontLineHeight"
+            type: "double"
+            isList: true
+            Parameter { name: "fontSizeBase"; type: "double" }
+        }
+        Method {
+            name: "genRadius"
+            type: "int"
+            isList: true
+            Parameter { name: "radiusBase"; type: "int" }
+        }
+        Method {
+            name: "genFontFamily"
+            type: "QString"
+            Parameter { name: "fontFamilyBase"; type: "QString" }
+        }
+        Method {
+            name: "darker"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "factor"; type: "int" }
+        }
+        Method {
+            name: "darker"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "lighter"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "factor"; type: "int" }
+        }
+        Method {
+            name: "lighter"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "brightness"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "lighterFactor"; type: "int" }
+            Parameter { name: "darkerFactor"; type: "int" }
+        }
+        Method {
+            name: "brightness"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+            Parameter { name: "lighterFactor"; type: "int" }
+        }
+        Method {
+            name: "brightness"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "light"; type: "bool" }
+        }
+        Method {
+            name: "brightness"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "alpha"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "alpha"; type: "double" }
+        }
+        Method {
+            name: "alpha"
+            type: "QColor"
+            isCloned: true
+            Parameter { name: "color"; type: "QColor" }
+        }
+        Method {
+            name: "onBackground"
+            type: "QColor"
+            Parameter { name: "color"; type: "QColor" }
+            Parameter { name: "background"; type: "QColor" }
+        }
+        Method {
+            name: "multiply"
+            type: "double"
+            Parameter { name: "num1"; type: "double" }
+            Parameter { name: "num2"; type: "double" }
+        }
     }
     Component {
         file: "Moswindowagent.h"

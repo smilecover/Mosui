@@ -10,6 +10,8 @@
 #include <QtGui/QFont>
 #include <QColor>
 
+using ComponentPropertyHash = QHash<QString, QVariantMap*>;
+Q_GLOBAL_STATIC(ComponentPropertyHash, g_componentTable);
 
 MosTheme *MosTheme::instance()
 {
@@ -33,34 +35,48 @@ MosTheme::MosTheme(QObject *parent)
     Q_D(MosTheme);
     d->initializeComponentPropertyHash();
 
+    d->m_helper = new MosSystemThemeHelper(this);
+    connect(d->m_helper, &MosSystemThemeHelper::colorSchemeChanged, this, [this]{
+        Q_D(MosTheme);
+        if (d->m_darkMode == DarkMode::System) {
+            d->applyTheme();
+            emit isDarkChanged();
+        }
+    });
 
-    
     reloadTheme();
 
 }
-// @brief 主题重新加载
-// @Function void reloadTheme()
-// @Description 重新加载主题
+// @brief 主题重新加载（重读文件 + 重新计算所有 Token）
+// @note 仅在主题文件本身可能发生变化时调用（如运行时替换主题包）。
+//       普通的亮/暗切换请使用 setDarkMode()，无需调用此函数。
 void MosTheme::reloadTheme()
 {
     Q_D(MosTheme);
-    // 打开json文件
     QFile index(d->m_themeMainPath);
     if (!index.open(QIODevice::ReadOnly)) {
-        qDebug() << "Index.json open faild:" << index.errorString();
+        qWarning() << "MosTheme: failed to open theme file:" << index.errorString();
         return;
     }
     QByteArray indexJson = index.readAll();
     index.close();
     QJsonParseError error;
     QJsonDocument indexDoc = QJsonDocument::fromJson(indexJson, &error);
-    if (error.error == QJsonParseError::NoError) {
-        d->m_mainObject = indexDoc.object();
-        d->reloadMainTheme();
-    } else {
-        qDebug() << "Index.json parse error:" << error.errorString();
+    if (error.error != QJsonParseError::NoError) {
+        qWarning() << "MosTheme: failed to parse theme file:" << error.errorString();
+        return;
     }
-} 
+    d->m_mainObject = indexDoc.object();
+    d->applyTheme();
+}
+
+// @brief 仅重新计算所有 Token，不重读文件（供 setDarkMode / 系统主题切换调用）
+void MosThemePrivate::applyTheme()
+{
+    reloadMainTheme();
+    reloadDefaultComponentTheme();
+    reloadCustomComponentTheme();
+}
 void MosThemePrivate::reloadMainTheme()
 {
     Q_Q(MosTheme);
@@ -84,16 +100,22 @@ void MosThemePrivate::reloadMainTheme()
         parseIndexExpr(it.key(), expr);
     }
 
+    auto __style__ = m_mainObject["__style__"].toObject();
+    for (auto it = __style__.constBegin(); it != __style__.constEnd(); it++) {
+        auto expr = it.value().toString().simplified();
+        parseIndexExpr(it.key(), expr);
+    }
 
+
+ 
     for (auto it = m_mainTokenTable.constBegin(); it != m_mainTokenTable.constEnd(); it++) {
         q->m_Primary[it.key()] = it.value();
     }
     emit q->PrimaryChanged();
 
-    auto __components__ = __init__["__components__"].toObject();
-    for (auto it = m_mainTokenTable.constBegin(); it != m_mainTokenTable.constEnd(); it++) {
-
-        
+    auto __components__ = m_mainObject["__component__"].toObject();
+    for (auto it = __components__.constBegin(); it != __components__.constEnd(); it++) {
+        registerDefaultComponentTheme(it.key(), it.value().toString());
     }
 }
 // @brief 暗色|亮色
@@ -102,16 +124,23 @@ void MosThemePrivate::reloadMainTheme()
 bool MosTheme::isDark() const
 {
     Q_D(const MosTheme);
-    return d->m_darkMode == MosTheme::DarkMode::Dark;
+        if (d->m_darkMode == DarkMode::System) {
+        return d->m_helper->getColorScheme() == MosSystemThemeHelper::ColorScheme::Dark;
+    } else {
+        return d->m_darkMode == DarkMode::Dark;
+    }
 }
-// @brief 设置暗色|亮色
+// @brief 设置主题模式（亮色 / 暗色 / 跟随系统）
 // @Function void setDarkMode(DarkMode darkMode)
-// @Description 设置暗色主题
+// @Description 自动重算所有 Token 并发出通知，调用方无需再手动调用 reloadTheme()
 void MosTheme::setDarkMode(MosTheme::DarkMode darkMode)
 {
     Q_D(MosTheme);
+    if (d->m_darkMode == darkMode) return; // 模式未变，无需重算
     d->m_darkMode = darkMode;
+    d->applyTheme();   // 仅重算 Token，不重读文件（m_mainObject 已缓存）
     emit darkModeChanged();
+    emit isDarkChanged();
 }
 // @brief 获取暗色|亮色
 // @Function DarkMode darkMode() const
@@ -126,11 +155,28 @@ MosTheme::DarkMode MosTheme::darkMode() const
 // @Description 解析主题变量var表达式
 void MosThemePrivate::parseIndexExpr(const QString &tokenName, const QString &expr)
 {
-    Q_Q(MosTheme);
-    if (expr.isEmpty()) {
-        return;
+    if (expr.startsWith('@')) {
+        auto refTokenName = expr.mid(1);
+        if (m_mainTokenTable.contains(refTokenName))
+            m_mainTokenTable[tokenName] = QVariant(m_mainTokenTable[refTokenName]);
+        else {
+            qDebug() << QString("Token(%1):Ref(%2) not found!").arg(expr, refTokenName);
+        }
+    } else if (expr.startsWith('$')) {
+        parse(m_mainTokenTable, tokenName, expr);
+    } else if (expr.startsWith('#')) {
+        /*! 按颜色处理 */
+        auto color = QColor(expr);
+        /*! 从预置颜色中获取 */
+        if (expr.startsWith("Preset_"))
+            color = MosColorGenerator::presetToColor(expr.mid(1));
+        if (!color.isValid())
+            qDebug() << "Unknown color:" << expr;
+        m_mainTokenTable[tokenName] = color;
+    } else {
+        /*! 按字符串处理 */
+        m_mainTokenTable[tokenName] = expr;
     }
-    
 }
 // @brief 初始化组件哈希列表
 // @Function void initializeComponentPropertyHash()
@@ -161,6 +207,21 @@ void MosThemePrivate::registerDefaultComponentTheme(const QString &componentName
         registerComponentTheme(q, componentName, g_componentTable->value(componentName), themePath, m_defaultTheme);
     }
 }
+void MosTheme::registerCustomComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap, const QString &themePath)
+{
+    Q_D(MosTheme);
+
+    d->registerComponentTheme(themeObject, component, themeMap, themePath, d->m_customTheme);
+
+    // 注册完立即加载一次，确保自定义组件初始化时就能拿到正确的主题样式
+    if (d->m_customTheme.contains(themeObject)) {
+        const auto &themeData = d->m_customTheme[themeObject];
+        if (themeData.componentMap.contains(component)) {
+            d->reloadComponentThemeFile(themeObject, component, themeData.componentMap[component]);
+        }
+    }
+}
+
 // @brief 注册组件主题
 // @Function void registerComponentTheme(QObject *themeObject, const QString &component, QVariantMap
 void MosThemePrivate::registerComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap,const QString &themePath, QMap<QObject *, ThemeData> &dataMap)
@@ -176,6 +237,7 @@ void MosThemePrivate::registerComponentTheme(QObject *themeObject, const QString
         dataMap[themeObject].componentMap[component].tokenMap = themeMap;
     }
 }
+
 // @brief 组件默认主题重新加载
 // @Function void reloadDefaultComponentTheme()
 void MosThemePrivate::reloadDefaultComponentTheme()
@@ -183,6 +245,14 @@ void MosThemePrivate::reloadDefaultComponentTheme()
     Q_Q(MosTheme);
 
     reloadComponentTheme(m_defaultTheme);
+}
+// @brief 组件自定义主题重新加载    
+// @Function void reloadCustomComponentTheme()
+void MosThemePrivate::reloadCustomComponentTheme()
+{
+    Q_Q(MosTheme);
+
+    reloadComponentTheme(m_customTheme);
 }
 // @brief 组件主题重新加载
 // @Function void reloadComponentTheme(const QMap<QObject *, ThemeData> &dataMap)
@@ -208,14 +278,25 @@ void MosThemePrivate::reloadComponentThemeFile(QObject *themeObject, const QStri
     auto installTokenMap = componentTheme.installTokenMap;
 
     auto style = QJsonObject();
-    if (reloadComponentImport(style, componentName)) {
-        for (auto it = style.constBegin(); it != style.constEnd(); it++) {
-            parseComponentExpr(tokenMapPtr, it.key(), it.value().toString().simplified());
-        }
 
+    if (reloadComponentImport(style, componentName)) {
+        // 第一遍：先处理所有 $ 函数（如 $genColor），这些会生成基础 token
+        for (auto it = style.constBegin(); it != style.constEnd(); it++) {
+            auto expr = it.value().toString().simplified();
+            if (expr.startsWith('$')) {
+                parseComponentExpr(tokenMapPtr, it.key(), expr);
+            }
+        }
+        // 第二遍：处理 @ 引用和其他表达式
+        for (auto it = style.constBegin(); it != style.constEnd(); it++) {
+            auto expr = it.value().toString().simplified();
+            if (!expr.startsWith('$')) {
+                parseComponentExpr(tokenMapPtr, it.key(), expr);
+            }
+        }
         /*! 读取通过 @link installComponentToken() 安装的变量, 存在则覆盖, 否则添加 */
         for (auto it = installTokenMap.constBegin(); it != installTokenMap.constEnd(); it++) {
-            // parseComponentExpr(tokenMapPtr, it.key(), it.value());
+            parseComponentExpr(tokenMapPtr, it.key(), it.value());
         }
 
         auto signalName = componentName + "Changed";
@@ -236,7 +317,7 @@ bool MosThemePrivate::reloadComponentImport(QJsonObject &style, const QString &c
             QJsonDocument themeDoc = QJsonDocument::fromJson(theme.readAll(), &error);
             if (error.error == QJsonParseError::NoError) {
                 const auto object = themeDoc.object();
-                const auto componentObject = themeDoc.object();
+                // const auto componentObject = themeDoc.object();
                 const auto __init__ = object["__init__"].toObject();
                 if (__init__.contains("__import__")) {
                     const auto __import__ = __init__["__import__"].toArray();
@@ -244,7 +325,7 @@ bool MosThemePrivate::reloadComponentImport(QJsonObject &style, const QString &c
                         reloadComponentImport(style, v.toString());
                     }
                 }
-                const auto __style__ = componentObject["__style__"].toObject();
+                const auto __style__ = object["__style__"].toObject();
                 for (auto it = __style__.constBegin(); it != __style__.constEnd(); it++) {
                     style[it.key()] = it.value();
                 }
@@ -261,23 +342,25 @@ bool MosThemePrivate::reloadComponentImport(QJsonObject &style, const QString &c
 }
 void MosThemePrivate::parseComponentExpr(QVariantMap *tokenMapPtr, const QString &tokenName, const QString &expr)
 {
-    if (expr.startsWith('@')) {
+    if (expr.startsWith('$')) {
+        parse(*tokenMapPtr, tokenName, expr);
+    } else if (expr.startsWith('@')) {
         auto refTokenName = expr.mid(1);
-        if (m_mainTokenTable.contains(refTokenName)) {
+        if (tokenMapPtr->contains(refTokenName)) {
+            tokenMapPtr->insert(tokenName, tokenMapPtr->value(refTokenName));
+        } else if (m_mainTokenTable.contains(refTokenName)) {
             tokenMapPtr->insert(tokenName, m_mainTokenTable[refTokenName]);
         } else {
             qDebug() << QString("Component: Token(%1):Ref(%2) not found!").arg(tokenName, refTokenName);
         }
-    } else if (expr.startsWith('$')) {
-        parse(*tokenMapPtr, tokenName, expr);
     } else if (expr.startsWith('#')) {
-        /*! 按颜色处理 */
-        auto color = QColor(expr);
-        /*! 从预置颜色中获取 */
-        if (expr.startsWith("Preset_"))
-            // color = MusColorGenerator::presetToColor(expr.mid(1));
+        QColor color;
+        if (expr.startsWith("#Preset_"))
+            color = MosColorGenerator::presetToColor(expr.mid(1));
+        else
+            color = QColor(expr);
         if (!color.isValid())
-            qDebug() << QString("Component [%1]: Unknown color:") << expr;
+            qDebug() << QString("Component [%1]: Unknown color: %2").arg(tokenName, expr);
         tokenMapPtr->insert(tokenName, color);
     } else {
         /*! 按字符串处理 */
@@ -530,4 +613,26 @@ qreal MosThemePrivate::numberFromIndexTable(const QString &tokenName)
     }
 
     return number;
+}
+void MosTheme::installComponentToken(const QString &component, const QString &token, const QString &value)
+{
+    Q_D(MosTheme);
+
+    for (auto &theme: d->m_defaultTheme) {
+        if (theme.componentMap.contains(component)) {
+            theme.componentMap[component].installTokenMap.insert(token, value);
+            d->reloadComponentThemeFile(theme.themeObject, component, theme.componentMap[component]);
+            return;
+        }
+    }
+
+    for (auto &theme: d->m_customTheme) {
+        if (theme.componentMap.contains(component)) {
+            theme.componentMap[component].installTokenMap.insert(token, value);
+            d->reloadComponentThemeFile(theme.themeObject, component, theme.componentMap[component]);
+            return;
+        }
+    }
+
+    qDebug() << QString("Component [%1] not found!").arg(component);
 }

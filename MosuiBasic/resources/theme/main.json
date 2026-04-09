@@ -5,15 +5,29 @@
             "colorBgBase": "#f5f5f5|#181818"    
         },
         "__vars__": {
+            "fontSizeBase": "$genFontSize(16)",
+            "fontFamilyBase": "$genFontFamily('Microsoft YaHei UI', BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif)"
             
 
 
         }
     },
     "__style__": {
+        "fontPrimaryFamily": "@fontFamilyBase",
+        "fontPrimarySize": "@fontSizeBase-1",
+        "colorPrimaryTextDisabled": "$alpha(@colorTextBase, 0.45)",
+
+        "durationFast": "100",
+        "durationMid": "200",
+        "durationSlow": "300",
+
+        "colorBorder": "$alpha(@colorTextBase, 0.15)",
+        "colorBorderSecondary": "$brightness(@colorBgBase, 106, 119)"
+
 
     },
     "__component__": {
-        "MosButton": ":/theme/theme/MosButton.json"
+        "MosButton": ":/theme/theme/MosButton.json",
+        "MosIconText":":/theme/theme/MosIconText.json"
     }
 }

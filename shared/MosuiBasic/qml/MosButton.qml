@@ -6,7 +6,7 @@ T.Button {
     width: 100
     height: 30
     // 背景
-    property color buttoncolor: "cyan"
+    property color buttoncolor: MosTheme.MosButton.MosButtonBgColor
     // 圆角
     property real buttonradius: 5
     enum Type{
@@ -21,4 +21,5 @@ T.Button {
         color: buttoncolor
         radius: buttonradius
     }
+
 }
