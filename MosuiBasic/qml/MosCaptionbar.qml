@@ -2,61 +2,49 @@ import QtQuick
 import QtQuick.Layouts
 import MosuiBasic
 
-MosRectangle{
+MosRectangle {
     id: root
-    objectName: '__HusCaptionBar__'
-    color: 'transparent'
+    objectName: '__MosCaptionBar__'
 
-    // // 目标窗口
-    // property var targetWindow: null
-    // property MosWindowAgent windowAgent: null
+    // 高度固定 32px（Windows 桌面标题栏标准高度）
+    implicitHeight: 32
 
-    // // 布局方向
-    // // property alias layoutDirection: _row.layoutDirection
-    // property bool mirrored: false
-    // // 窗口图标
-    // property string winIcon: ''
-    // // property alias winIconWidth: _winIcon.width
-    // // property alias winIconHeight: _winIcon.height
-    // // property alias winIconShow: _winIcon.visible
+    // 背景跟随主题
+    color: MosTheme.isDark ? "#202020" : "#f5f5f5"
 
-    // property string winTitle: targetWindow?.title ?? ''
-    // property font winTitleFont: Qt.font({family: "Microsoft YaHei UI",pixelSize: 14})
-    // property color winTitleColor: HusTheme.Primary.colorTextBase
-    // // property alias showWinTitle: __winTitleLoader.visible
+    RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: 8
+        anchors.rightMargin: 8
+        spacing: 8
 
-    // property bool showReturnButton: false
-    // property bool showThemeButton: false
-    // property bool topButtonChecked: false
-    // property bool showTopButton: false
-    // property bool showMinimizeButton: Qt.platform.os !== 'osx'
-    // property bool showMaximizeButton: Qt.platform.os !== 'osx'
-    // property bool showCloseButton: Qt.platform.os !== 'osx'
+        // ── 右侧：窗口控制按钮 ──
+        RowLayout {
+            id: buttonRow
+            Layout.alignment: Qt.AlignVCenter
+            spacing: 2
 
-    // property var returnCallback: () => { }
-    // property var themeCallback: () => { MosTheme.darkMode = MosTheme.isDark ? MosTheme.DarkMode.Light : MosTheme.DarkMode.Dark; }
-    // property var topCallback: checked => { }
-    
+            // 最小化
+            ControlButton {
+                onClicked: root.windowAgent.showMinimized()
+            }
 
+            // 最大化 / 还原
+            ControlButton {
+                id: btnMaximize
+                onClicked: {
+                    if (root.windowAgent.window) {
+                        isMaximized
+                            ? root.windowAgent.window.showNormal()
+                            : root.windowAgent.window.showMaximized()
+                    }
+                }
+            }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            // 关闭
+            ControlButton {
+                onClicked: root.windowAgent.close()
+            }
+        }
+    }
 }
-
-

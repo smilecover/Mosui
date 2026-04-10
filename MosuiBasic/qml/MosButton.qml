@@ -1,12 +1,13 @@
 import QtQuick
 import QtQuick.Templates as T
+import MosuiBasic
 
 T.Button {
     id: root
     width: 100
     height: 30
     // 背景
-    property color buttoncolor: MosTheme.MosButton.MosButtonBgColor
+    property color buttoncolor: MosTheme.MosButton.ButtonBgColor
     // 圆角
     property real buttonradius: 5
     enum Type{

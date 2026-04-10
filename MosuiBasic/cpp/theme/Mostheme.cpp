@@ -13,12 +13,11 @@
 using ComponentPropertyHash = QHash<QString, QVariantMap*>;
 Q_GLOBAL_STATIC(ComponentPropertyHash, g_componentTable);
 
+
 MosTheme *MosTheme::instance()
 {
-    static MosTheme *theme = new MosTheme;
-
-
-    return theme;
+    static MosTheme g_themeInstance;
+    return &g_themeInstance;
 }
 MosTheme *MosTheme::create(QQmlEngine *, QJSEngine *)
 {

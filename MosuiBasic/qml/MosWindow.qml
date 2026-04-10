@@ -1,22 +1,20 @@
 import QtQuick
-// import QtQml
 import MosuiBasic
 
-Window{
+Window {
     id: root
     objectName: '__MosWindow__'
     visible: true
-    Component.onCompleted: {
-        windowAgent.setup(root)
-        windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
-        if (root.showWhenReady) {
-            root.visible = true
-        }   
-    }
-    MosWindowAgent{
+
+    property alias windowAgent: windowAgent
+
+    title: windowAgent.windowTitle
+
+    MosWindowAgent {
         id: windowAgent
     }
-    MosCaptionbar{
+
+    MosCaptionbar {
         id: captionbar
         width: root.width
         height: 32
@@ -28,6 +26,7 @@ Window{
         target: MosTheme
         function onIsDarkChanged() {
             windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
+            root.color = MosTheme.isDark ? "#181818" : "#f5f5f5"
         }
     }
 }

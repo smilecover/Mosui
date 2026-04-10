@@ -4,4 +4,7 @@
         <file>theme/MosButton.json</file>
         <file>theme/MosIconText.json</file>
     </qresource>
+    <qresource prefix="/font">
+        <file>font/MOSUI-Icons.otf</file>
+    </qresource>
 </RCC>

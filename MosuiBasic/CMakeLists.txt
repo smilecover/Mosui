@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 add_subdirectory(qwindowkit)
-
+ 
 # 动态库目录
 if(NOT DEFINED LIBRARY_SHARED_OUTPUT_DIRECTORY OR NOT EXISTS ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
     set(LIBRARY_SHARED_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/shared CACHE PATH "动态库文件输出目录" FORCE)
@@ -25,6 +25,7 @@ file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "cpp/*.cpp" "cpp/*.h"
     "cpp/theme/*.cpp" "cpp/theme/*.h"
     "cpp/window/*.cpp" "cpp/window/*.h"
+    "cpp/controls/*.cpp" "cpp/controls/*.h"
 )
 
 # 动态库
@@ -43,6 +44,7 @@ qt_add_qml_module(
 set_target_properties(${PROJECT_NAME} PROPERTIES
     QMLDIR_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qmldir"
 )
+
 target_link_libraries(${PROJECT_NAME} PUBLIC
     QWKCore
     QWKQuick
@@ -50,6 +52,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt6::Core
     Qt6::Qml
     Qt6::Quick
+    Qt6::QuickPrivate
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -91,4 +94,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/theme
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/window
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/controls
 )

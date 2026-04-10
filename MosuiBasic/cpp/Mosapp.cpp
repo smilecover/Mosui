@@ -11,7 +11,7 @@ MosApp::~MosApp()
 
 void MosApp::initialize(QQmlEngine *engine)
 {
-    QFontDatabase::addApplicationFont(":/HuskarUI/resources/font/HuskarUI-Icons.ttf");
+    QFontDatabase::addApplicationFont(":/font/font/MOSUI-Icons.otf");
 
     *g_initialized = true;
 }

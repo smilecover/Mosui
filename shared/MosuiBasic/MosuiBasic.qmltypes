@@ -107,6 +107,102 @@ Module {
         }
     }
     Component {
+        file: "Mosrectangle.h"
+        name: "MosPen"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosPen 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "width"
+            type: "double"
+            read: "width"
+            write: "setWidth"
+            notify: "widthChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "color"
+            type: "QColor"
+            read: "color"
+            write: "setColor"
+            notify: "colorChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "style"
+            type: "int"
+            read: "style"
+            write: "setStyle"
+            notify: "styleChanged"
+            index: 2
+            isFinal: true
+        }
+        Signal { name: "widthChanged" }
+        Signal { name: "colorChanged" }
+        Signal { name: "styleChanged" }
+    }
+    Component {
+        file: "Mosrectangle.h"
+        name: "MosRadius"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosRadius 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "all"
+            type: "double"
+            read: "all"
+            write: "setAll"
+            notify: "allChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "topLeft"
+            type: "double"
+            read: "topLeft"
+            write: "setTopLeft"
+            notify: "topLeftChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "topRight"
+            type: "double"
+            read: "topRight"
+            write: "setTopRight"
+            notify: "topRightChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
+            name: "bottomLeft"
+            type: "double"
+            read: "bottomLeft"
+            write: "setBottomLeft"
+            notify: "bottomLeftChanged"
+            index: 3
+            isFinal: true
+        }
+        Property {
+            name: "bottomRight"
+            type: "double"
+            read: "bottomRight"
+            write: "setBottomRight"
+            notify: "bottomRightChanged"
+            index: 4
+            isFinal: true
+        }
+        Signal { name: "allChanged" }
+        Signal { name: "topLeftChanged" }
+        Signal { name: "topRightChanged" }
+        Signal { name: "bottomLeftChanged" }
+        Signal { name: "bottomRightChanged" }
+    }
+    Component {
         file: "Mosradiusgenerator.h"
         name: "MosRadiusGenerator"
         accessSemantics: "reference"
@@ -119,6 +215,100 @@ Module {
             isList: true
             Parameter { name: "radiusBase"; type: "int" }
         }
+    }
+    Component {
+        file: "Mosrectangle.h"
+        name: "MosRectangle"
+        accessSemantics: "reference"
+        prototype: "QQuickPaintedItem"
+        exports: ["MosuiBasic/MosRectangle 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "color"
+            type: "QColor"
+            read: "color"
+            write: "setColor"
+            notify: "colorChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "gradient"
+            type: "QJSValue"
+            read: "gradient"
+            write: "setGradient"
+            reset: "resetGradient"
+            index: 1
+        }
+        Property {
+            name: "border"
+            type: "MosPen"
+            isPointer: true
+            read: "border"
+            index: 2
+            isReadonly: true
+            isConstant: true
+        }
+        Property {
+            name: "radius"
+            type: "double"
+            read: "radius"
+            write: "setRadius"
+            notify: "radiusChanged"
+            index: 3
+            isFinal: true
+        }
+        Property {
+            name: "topLeftRadius"
+            type: "double"
+            read: "topLeftRadius"
+            write: "setTopLeftRadius"
+            notify: "topLeftRadiusChanged"
+            index: 4
+            isFinal: true
+        }
+        Property {
+            name: "topRightRadius"
+            type: "double"
+            read: "topRightRadius"
+            write: "setTopRightRadius"
+            notify: "topRightRadiusChanged"
+            index: 5
+            isFinal: true
+        }
+        Property {
+            name: "bottomLeftRadius"
+            type: "double"
+            read: "bottomLeftRadius"
+            write: "setBottomLeftRadius"
+            notify: "bottomLeftRadiusChanged"
+            index: 6
+            isFinal: true
+        }
+        Property {
+            name: "bottomRightRadius"
+            type: "double"
+            read: "bottomRightRadius"
+            write: "setBottomRightRadius"
+            notify: "bottomRightRadiusChanged"
+            index: 7
+            isFinal: true
+        }
+        Signal { name: "colorChanged" }
+        Signal { name: "radiusChanged" }
+        Signal { name: "topLeftRadiusChanged" }
+        Signal { name: "topRightRadiusChanged" }
+        Signal { name: "bottomLeftRadiusChanged" }
+        Signal { name: "bottomRightRadiusChanged" }
+        Method { name: "doUpdate" }
+    }
+    Component {
+        file: "Mosrectangle.h"
+        name: "MosRectangleInternal"
+        accessSemantics: "reference"
+        prototype: "QQuickRectangle"
+        exports: ["MosuiBasic/MosRectangleInternal 1.0"]
+        exportMetaObjectRevisions: [256]
     }
     Component {
         file: "Mossizegenerator.h"
