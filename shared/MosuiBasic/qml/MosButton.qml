@@ -6,10 +6,11 @@ T.Button {
     id: root
     width: 100
     height: 30
-    // 背景
+    text: "按钮"
+
     property color buttoncolor: MosTheme.MosButton.ButtonBgColor
-    // 圆角
     property real buttonradius: MosTheme.MosButton.ButtonRadius
+
     enum Type{
         Type_Default = 0 // 默认按钮类型
     }
