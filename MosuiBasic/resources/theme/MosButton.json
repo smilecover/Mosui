@@ -1,7 +1,13 @@
 {
     "__style__":{
         "MosButtonBgColor": "$genColor(#Preset_Green)",
+        "ButtonBgColor": "@MosButtonBgColor-6",
+        "ButtonBgColor2": "@MosButtonBgColor-2",
 
-        "ButtonBgColor": "@MosButtonBgColor-6"
+
+        "MosButtonRadius": "$genRadius(14)",
+        "ButtonRadius": "@MosButtonRadius-1",
+        "ButtonRadius2": "@MosButtonRadius-2"
+        
     }
 }

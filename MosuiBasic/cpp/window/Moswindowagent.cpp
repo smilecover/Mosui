@@ -27,6 +27,7 @@ void MosWindowAgent::classBegin()
         }
     }
 }
+
 void MosWindowAgent::componentComplete()
 {
 

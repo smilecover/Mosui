@@ -442,10 +442,20 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosCaptionbar"
+            type: "QVariantMap"
+            read: "MosCaptionbar"
+            notify: "MosCaptionbarChanged"
+            index: 6
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
         Signal { name: "MosCardChanged" }
+        Signal { name: "MosCaptionbarChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Method { name: "reloadTheme" }

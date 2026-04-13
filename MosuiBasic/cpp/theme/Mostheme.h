@@ -23,6 +23,7 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, Primary);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosButton);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCard);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCaptionbar);
 
 
 public:

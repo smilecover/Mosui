@@ -8,7 +8,11 @@ Window {
 
     property alias windowAgent: windowAgent
 
+    property int captionbarcolor: MosCaptionbar.CaptionbarColorTransparent
+
     title: windowAgent.windowTitle
+
+    
 
     MosWindowAgent {
         id: windowAgent
@@ -17,7 +21,7 @@ Window {
     MosCaptionbar {
         id: captionbar
         width: root.width
-        height: 32
+        captionbarcolor: root.captionbarcolor
         Component.onCompleted: windowAgent.setTitleBar(captionbar)
     }
 
@@ -25,9 +29,7 @@ Window {
     Connections {
         target: MosTheme
         function onIsDarkChanged() {
-            // dark-mode 已由 classBegin() 初始化，此处仅做动态切换
             windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
-            // 同步窗口背景
             root.color = MosTheme.isDark ? "#181818" : "#f5f5f5"
         }
     }

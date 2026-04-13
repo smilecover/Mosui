@@ -2,7 +2,8 @@
     <qresource prefix="/theme">
         <file>theme/main.json</file>
         <file>theme/MosButton.json</file>
-        <file>theme/MosIconText.json</file>
+        <file>theme/MosCaptionbar.json</file>
+        <file>theme/MosCard.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/MOSUI-Icons.otf</file>

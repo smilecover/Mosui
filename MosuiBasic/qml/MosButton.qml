@@ -9,7 +9,7 @@ T.Button {
     // 背景
     property color buttoncolor: MosTheme.MosButton.ButtonBgColor
     // 圆角
-    property real buttonradius: 5
+    property real buttonradius: MosTheme.MosButton.ButtonRadius
     enum Type{
         Type_Default = 0 // 默认按钮类型
     }

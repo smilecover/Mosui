@@ -28,6 +28,6 @@
     },
     "__component__": {
         "MosButton": ":/theme/theme/MosButton.json",
-        "MosIconText":":/theme/theme/MosIconText.json"
+        "MosCaptionbar": ":/theme/theme/MosCaptionbar.json"
     }
 }

@@ -8,5 +8,21 @@ MosWindow{
     height: 800
     color: MosTheme.Primary.colorBgBase
     title: "MosUI"
+    captionbarcolor: MosCaptionbar.CaptionbarColorTransparent
+    MosButton{
+        id: button1
+        anchors.centerIn: parent
+        width: 100
+        height: 30
+        text: "按钮"
+
+        onClicked: {
+            // 输出
+
+            button1.buttonradius=MosTheme.MosButton.ButtonRadius2
+            button1.buttoncolor=MosTheme.MosButton.ButtonBgColor2
+            console.log("按钮点击事件触发"+button1.buttonradius)
+        }
+    }
 
 }

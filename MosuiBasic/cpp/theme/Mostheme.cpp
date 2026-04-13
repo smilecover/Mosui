@@ -193,6 +193,8 @@ void MosThemePrivate::initializeComponentPropertyHash()
         initialized = true;
 
         ADD_COMPONENT_PROPERTY(MosButton);
+        ADD_COMPONENT_PROPERTY(MosCard);
+        ADD_COMPONENT_PROPERTY(MosCaptionbar);
 
     }
 }

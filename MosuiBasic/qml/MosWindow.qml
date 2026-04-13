@@ -8,7 +8,11 @@ Window {
 
     property alias windowAgent: windowAgent
 
+    property int captionbarcolor: MosCaptionbar.CaptionbarColorTransparent
+
     title: windowAgent.windowTitle
+
+    
 
     MosWindowAgent {
         id: windowAgent
@@ -17,7 +21,7 @@ Window {
     MosCaptionbar {
         id: captionbar
         width: root.width
-        height: 32
+        captionbarcolor: root.captionbarcolor
         Component.onCompleted: windowAgent.setTitleBar(captionbar)
     }
 
