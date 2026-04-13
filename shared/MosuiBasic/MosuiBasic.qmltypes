@@ -407,12 +407,21 @@ Module {
             isFinal: true
         }
         Property {
+            name: "sizeHint"
+            type: "QVariantMap"
+            read: "sizeHint"
+            notify: "sizeHintChanged"
+            index: 2
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
             name: "animationEnabled"
             type: "bool"
             read: "animationEnabled"
             write: "setAnimationEnabled"
             notify: "animationEnabledChanged"
-            index: 2
+            index: 3
             isFinal: true
         }
         Property {
@@ -420,7 +429,7 @@ Module {
             type: "QVariantMap"
             read: "Primary"
             notify: "PrimaryChanged"
-            index: 3
+            index: 4
             isReadonly: true
             isFinal: true
         }
@@ -429,7 +438,7 @@ Module {
             type: "QVariantMap"
             read: "MosButton"
             notify: "MosButtonChanged"
-            index: 4
+            index: 5
             isReadonly: true
             isFinal: true
         }
@@ -438,7 +447,7 @@ Module {
             type: "QVariantMap"
             read: "MosCard"
             notify: "MosCardChanged"
-            index: 5
+            index: 6
             isReadonly: true
             isFinal: true
         }
@@ -447,7 +456,7 @@ Module {
             type: "QVariantMap"
             read: "MosCaptionbar"
             notify: "MosCaptionbarChanged"
-            index: 6
+            index: 7
             isReadonly: true
             isFinal: true
         }
@@ -458,6 +467,7 @@ Module {
         Signal { name: "MosCaptionbarChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
+        Signal { name: "sizeHintChanged" }
         Method { name: "reloadTheme" }
         Method { name: "isDark"; type: "bool" }
         Method {
@@ -477,6 +487,11 @@ Module {
             Parameter { name: "component"; type: "QString" }
             Parameter { name: "token"; type: "QString" }
             Parameter { name: "value"; type: "QString" }
+        }
+        Method {
+            name: "installSizeHintRatio"
+            Parameter { name: "size"; type: "QString" }
+            Parameter { name: "ratio"; type: "double" }
         }
     }
     Component {

@@ -60,6 +60,9 @@ public:
     QMap<QObject *, ThemeData> m_customTheme; // 自定义主题
 
 
+    QVariantMap m_sizeHintMap;
+
+
     // 主题重新加载（仅重新计算 Token，不重读文件）
     void applyTheme();
     // 主题重新加载

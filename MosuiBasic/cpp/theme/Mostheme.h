@@ -17,6 +17,8 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     Q_PROPERTY(bool isDark READ isDark NOTIFY isDarkChanged)
     Q_PROPERTY(DarkMode darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged FINAL)
 
+    Q_PROPERTY(QVariantMap sizeHint READ sizeHint NOTIFY sizeHintChanged FINAL)
+
     MOSUI_PROPERTY_INIT(bool, animationEnabled, setAnimationEnabled, true); // 是否启用动画效果
 
 
@@ -37,6 +39,8 @@ public:
     };
     Q_ENUM(DarkMode)
 
+    QVariantMap sizeHint() const;
+
     // 主题重新加载
     Q_INVOKABLE void reloadTheme();
     // 暗色|亮色
@@ -48,12 +52,14 @@ public:
         // 注册自定义组件主题
     Q_INVOKABLE void registerCustomComponentTheme(QObject *themeObject, const QString &component, QVariantMap *themeMap, const QString &themePath);
     Q_INVOKABLE void installComponentToken(const QString &component, const QString &token, const QString &value);
+    // 设置尺寸提示比率
+    Q_INVOKABLE void installSizeHintRatio(const QString &size, qreal ratio);
 
 
-
-signals:
+signals:    
     void darkModeChanged();
     void isDarkChanged();
+    void sizeHintChanged();
 private:
     explicit MosTheme(QObject *parent = nullptr);
 

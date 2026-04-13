@@ -43,6 +43,12 @@ MosTheme::MosTheme(QObject *parent)
         }
     });
 
+
+
+    d->m_sizeHintMap["small"] = 0.8;
+    d->m_sizeHintMap["normal"] = 1.0;
+    d->m_sizeHintMap["large"] = 1.25;
+
     reloadTheme();
 
 }
@@ -636,4 +642,29 @@ void MosTheme::installComponentToken(const QString &component, const QString &to
     }
 
     qDebug() << QString("Component [%1] not found!").arg(component);
+}
+QVariantMap MosTheme::sizeHint() const
+{
+    Q_D(const MosTheme);
+
+    return d->m_sizeHintMap;
+}
+void MosTheme::installSizeHintRatio(const QString &size, qreal ratio)
+{
+    Q_D(MosTheme);
+
+    bool change = false;
+    if (d->m_sizeHintMap.contains(size)) {
+        auto value = d->m_sizeHintMap.value(size).toDouble();
+        if (!qFuzzyCompare(value, ratio)) {
+            change = true;
+        }
+    } else {
+        change = true;
+    }
+
+    if (change) {
+        d->m_sizeHintMap[size] = ratio;
+        emit sizeHintChanged();
+    }
 }

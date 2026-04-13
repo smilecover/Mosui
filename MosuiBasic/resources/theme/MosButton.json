@@ -4,10 +4,20 @@
         "ButtonBgColor": "@MosButtonBgColor-6",
         "ButtonBgColor2": "@MosButtonBgColor-2",
 
+        "fontFamily": "@fontPrimaryFamily",
+        "fontSize": "@fontPrimarySize",
+        "fontHeight": "@fontPrimaryHeight",
+        "fontLineHeight": "1.0",
+
 
         "MosButtonRadius": "$genRadius(14)",
         "ButtonRadius": "@MosButtonRadius-1",
-        "ButtonRadius2": "@MosButtonRadius-2"
-        
+        "ButtonRadius2": "@MosButtonRadius-2",
+
+        "colorTextHover": "@colorPrimaryTextHover",
+        "colorTextActive": "@colorPrimaryTextActive",
+        "colorText": "@colorPrimaryText",
+        "colorTextDisabled": "@colorPrimaryTextDisabled",
+        "colorTextDefault": "@colorTextBase"
     }
 }
