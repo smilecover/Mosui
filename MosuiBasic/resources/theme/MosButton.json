@@ -18,6 +18,31 @@
         "colorTextActive": "@colorPrimaryTextActive",
         "colorText": "@colorPrimaryText",
         "colorTextDisabled": "@colorPrimaryTextDisabled",
-        "colorTextDefault": "@colorTextBase"
+        "colorTextDefault": "@colorTextBase",
+
+        "colorBgDisabled": "@colorPrimaryContainerBgDisabled",
+        "colorBg": "$alpha(@colorBgBase, 0)",
+        "colorBgHover": "@colorBgBase",
+        "colorBgActive": "@colorBgBase",
+        "colorPrimaryBg": "@colorPrimaryContainerBg",
+        "colorPrimaryBgHover": "@colorPrimaryContainerBgHover",
+        "colorPrimaryBgActive": "@colorPrimaryContainerBgActive",
+        "colorFillBgDark": "@colorPrimaryBase-10",
+        "colorFillBgDarkHover": "@colorPrimaryBase-9",
+        "colorFillBgDarkActive": "@colorPrimaryBase-8",
+        "colorFillBg": "@colorPrimaryBg",
+        "colorFillBgHover": "@colorPrimaryBgHover",
+        "colorFillBgActive": "@colorPrimaryBgActive",
+        "colorTextBg": "$alpha(@colorBgBase, 0)",
+        "colorTextBgHover": "@colorPrimaryBg",
+        "colorTextBgActive": "@colorPrimaryBgActive",
+
+        "colorBorder": "@colorPrimaryBorder",
+        "colorBorderHover": "@colorPrimaryBorderHover",
+        "colorBorderActive": "@colorPrimaryBorderActive",
+        "colorBorderDisabled": "$alpha(@colorTextBase, 0.15)",
+        "colorDefaultBorder": "#80808080"
+        
+
     }
 }
