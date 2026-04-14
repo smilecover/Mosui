@@ -48,6 +48,7 @@ public:
     MosThemePrivate(MosTheme *q) : q_ptr(q) { };
     MosTheme *q_ptr { nullptr };
     MosTheme::DarkMode m_darkMode = MosTheme::DarkMode::Dark;
+    MosTheme::TextRenderType m_textRenderType = MosTheme::TextRenderType::QtRendering;
 
     MosSystemThemeHelper *m_helper { nullptr };
 

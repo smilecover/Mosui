@@ -1,0 +1,8 @@
+{
+    "__style__":{
+        "fontSize": "@fontPrimarySize",
+        "colorText": "red",
+
+        "colorTextDisabled": "$alpha(red, 0.45)"
+    }
+}

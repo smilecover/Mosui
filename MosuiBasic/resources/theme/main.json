@@ -53,6 +53,7 @@
     },
     "__component__": {
         "MosButton": ":/theme/theme/MosButton.json",
-        "MosCaptionbar": ":/theme/theme/MosCaptionbar.json"
+        "MosCaptionbar": ":/theme/theme/MosCaptionbar.json",
+        "MosIconText": ":/theme/theme/MosIconText.json"
     }
 }

@@ -389,6 +389,11 @@ Module {
             isScoped: true
             values: ["Light", "Dark", "System"]
         }
+        Enum {
+            name: "TextRenderType"
+            isScoped: true
+            values: ["QtRendering", "NativeRendering", "CurveRendering"]
+        }
         Property {
             name: "isDark"
             type: "bool"
@@ -407,11 +412,20 @@ Module {
             isFinal: true
         }
         Property {
+            name: "textRenderType"
+            type: "TextRenderType"
+            read: "textRenderType"
+            write: "setTextRenderType"
+            notify: "textRenderTypeChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
             name: "sizeHint"
             type: "QVariantMap"
             read: "sizeHint"
             notify: "sizeHintChanged"
-            index: 2
+            index: 3
             isReadonly: true
             isFinal: true
         }
@@ -421,7 +435,7 @@ Module {
             read: "animationEnabled"
             write: "setAnimationEnabled"
             notify: "animationEnabledChanged"
-            index: 3
+            index: 4
             isFinal: true
         }
         Property {
@@ -429,7 +443,7 @@ Module {
             type: "QVariantMap"
             read: "Primary"
             notify: "PrimaryChanged"
-            index: 4
+            index: 5
             isReadonly: true
             isFinal: true
         }
@@ -438,7 +452,7 @@ Module {
             type: "QVariantMap"
             read: "MosButton"
             notify: "MosButtonChanged"
-            index: 5
+            index: 6
             isReadonly: true
             isFinal: true
         }
@@ -447,7 +461,7 @@ Module {
             type: "QVariantMap"
             read: "MosCard"
             notify: "MosCardChanged"
-            index: 6
+            index: 7
             isReadonly: true
             isFinal: true
         }
@@ -456,7 +470,16 @@ Module {
             type: "QVariantMap"
             read: "MosCaptionbar"
             notify: "MosCaptionbarChanged"
-            index: 7
+            index: 8
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosIconText"
+            type: "QVariantMap"
+            read: "MosIconText"
+            notify: "MosIconTextChanged"
+            index: 9
             isReadonly: true
             isFinal: true
         }
@@ -465,8 +488,10 @@ Module {
         Signal { name: "MosButtonChanged" }
         Signal { name: "MosCardChanged" }
         Signal { name: "MosCaptionbarChanged" }
+        Signal { name: "MosIconTextChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
+        Signal { name: "textRenderTypeChanged" }
         Signal { name: "sizeHintChanged" }
         Method { name: "reloadTheme" }
         Method { name: "isDark"; type: "bool" }

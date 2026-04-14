@@ -16,6 +16,7 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
 
     Q_PROPERTY(bool isDark READ isDark NOTIFY isDarkChanged)
     Q_PROPERTY(DarkMode darkMode READ darkMode WRITE setDarkMode NOTIFY darkModeChanged FINAL)
+    Q_PROPERTY(TextRenderType textRenderType READ textRenderType WRITE setTextRenderType NOTIFY textRenderTypeChanged FINAL)
 
     Q_PROPERTY(QVariantMap sizeHint READ sizeHint NOTIFY sizeHintChanged FINAL)
 
@@ -26,6 +27,7 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosButton);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCard);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCaptionbar);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosIconText);
 
 
 public:
@@ -38,8 +40,18 @@ public:
     System,
     };
     Q_ENUM(DarkMode)
+    enum class TextRenderType {
+        QtRendering = 0,
+        NativeRendering = 1,
+        CurveRendering = 2
+    };
+    Q_ENUM(TextRenderType);
+
 
     QVariantMap sizeHint() const;
+
+    TextRenderType textRenderType() const;
+    void setTextRenderType(TextRenderType renderType);
 
     // 主题重新加载
     Q_INVOKABLE void reloadTheme();
@@ -59,6 +71,7 @@ public:
 signals:    
     void darkModeChanged();
     void isDarkChanged();
+    void textRenderTypeChanged();
     void sizeHintChanged();
 private:
     explicit MosTheme(QObject *parent = nullptr);

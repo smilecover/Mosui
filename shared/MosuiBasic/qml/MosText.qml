@@ -3,10 +3,10 @@ import QtQuick
 import MosuiBasic
 
 Text {
-    id: control
+    id: root
 
     objectName: '__MosText__'
-    // renderType: MosTheme.textRenderType
+    renderType: MosTheme.textRenderType
     color: enabled ? MosTheme.Primary.colorTextBase :
                      MosTheme.Primary.colorPrimaryTextDisabled
     font {

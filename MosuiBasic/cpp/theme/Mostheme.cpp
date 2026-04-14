@@ -201,6 +201,7 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosButton);
         ADD_COMPONENT_PROPERTY(MosCard);
         ADD_COMPONENT_PROPERTY(MosCaptionbar);
+        ADD_COMPONENT_PROPERTY(MosIconText);
 
     }
 }
@@ -666,5 +667,26 @@ void MosTheme::installSizeHintRatio(const QString &size, qreal ratio)
     if (change) {
         d->m_sizeHintMap[size] = ratio;
         emit sizeHintChanged();
+    }
+}
+MosTheme::TextRenderType MosTheme::textRenderType() const
+{
+    Q_D(const MosTheme);
+
+    return d->m_textRenderType;
+}
+void MosTheme::setTextRenderType(TextRenderType renderType)
+{
+    Q_D(MosTheme);
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    if (renderType == TextRenderType::CurveRendering) {
+        renderType = TextRenderType::QtRendering;
+        qDebug() << "Qt5 is not supported TextRenderType::CurveRendering!";
+    }
+#endif
+    if (d->m_textRenderType != renderType) {
+        d->m_textRenderType = renderType;
+        emit textRenderTypeChanged();
     }
 }
