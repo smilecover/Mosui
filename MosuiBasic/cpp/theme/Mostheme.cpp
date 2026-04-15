@@ -96,8 +96,8 @@ void MosThemePrivate::reloadMainTheme()
     auto colorTextBaseList = colorTextBase.split("|");
     auto colorBgBaseList = colorBgBase.split("|");
 
-    m_mainTokenTable["colorTextBase"] = q->isDark() ? colorTextBaseList.at(1) : colorTextBaseList.at(0);
-    m_mainTokenTable["colorBgBase"] = q->isDark() ? colorBgBaseList.at(1) : colorBgBaseList.at(0);
+    m_mainTokenTable["colorTextBase"] = QVariant(QColor(q->isDark() ? colorTextBaseList.at(1) : colorTextBaseList.at(0)));
+    m_mainTokenTable["colorBgBase"] = QVariant(QColor(q->isDark() ? colorBgBaseList.at(1) : colorBgBaseList.at(0)));
 
     auto __vars__ = __init__["__vars__"].toObject();
     for (auto it = __vars__.constBegin(); it != __vars__.constEnd(); it++) {
@@ -163,10 +163,7 @@ void MosThemePrivate::parseIndexExpr(const QString &tokenName, const QString &ex
     if (expr.startsWith('@')) {
         auto refTokenName = expr.mid(1);
         if (m_mainTokenTable.contains(refTokenName))
-            m_mainTokenTable[tokenName] = QVariant(m_mainTokenTable[refTokenName]);
-        else {
-            qDebug() << QString("Token(%1):Ref(%2) not found!").arg(expr, refTokenName);
-        }
+            m_mainTokenTable[tokenName] = m_mainTokenTable[refTokenName];  // 直接赋值，避免 QVariant 嵌套
     } else if (expr.startsWith('$')) {
         parse(m_mainTokenTable, tokenName, expr);
     } else if (expr.startsWith('#')) {
@@ -202,6 +199,7 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosCard);
         ADD_COMPONENT_PROPERTY(MosCaptionbar);
         ADD_COMPONENT_PROPERTY(MosIconText);
+        ADD_COMPONENT_PROPERTY(MosCaptionButton);
 
     }
 }

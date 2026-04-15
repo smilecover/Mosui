@@ -483,12 +483,22 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosCaptionButton"
+            type: "QVariantMap"
+            read: "MosCaptionButton"
+            notify: "MosCaptionButtonChanged"
+            index: 10
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
         Signal { name: "MosCardChanged" }
         Signal { name: "MosCaptionbarChanged" }
         Signal { name: "MosIconTextChanged" }
+        Signal { name: "MosCaptionButtonChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }

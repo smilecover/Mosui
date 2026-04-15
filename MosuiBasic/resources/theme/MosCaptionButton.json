@@ -1,0 +1,22 @@
+{
+    "__init__": {
+        "__import__": ["MosButton"]
+    },
+    "__style__": {
+        "fontSize": "14",
+        "colorIconDisabled": "@colorPrimaryTextDisabled",
+        "colorIcon": "@colorTextBase",
+        "colorIconHover": "@colorTextBase",
+        "colorIconActive": "@colorTextBase",
+        "colorIconChecked": "@colorPrimaryTextHover",
+        "colorBgDisabled": "@colorPrimaryContainerBgDisabled",
+        "colorBg": "$alpha(@colorTextBase, 0)",
+        "colorBgHover": "@colorFillSecondary",
+        "colorBgActive": "@colorFill",
+        "colorErrorBg": "$alpha(@colorError, 0)",
+        "colorErrorBgHover": "@colorErrorHover",
+        "colorErrorBgActive": "@colorErrorActive",
+        "colorErrorBgDisabled": "@colorError",
+        "radiusBg": "@radiusPrimary"
+    }
+}

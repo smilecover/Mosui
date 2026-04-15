@@ -4,33 +4,37 @@ import MosuiBasic
 Window {
     id: root
     objectName: '__MosWindow__'
-    visible: true
+    visible: false
 
     property alias windowAgent: windowAgent
 
-    property int captionbarcolor: MosCaptionbar.CaptionbarColorTransparent
+    property color captionbarcolor: "transparent"
 
     title: windowAgent.windowTitle
+
 
     
 
     MosWindowAgent {
         id: windowAgent
+        Component.onCompleted:{
+            windowAgent.setup(root);
+            windowAgent.setTitleBar(captionbar);
+            captionbar.windowAgent = windowAgent
+            Window.visible = true
+        }
     }
 
     MosCaptionbar {
         id: captionbar
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         width: root.width
-        captionbarcolor: root.captionbarcolor
-        Component.onCompleted: windowAgent.setTitleBar(captionbar)
+        color: "red"
+        z: 65535
+        targetWindow: root
+        windowAgent: root.windowAgent
     }
 
-    // 跟随主题系统同步标题栏暗色模式
-    Connections {
-        target: MosTheme
-        function onIsDarkChanged() {
-            windowAgent.setWindowAttribute("dark-mode", MosTheme.isDark)
-            root.color = MosTheme.isDark ? "#181818" : "#f5f5f5"
-        }
-    }
 }

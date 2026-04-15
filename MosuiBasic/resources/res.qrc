@@ -5,6 +5,7 @@
         <file>theme/MosCaptionbar.json</file>
         <file>theme/MosCard.json</file>
         <file>theme/MosIconText.json</file>
+        <file>theme/MosCaptionButton.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>

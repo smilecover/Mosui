@@ -8,7 +8,7 @@ MosText {
     readonly property bool isIcon: iconSource === 0 || iconSource === ""
     property var iconSource: 0 ?? ""
     font {
-        family: 'iconfont'
+        family: 'MOSUI'
         pixelSize: parseInt(MosTheme.MosIconText.fontSize)
     }
     

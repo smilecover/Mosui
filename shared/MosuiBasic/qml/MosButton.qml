@@ -151,9 +151,9 @@ T.Button {
             bottomRightRadius: __bg.br
             anchors.centerIn: parent
             visible: root.effectEnabled && root.type != MosButton.Type_Link
-            color: 'transparent'
+            color: "transparent"
             border.width: 0
-            border.color: root.enabled ? root.themeSource.colorBorderHover : 'transparent'
+            border.color: root.enabled ? root.themeSource.colorBorderHover : "transparent"
             opacity: 0.2
 
             ParallelAnimation {

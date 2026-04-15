@@ -1,42 +1,24 @@
 import QtQuick
 import QtQuick.Layouts
 import MosuiBasic
-
-Item {
+MosRectangle{
     id: root
+
+    property var targetWindow: null
+    property MosWindowAgent windowAgent: null
+
+    property string winIcon: ''
+
+    property string winTitle: targetWindow?.title ?? ''
+    property font winTitleFont: Qt.font({
+                                        family: MosTheme.Primary.fontPrimaryFamily,
+                                        pixelSize: 14
+                                    })
+    property color winTitleColor: MosTheme.Primary.colorTextBase
+
     objectName: '__MosCaptionBar__'
+    color: "red"
 
-    // 高度固定 32px（Windows 桌面标题栏标准高度）
-    implicitHeight: 32
 
-    enum CaptionbarColor {
-        CaptionbarColorDefault = 0,
-        CaptionbarColorTransparent = 1
-    }
-    property int captionbarcolor: MosCaptionbar.CaptionbarColorTransparent
-
-    property color backgroundcolor:{
-
-        if (enabled) {
-            switch (root.captionbarcolor){
-            case MosCaptionbar.CaptionbarColorDefault:
-                return MosTheme.MosCaptionbar.DefaultColor
-            case MosCaptionbar.CaptionbarColorTransparent:
-                return MosTheme.MosCaptionbar.Transparent
-            default:
-                return MosTheme.MosCaptionbar.DefaultColor 
-        }
-
-        }
-        
-    }
-        
-
-    MosRectangle {
-        id: background
-        anchors.fill: parent
-        color: backgroundcolor
-    }
-    
 
 }

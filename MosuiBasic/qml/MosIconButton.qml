@@ -17,12 +17,11 @@ MosButton {
     property int iconPosition: MosIconButton.Position_Start
     property int orientation: Qt.Horizontal
     property alias textFont: root.font
+    property color colorIcon: root.colorText
     property font iconFont: Qt.font({
-                                        family: 'iconfont',
+                                        family: 'MOSUI',
                                         pixelSize: iconSize
                                     })
-    property color colorIcon: colorText
-
     property Component iconDelegate: MosIconText {
         font: root.iconFont
         color: root.colorIcon
