@@ -10,4 +10,7 @@
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>
     </qresource>
+    <qresource prefix="/image">
+        <file>image/cangshu.svg</file>
+    </qresource>
 </RCC>

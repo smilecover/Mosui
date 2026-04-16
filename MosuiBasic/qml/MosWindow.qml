@@ -5,25 +5,17 @@ Window {
     id: root
     objectName: '__MosWindow__'
     visible: false
+    color: "Transparent"
 
     property alias windowAgent: windowAgent
 
-    property color captionbarcolor: "transparent"
+    property color captionbarcolor: "Transparent"
+
+    property string windowIcon: ''
 
     title: windowAgent.windowTitle
 
-
-    
-
-    MosWindowAgent {
-        id: windowAgent
-        Component.onCompleted:{
-            windowAgent.setup(root);
-            windowAgent.setTitleBar(captionbar);
-            captionbar.windowAgent = windowAgent
-            Window.visible = true
-        }
-    }
+    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
 
     MosCaptionbar {
         id: captionbar
@@ -31,10 +23,28 @@ Window {
         anchors.right: parent.right
         anchors.top: parent.top
         width: root.width
-        color: "red"
-        z: 65535
+        color: captionbarcolor
+        z: 9999
+        winIcon: root.windowIcon
         targetWindow: root
         windowAgent: root.windowAgent
     }
+
+    MosWindowAgent {
+        id: windowAgent
+
+        Component.onCompleted: {
+            setup(root)
+            setTitleBar(captionbar)
+
+            setWindowAttribute("acrylic-material", true)
+            
+            captionbar.windowAgent = windowAgent
+            root.visible = true
+
+        }
+    }
+
+
 
 }

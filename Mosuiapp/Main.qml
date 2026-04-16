@@ -6,9 +6,10 @@ MosWindow{
     visible: true
     width: 1200
     height: 800
-    color: MosTheme.Primary.colorBgBase
+    // color: MosTheme.Primary.colorBgBase
     title: "MosUI"
-    MosCaptionButton{
+    windowIcon: "qrc:/image/image/cangshu.svg"
+    MosIconButton{
         id: exitButton
         anchors.centerIn: parent
         height: 32
