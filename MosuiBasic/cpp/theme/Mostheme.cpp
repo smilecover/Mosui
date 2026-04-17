@@ -200,6 +200,8 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosCaptionbar);
         ADD_COMPONENT_PROPERTY(MosIconText);
         ADD_COMPONENT_PROPERTY(MosCaptionButton);
+        ADD_COMPONENT_PROPERTY(MosMenuButton);
+        ADD_COMPONENT_PROPERTY(MosMenu);
 
     }
 }

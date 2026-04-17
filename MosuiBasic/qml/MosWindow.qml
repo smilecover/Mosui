@@ -15,7 +15,6 @@ Window {
 
     title: windowAgent.windowTitle
 
-    flags: Qt.FramelessWindowHint | Qt.Window | Qt.WindowMinimizeButtonHint | Qt.WindowMaximizeButtonHint | Qt.WindowCloseButtonHint
 
     MosCaptionbar {
         id: captionbar

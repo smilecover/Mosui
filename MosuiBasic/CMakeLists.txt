@@ -26,6 +26,7 @@ file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "cpp/theme/*.cpp" "cpp/theme/*.h"
     "cpp/window/*.cpp" "cpp/window/*.h"
     "cpp/controls/*.cpp" "cpp/controls/*.h"
+    "cpp/utils/*.cpp" "cpp/utils/*.h"
 )
 
 # 动态库
@@ -53,6 +54,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickPrivate
+    Qt6::QuickTemplates2
+    Qt6::QuickTemplates2Private
+
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -95,4 +99,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/theme
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/window
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/controls
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/utils
 )

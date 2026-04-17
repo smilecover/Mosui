@@ -1,0 +1,8 @@
+{
+    "__init__": {
+        "__import__": ["MosButton"]
+    },
+    "__style__":{
+        
+    }
+}

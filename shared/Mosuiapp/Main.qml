@@ -9,15 +9,22 @@ MosWindow{
     // color: MosTheme.Primary.colorBgBase
     title: "MosUI"
     windowIcon: "qrc:/image/image/cangshu.svg"
-    MosIconButton{
-        id: exitButton
-        anchors.centerIn: parent
-        height: 32
-        iconSource: 0xeb1b
-        onClicked: {
-            if(root){
-                root.close()
-            }
-        }
+    MosMenu{
+        id: menu
+        width: root.width/5
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        menuColor: "red"
+    }
+    Item{
+        id: item
+        anchors.left: menu.right
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+    }
+    MosRouter{
+        id: router
     }
 }

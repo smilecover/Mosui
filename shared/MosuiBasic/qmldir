@@ -9,6 +9,8 @@ MosCaptionButton 1.0 qml/MosCaptionButton.qml
 MosCaptionbar 1.0 qml/MosCaptionbar.qml
 MosIconButton 1.0 qml/MosIconButton.qml
 MosIconText 1.0 qml/MosIconText.qml
+MosMenu 1.0 qml/MosMenu.qml
+MosMenuButton 1.0 qml/MosMenuButton.qml
 MosShadow 1.0 qml/MosShadow.qml
 MosText 1.0 qml/MosText.qml
 MosWindow 1.0 qml/MosWindow.qml

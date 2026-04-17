@@ -51,8 +51,8 @@
 
         "colorFill": "$alpha(@colorTextBase, 0.15)",
         "colorFillPrimary": "$alpha(@colorTextBase, 0.1)",
-        "colorFillSecondary": "$alpha(@colorTextBase, 0.06)",
-        "colorFillTertiary": "$alpha(@colorTextBase, 0.04)",
+        "colorFillSecondary": "$alpha(@colorTextBase, 0.6)",
+        "colorFillTertiary": "$alpha(@colorTextBase, 0.4)",
         "colorFillQuaternary": "$alpha(@colorTextBase, 0.02)",
 
         "radiusPrimary": "@radiusBase-1",
@@ -60,6 +60,8 @@
         "radiusPrimarySM": "@radiusBase-3",
         "radiusPrimaryXS": "@radiusBase-4",
         "radiusPrimaryOuter": "@radiusBase-5",
+
+        "colorSplit": "$alpha(@colorTextBase, 0.1)",
 
         "colorErrorBg": "@colorErrorBase-1",
         "colorErrorBgHover": "@colorErrorBase-2",
@@ -79,6 +81,9 @@
         "MosButton": ":/theme/theme/MosButton.json",
         "MosCaptionbar": ":/theme/theme/MosCaptionbar.json",
         "MosIconText": ":/theme/theme/MosIconText.json",
-        "MosCaptionButton": ":/theme/theme/MosCaptionButton.json"
+        "MosCaptionButton": ":/theme/theme/MosCaptionButton.json",
+        "MosCard": ":/theme/theme/MosCard.json",
+        "MosMenu": ":/theme/theme/MosMenu.json",
+        "MosMenuButton": ":/theme/theme/MosMenuButton.json"
     }
 }

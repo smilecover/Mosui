@@ -7,6 +7,76 @@ import QtQuick.tooling 1.2
 
 Module {
     Component {
+        file: "Mosapi.h"
+        name: "MosApi"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosApi 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "clamp"
+            type: "double"
+            Parameter { name: "value"; type: "double" }
+            Parameter { name: "min"; type: "double" }
+            Parameter { name: "max"; type: "double" }
+        }
+        Method {
+            name: "setWindowStaysOnTopHint"
+            Parameter { name: "window"; type: "QWindow"; isPointer: true }
+            Parameter { name: "hint"; type: "bool" }
+        }
+        Method {
+            name: "setWindowState"
+            Parameter { name: "window"; type: "QWindow"; isPointer: true }
+            Parameter { name: "state"; type: "int" }
+        }
+        Method {
+            name: "setPopupAllowAutoFlip"
+            Parameter { name: "popup"; type: "QObject"; isPointer: true }
+            Parameter { name: "allowVerticalFlip"; type: "bool" }
+            Parameter { name: "allowHorizontalFlip"; type: "bool" }
+        }
+        Method {
+            name: "setPopupAllowAutoFlip"
+            isCloned: true
+            Parameter { name: "popup"; type: "QObject"; isPointer: true }
+            Parameter { name: "allowVerticalFlip"; type: "bool" }
+        }
+        Method {
+            name: "setPopupAllowAutoFlip"
+            isCloned: true
+            Parameter { name: "popup"; type: "QObject"; isPointer: true }
+        }
+        Method { name: "getClipboardText"; type: "QString" }
+        Method {
+            name: "setClipboardText"
+            type: "bool"
+            Parameter { name: "text"; type: "QString" }
+        }
+        Method {
+            name: "readFileToString"
+            type: "QString"
+            Parameter { name: "fileName"; type: "QString" }
+        }
+        Method {
+            name: "getWeekNumber"
+            type: "int"
+            Parameter { name: "dateTime"; type: "QDateTime" }
+        }
+        Method {
+            name: "dateFromString"
+            type: "QDateTime"
+            Parameter { name: "dateTime"; type: "QString" }
+            Parameter { name: "format"; type: "QString" }
+        }
+        Method {
+            name: "openLocalUrl"
+            Parameter { name: "local"; type: "QString" }
+        }
+    }
+    Component {
         file: "Mosapp.h"
         name: "MosApp"
         accessSemantics: "reference"
@@ -17,6 +87,98 @@ Module {
         exportMetaObjectRevisions: [256]
         Method { name: "libName"; type: "QString" }
         Method { name: "libVersion"; type: "QString" }
+    }
+    Component {
+        file: "Mosasynchasher.h"
+        name: "MosAsyncHasher"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosAsyncHasher 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "algorithm"
+            type: "QCryptographicHash::Algorithm"
+            read: "algorithm"
+            write: "setAlgorithm"
+            notify: "algorithmChanged"
+            index: 0
+        }
+        Property {
+            name: "asynchronous"
+            type: "bool"
+            read: "asynchronous"
+            write: "setAsynchronous"
+            notify: "asynchronousChanged"
+            index: 1
+        }
+        Property {
+            name: "hashValue"
+            type: "QString"
+            read: "hashValue"
+            notify: "hashValueChanged"
+            index: 2
+            isReadonly: true
+        }
+        Property {
+            name: "hashLength"
+            type: "int"
+            read: "hashLength"
+            notify: "hashLengthChanged"
+            index: 3
+            isReadonly: true
+        }
+        Property {
+            name: "source"
+            type: "QUrl"
+            read: "source"
+            write: "setSource"
+            notify: "sourceChanged"
+            index: 4
+        }
+        Property {
+            name: "sourceText"
+            type: "QString"
+            read: "sourceText"
+            write: "setSourceText"
+            notify: "sourceTextChanged"
+            index: 5
+        }
+        Property {
+            name: "sourceData"
+            type: "QByteArray"
+            read: "sourceData"
+            write: "setSourceData"
+            notify: "sourceDataChanged"
+            index: 6
+        }
+        Property {
+            name: "sourceObject"
+            type: "QObject"
+            isPointer: true
+            read: "sourceObject"
+            write: "setSourceObject"
+            notify: "sourceObjectChanged"
+            index: 7
+        }
+        Signal { name: "algorithmChanged" }
+        Signal { name: "asynchronousChanged" }
+        Signal { name: "hashValueChanged" }
+        Signal { name: "hashLengthChanged" }
+        Signal { name: "sourceChanged" }
+        Signal { name: "sourceTextChanged" }
+        Signal { name: "sourceDataChanged" }
+        Signal { name: "sourceObjectChanged" }
+        Signal {
+            name: "hashProgress"
+            Parameter { name: "processed"; type: "qlonglong" }
+            Parameter { name: "total"; type: "qlonglong" }
+        }
+        Signal { name: "started" }
+        Signal { name: "finished" }
+        Method {
+            name: "setHashValue"
+            Parameter { name: "value"; type: "QString" }
+        }
     }
     Component {
         file: "Moscolorgenerator.h"
@@ -311,6 +473,120 @@ Module {
         exportMetaObjectRevisions: [256]
     }
     Component {
+        file: "Mosrouter.h"
+        name: "MosRouter"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosRouter 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "currentUrl"
+            type: "QUrl"
+            read: "currentUrl"
+            notify: "currentUrlChanged"
+            index: 0
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "currentPath"
+            type: "QString"
+            read: "currentPath"
+            notify: "currentPathChanged"
+            index: 1
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "currentIndex"
+            type: "int"
+            read: "currentIndex"
+            notify: "currentIndexChanged"
+            index: 2
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "history"
+            type: "MosRouterHistory"
+            isList: true
+            read: "history"
+            notify: "historyChanged"
+            index: 3
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "historyMaxCount"
+            type: "int"
+            read: "historyMaxCount"
+            write: "setHistoryMaxCount"
+            notify: "historyMaxCountChanged"
+            index: 4
+            isFinal: true
+        }
+        Property {
+            name: "canGoBack"
+            type: "bool"
+            read: "canGoBack"
+            notify: "canGoBackChanged"
+            index: 5
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "canGoForward"
+            type: "bool"
+            read: "canGoForward"
+            notify: "canGoForwardChanged"
+            index: 6
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "currentUrlChanged" }
+        Signal { name: "currentPathChanged" }
+        Signal { name: "currentIndexChanged" }
+        Signal { name: "historyChanged" }
+        Signal { name: "historyMaxCountChanged" }
+        Signal { name: "canGoBackChanged" }
+        Signal { name: "canGoForwardChanged" }
+        Method {
+            name: "push"
+            Parameter { name: "url"; type: "QUrl" }
+        }
+        Method {
+            name: "replace"
+            Parameter { name: "url"; type: "QUrl" }
+        }
+        Method { name: "clear" }
+        Method { name: "goBack" }
+        Method { name: "goForward" }
+        Method {
+            name: "getQueryParams"
+            type: "QVariantMap"
+            Parameter { name: "url"; type: "QUrl" }
+        }
+    }
+    Component {
+        file: "Mosrouter.h"
+        name: "MosRouterHistory"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosRouterHistory 1.0"]
+        isCreatable: false
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "location"
+            type: "QUrl"
+            read: "location"
+            notify: "locationChanged"
+            index: 0
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "locationChanged" }
+    }
+    Component {
         file: "Mossizegenerator.h"
         name: "MosSizeGenerator"
         accessSemantics: "reference"
@@ -492,6 +768,24 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosMenuButton"
+            type: "QVariantMap"
+            read: "MosMenuButton"
+            notify: "MosMenuButtonChanged"
+            index: 11
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosMenu"
+            type: "QVariantMap"
+            read: "MosMenu"
+            notify: "MosMenuChanged"
+            index: 12
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -499,6 +793,8 @@ Module {
         Signal { name: "MosCaptionbarChanged" }
         Signal { name: "MosIconTextChanged" }
         Signal { name: "MosCaptionButtonChanged" }
+        Signal { name: "MosMenuButtonChanged" }
+        Signal { name: "MosMenuChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }
