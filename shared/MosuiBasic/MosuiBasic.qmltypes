@@ -786,6 +786,42 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosScrollBar"
+            type: "QVariantMap"
+            read: "MosScrollBar"
+            notify: "MosScrollBarChanged"
+            index: 13
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosDivider"
+            type: "QVariantMap"
+            read: "MosDivider"
+            notify: "MosDividerChanged"
+            index: 14
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosToolTip"
+            type: "QVariantMap"
+            read: "MosToolTip"
+            notify: "MosToolTipChanged"
+            index: 15
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosPopup"
+            type: "QVariantMap"
+            read: "MosPopup"
+            notify: "MosPopupChanged"
+            index: 16
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -795,6 +831,10 @@ Module {
         Signal { name: "MosCaptionButtonChanged" }
         Signal { name: "MosMenuButtonChanged" }
         Signal { name: "MosMenuChanged" }
+        Signal { name: "MosScrollBarChanged" }
+        Signal { name: "MosDividerChanged" }
+        Signal { name: "MosToolTipChanged" }
+        Signal { name: "MosPopupChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }

@@ -7,11 +7,17 @@ prefer :/qt/qml/MosuiBasic/
 MosButton 1.0 qml/MosButton.qml
 MosCaptionButton 1.0 qml/MosCaptionButton.qml
 MosCaptionbar 1.0 qml/MosCaptionbar.qml
+MosDivider 1.0 qml/MosDivider.qml
 MosIconButton 1.0 qml/MosIconButton.qml
 MosIconText 1.0 qml/MosIconText.qml
 MosMenu 1.0 qml/MosMenu.qml
 MosMenuButton 1.0 qml/MosMenuButton.qml
+MosMoveMouseArea 1.0 qml/MosMoveMouseArea.qml
+MosPopup 1.0 qml/MosPopup.qml
+MosResizeMouseArea 1.0 qml/MosResizeMouseArea.qml
+MosScrollBar 1.0 qml/MosScrollBar.qml
 MosShadow 1.0 qml/MosShadow.qml
 MosText 1.0 qml/MosText.qml
+MosToolTip 1.0 qml/MosToolTip.qml
 MosWindow 1.0 qml/MosWindow.qml
 

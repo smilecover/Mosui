@@ -202,6 +202,10 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosCaptionButton);
         ADD_COMPONENT_PROPERTY(MosMenuButton);
         ADD_COMPONENT_PROPERTY(MosMenu);
+        ADD_COMPONENT_PROPERTY(MosScrollBar);
+        ADD_COMPONENT_PROPERTY(MosDivider);
+        ADD_COMPONENT_PROPERTY(MosToolTip);
+        ADD_COMPONENT_PROPERTY(MosPopup);
 
     }
 }

@@ -8,6 +8,8 @@ Window {
     color: "Transparent"
 
     property alias windowAgent: windowAgent
+    property alias captionbar: captionbar
+    
 
     property color captionbarcolor: "Transparent"
 
@@ -22,6 +24,7 @@ Window {
         anchors.right: parent.right
         anchors.top: parent.top
         width: root.width
+        height: 32
         color: captionbarcolor
         z: 9999
         winIcon: root.windowIcon

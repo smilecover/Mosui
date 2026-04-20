@@ -7,7 +7,7 @@ MosButton{
 
     property var iconSource: 0 ?? ''
     property bool animationEnabled: MosTheme.animationEnabled
-    property int iconSize: parseInt(control.themeSource.fontSize)
+    property int iconSize: parseInt(root.themeSource.fontSize)
     property int iconSpacing: 5
     property bool expanded: false
     property bool showExpanded: false
@@ -31,29 +31,29 @@ MosButton{
     colorText: {
         if (enabled) {
             if (isGroup) {
-                return (isCurrent && control.compactMode !== HusMenu.Mode_Relaxed) ? control.themeSource.colorTextActive :
-                                                                    control.themeSource.colorTextDisabled;
+                return (isCurrent && root.compactMode !== MosMenu.Mode_Relaxed) ? root.themeSource.colorTextActive :
+                                                                    root.themeSource.colorTextDisabled;
             } else {
-                return isCurrent ? control.themeSource.colorTextActive : control.themeSource.colorText;
+                return isCurrent ? root.themeSource.colorTextActive : root.themeSource.colorText;
             }
         } else {
-            return control.themeSource.colorTextDisabled;
+            return root.themeSource.colorTextDisabled;
         }
     }
     colorBg: {
         if (enabled) {
             if (isGroup)
-                return (isCurrent && control.compactMode !== HusMenu.Mode_Relaxed) ? control.themeSource.colorBgActive :
-                                                                                        control.themeSource.colorBgDisabled;
+                return (isCurrent && root.compactMode !== MosMenu.Mode_Relaxed) ? root.themeSource.colorBgActive :
+                                                                                        root.themeSource.colorBgDisabled;
             else if (isCurrent)
-                return control.themeSource.colorBgActive;
+                return root.themeSource.colorBgActive;
             else if (hovered) {
-                return control.themeSource.colorBgHover;
+                return root.themeSource.colorBgHover;
             } else {
-                return control.themeSource.colorBg;
+                return root.themeSource.colorBg;
             }
         } else {
-            return control.themeSource.colorBgDisabled;
+            return root.themeSource.colorBgDisabled;
         }
     }
     contentItem: Loader {

@@ -31,6 +31,10 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCaptionButton);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosMenuButton);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosMenu);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosScrollBar);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosDivider);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosToolTip);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosPopup);
 
 
 public:

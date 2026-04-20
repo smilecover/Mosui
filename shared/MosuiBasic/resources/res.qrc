@@ -8,6 +8,10 @@
         <file>theme/MosCaptionButton.json</file>
         <file>theme/MosMenu.json</file>
         <file>theme/MosMenuButton.json</file>
+        <file>theme/MosScrollBar.json</file>
+        <file>theme/MosDivider.json</file>
+        <file>theme/MosToolTip.json</file>
+        <file>theme/MosPopup.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>
