@@ -39,14 +39,11 @@ Window {
             setup(root)
             setTitleBar(captionbar)
 
-            setWindowAttribute("acrylic-material", true)
+            setWindowAttribute("dwm-blur", true)
+            // setWindowAttribute("mica", true)
             
             captionbar.windowAgent = windowAgent
             root.visible = true
-
         }
     }
-
-
-
 }

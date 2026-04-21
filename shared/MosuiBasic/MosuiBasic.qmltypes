@@ -269,6 +269,23 @@ Module {
         }
     }
     Component {
+        file: "MosIcon.h"
+        name: "MosIcon"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosIcon 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "Type"
+            isScoped: true
+            type: "ushort"
+            values: ["HomeOutlined"]
+        }
+        Method { name: "allIconNames"; type: "QVariantMap" }
+    }
+    Component {
         file: "Mosrectangle.h"
         name: "MosPen"
         accessSemantics: "reference"

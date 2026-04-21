@@ -1,5 +1,7 @@
 module Mosuiapp
 typeinfo Mosuiapp.qmltypes
 prefer :/qt/qml/Mosuiapp/
+HomePage 1.0 Controls/HomePage.qml
 Main 1.0 Main.qml
+MenuModel 1.0 MenuModel.qml
 

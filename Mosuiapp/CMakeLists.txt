@@ -7,11 +7,16 @@ set(QT_QML_MODULE_IMPORT_PATH ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE STRING "Q
 set(QT_QML_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE PATH "QML module output directory" FORCE)
 qt_add_executable(${PROJECT_NAME})
 
+file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml")
+
 qt_add_qml_module(
     ${PROJECT_NAME}
     URI Mosuiapp
     VERSION ${MOSUI_VERSION}
-    QML_FILES Main.qml
+    QML_FILES 
+        ${QML_FILES}
+        Main.qml
+        MenuModel.qml
     SOURCES main.cpp
 )
 

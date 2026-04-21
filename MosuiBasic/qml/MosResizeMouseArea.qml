@@ -1,20 +1,6 @@
 import QtQuick
 import MosuiBasic
 
-/*
-             ↑     ↑     ↑
-           ←|1|   |2|   |3|→
-           ←|4|   |5|   |6|→
-           ←|7|   |8|   |9|→
-             ↓     ↓     ↓
-             分8个缩放区域
-      |5|为移动区域{MoveMouseArea}
-    target               缩放目标
-    __private.startPos   鼠标起始点
-    __private.fixedPos   用于固定目标的点
-    每一个area            大小 areaMarginSize x areaMarginSize
-*/
-
 Item {
     id: root
 
@@ -57,7 +43,6 @@ Item {
                 if (pressed && target) {
                     let offsetX = mouse.x - __private.startPos.x;
                     let offsetY = mouse.y - __private.startPos.y;
-                    //如果本次调整小于最小限制，则调整为最小，大于最大则调整为最大
                     if (maximumWidth != Number.NaN && (target.width - offsetX) > maximumWidth) {
                         target.x += (target.width - maximumWidth);
                         target.width = maximumWidth;

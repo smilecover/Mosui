@@ -13,6 +13,7 @@ class MOSUIBASIC_EXPORT MosIcon : public QObject
     QML_NAMED_ELEMENT(MosIcon)
 public:
     enum class Type : uint16_t {
+        HomeOutlined = 0xe600,
         
         
     };
@@ -25,7 +26,7 @@ public:
 
     static Q_INVOKABLE QVariantMap allIconNames();
 private:
-    MosIcon(QObject *parent = nullptr);
+    explicit MosIcon(QObject *parent = nullptr);
 };
 
 #endif // MOSICON_H

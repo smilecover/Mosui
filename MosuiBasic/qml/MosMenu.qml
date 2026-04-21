@@ -32,7 +32,6 @@ T.Control{
         }
     }
 
-
     property bool popupMode: false
     property int popupWidth: 200
     property int popupOffset: 4
