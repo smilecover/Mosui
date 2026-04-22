@@ -1,7 +1,9 @@
 module Mosuiapp
 typeinfo Mosuiapp.qmltypes
 prefer :/qt/qml/Mosuiapp/
+Data 1.0 Controls/Data.qml
 HomePage 1.0 Controls/HomePage.qml
+SettingsPage 1.0 Controls/SettingsPage.qml
 Main 1.0 Main.qml
 MenuModel 1.0 MenuModel.qml
 

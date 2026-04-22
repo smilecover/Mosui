@@ -281,7 +281,7 @@ Module {
             name: "Type"
             isScoped: true
             type: "ushort"
-            values: ["HomeOutlined"]
+            values: ["HomeOutlined", "SettingsOutlined"]
         }
         Method { name: "allIconNames"; type: "QVariantMap" }
     }

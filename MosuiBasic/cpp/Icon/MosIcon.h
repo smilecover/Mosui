@@ -14,6 +14,7 @@ class MOSUIBASIC_EXPORT MosIcon : public QObject
 public:
     enum class Type : uint16_t {
         HomeOutlined = 0xe600,
+        SettingsOutlined = 0xe851,
         
         
     };

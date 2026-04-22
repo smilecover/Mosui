@@ -2,24 +2,32 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Effects
 import MosuiBasic
+import "./Controls" as C
 MosWindow{
     id: root
     visible: true
     width: 1200
     height: 800
-    color: MosTheme.Primary.colorBgBase
+    // color: MosTheme.Primary.colorBgBase
     title: "MosUI"
     windowIcon: "qrc:/image/image/cangshu.svg"
     MenuModel{id: menumodel}
     MosRouter {id: galleryRouter}
+    C.Data{id: appData
+    onMenuTypeChanged: {
+        console.log("menuType: "+appData.menuType)
+        }
+    }
 
     MosMenu{
         id: menu
-        width: root.width/5
+        width: root.width/5>200?200:root.width/5
         anchors.top: captionbar.bottom
         anchors.left: parent.left
-        anchors.bottom: parent.bottom
+        anchors.bottom: settingButton.bottom
         showEdge: true
+        compactMode: appData.menuType
+
         initModel: menumodel.galleryModel
         defaultSelectedKeys: ['HomePage']
         onClickMenu: function(deep, key, keyPath, data) 
@@ -29,9 +37,31 @@ MosWindow{
                 galleryRouter.push(data.source)
             }
         }
-        
-
+        onCompactModeChanged: {
+            if (compactMode == 0) {
+                menu.width = root.width/5>200?200:root.width/5
+            } else if (compactMode == 1) {
+                menu.width = root.width/5>200?200:root.width/5
+            } else {
+                menu.width = root.width/10>50?50:root.width/10
+            }
+        }
     }
+    
+    MosRotateIconButton{
+        id: settingButton
+        height: 30
+        anchors.left: menu.left
+        anchors.right: menu.right
+        anchors.bottom: parent.bottom
+        iconSource: MosIcon.SettingsOutlined
+        iconSize: 30
+        onClicked: {
+            galleryRouter.push('./Controls/SettingsPage.qml')
+            menu.clearSelection()
+        }
+    }
+
 
     Item{
         id: item
@@ -40,7 +70,7 @@ MosWindow{
         anchors.top: captionbar.bottom
         anchors.bottom: parent.bottom
         anchors.margins: 5
-        clip: true
+        // clip: true
 
         Loader{
             id: nextpage

@@ -1,11 +1,14 @@
 import QtQuick
 import MosuiBasic
+
+
 MosRectangle {
+    id: root
+
     width: 200
     height: 200
-    color: "blue"
+    color: "red"
     radius: 10
-    property int mode: 0
 
     // 直接套上这个组件
     MosResizeMouseArea {
@@ -18,20 +21,7 @@ MosRectangle {
         maximumWidth: 500
         maximumHeight: 500
     }
-    MosButton{
-        id: menuButton
-        text: "Menu"
-        anchors.centerIn: parent
-        onClicked: {
-            if (mode == 0) {
-                mode = 1
-                menu.compactMode = 2
-                
-            } else {
-                mode = 0
-                menu.compactMode = 0
-            }
-        }
-    }
+
+    
 
 }

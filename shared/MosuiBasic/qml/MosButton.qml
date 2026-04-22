@@ -84,15 +84,15 @@ T.Button {
                                                               themeSource.colorFillBg;
                 }
             case MosButton.Type_Text:
-                if (MosTheme.isDark) {
-                    return root.active ? themeSource.colorFillBgDarkActive:
-                                            root.hovered ? themeSource.colorFillBgDarkHover :
-                                                              themeSource.colorTextBg;
-                } else {
-                    return root.active ? themeSource.colorTextBgActive:
-                                            root.hovered ? themeSource.colorTextBgHover :
-                                                              themeSource.colorTextBg;
-                }
+                // if (MosTheme.isDark) {
+                //     return root.active ? themeSource.colorFillBgDarkActive:
+                //                             root.hovered ? themeSource.colorFillBgDarkHover :
+                //                                               themeSource.colorTextBg;
+                // } else {
+                //     return root.active ? themeSource.colorTextBgActive:
+                //                             root.hovered ? themeSource.colorTextBgHover :
+                //                                               themeSource.colorTextBg;
+                // }
             default: return themeSource.colorBg;
             }
         } else {

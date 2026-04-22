@@ -66,7 +66,18 @@
         "usedAt": 1776666531683,
         "industryId": "all"
       }
+    ],
+    "ef92deae6bce4f27ac44266d0bcc77ff": [
+      {
+        "expertId": "SeniorDeveloper",
+        "name": "吴八哥",
+        "profession": "高级开发工程师",
+        "avatarUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/avatars/02-Engineering/SeniorDeveloper/SeniorDeveloper.png",
+        "promptUrl": "https://acc-1258344699.cos.accelerate.myqcloud.com/workbuddy/experts/experts/02-Engineering/SeniorDeveloper/SeniorDeveloper_zh.md",
+        "usedAt": 1776826343814,
+        "industryId": "all"
+      }
     ]
   },
-  "lastUpdated": 1776760269367
+  "lastUpdated": 1776826359518
 }

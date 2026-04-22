@@ -9,10 +9,6 @@ QtObject{
             iconSource: MosIcon.HomeOutlined,
             source: './Controls/HomePage.qml'
         },
-        {
-
-
-        }
 
     ]
 }

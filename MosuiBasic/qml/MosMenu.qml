@@ -229,6 +229,17 @@ T.Control{
         __private.gotoMenuKey = '';
         __listView.model = [];
     }
+    
+    function clearSelection() {
+    __private.selectedItem = null;
+    selectedKey = "";
+
+    // 遍历清掉父级高亮
+    for (let i = 0; i < __listView.count; ++i) {
+        let item = __listView.itemAtIndex(i);
+        if (item) item.clearIsCurrentParent();
+    }
+}
 
     onInitModelChanged: {
         __listView.model = initModel;

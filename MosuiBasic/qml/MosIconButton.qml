@@ -31,14 +31,6 @@ MosButton {
         visible: root.loading || (root.iconSource !== 0 && root.iconSource !== "")
 
         Behavior on color { enabled: root.animationEnabled; ColorAnimation { duration: MosTheme.Primary.durationFast } }
-
-        NumberAnimation on rotation {
-            running: root.loading
-            from: 0
-            to: 360
-            loops: Animation.Infinite
-            duration: 1000
-        }
     }
 
 
