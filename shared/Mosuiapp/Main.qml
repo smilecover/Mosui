@@ -24,11 +24,12 @@ MosWindow{
         width: root.width/5>200?200:root.width/5
         anchors.top: captionbar.bottom
         anchors.left: parent.left
-        anchors.bottom: settingButton.bottom
+        anchors.bottom: linemenutosetting.top
         showEdge: true
         compactMode: appData.menuType
+        // popupMode: true
 
-        initModel: menumodel.galleryModel
+        initModel: menumodel.menus
         defaultSelectedKeys: ['HomePage']
         onClickMenu: function(deep, key, keyPath, data) 
         {
@@ -41,26 +42,43 @@ MosWindow{
             if (compactMode == 0) {
                 menu.width = root.width/5>200?200:root.width/5
             } else if (compactMode == 1) {
-                menu.width = root.width/5>200?200:root.width/5
+                menu.width = root.width/5>100?100:root.width/5
             } else {
                 menu.width = root.width/10>50?50:root.width/10
             }
         }
     }
-    
-    MosRotateIconButton{
-        id: settingButton
-        height: 30
+    MosDivider{
+        id: linemenutosetting
+        anchors.bottom: settingItem.top
+        anchors.left: menu.left
+        anchors.leftMargin: 2
+        anchors.right: menu.right
+        anchors.bottomMargin: 0
+    }
+    Item{
+        id: settingItem
         anchors.left: menu.left
         anchors.right: menu.right
         anchors.bottom: parent.bottom
-        iconSource: MosIcon.SettingsOutlined
-        iconSize: 30
-        onClicked: {
-            galleryRouter.push('./Controls/SettingsPage.qml')
-            menu.clearSelection()
+        anchors.bottomMargin: 5
+        height: 30
+        property Component settingButtonComponent: MosRotateIconButton {
+            iconSource: MosIcon.SettingsOutlined
+            iconSize: 30
+            onClicked: {
+                galleryRouter.push('./Controls/SettingsPage.qml')
+                menu.clearSelection()
+            }
+        }
+        Loader{
+            anchors.fill: parent
+            id: settingsButtonLoader
+            sourceComponent: settingItem.settingButtonComponent
+            visible: settingItem.settingButtonComponent !== null && root.visible
         }
     }
+
 
 
     Item{

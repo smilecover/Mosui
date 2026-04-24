@@ -22,6 +22,8 @@
         "fontPrimarySize": "@fontSizeBase-1",
         "fontPrimaryHeight": "$multiply(@fontSizeBase-1, @fontLineHeightBase-1)",
 
+        "colorLine": "gray",
+
         "durationFast": "100",
         "durationMid": "200",
         "durationSlow": "300",
@@ -59,6 +61,7 @@
         "colorTextSecondary": "$alpha(@colorTextBase, 0.65)",
         "colorTextTertiary": "$alpha(@colorTextBase, 0.45)",
         "colorTextQuaternary": "$alpha(@colorTextBase, 0.25)",
+        "colorTextDisabled": "$alpha(@colorTextBase, 0.27)",
 
         "radiusPrimary": "@radiusBase-1",
         "radiusPrimaryLG": "@radiusBase-2",
@@ -107,6 +110,7 @@
         "MosScrollBar": ":/theme/theme/MosScrollBar.json",
         "MosDivider": ":/theme/theme/MosDivider.json",
         "MosToolTip": ":/theme/theme/MosToolTip.json",
-        "MosPopup": ":/theme/theme/MosPopup.json"
+        "MosPopup": ":/theme/theme/MosPopup.json",
+        "MosRadioBlock": ":/theme/theme/MosRadioBlock.json"
     }
 }

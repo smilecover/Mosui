@@ -6,6 +6,18 @@ T.Popup {
     id: root
     objectName: '__MosPopup__'
 
+    property int autoCloseDelay: 0   
+    Timer {
+        id: _autoCloseTimer
+        interval: root.autoCloseDelay
+        running: root.visible && root.autoCloseDelay > 0
+        onTriggered: root.close()
+    }
+    onVisibleChanged: {
+        if(visible) _autoCloseTimer.restart();
+        else _autoCloseTimer.stop();
+    }
+
     property bool animationEnabled: MosTheme.animationEnabled
     property bool movable: false
     property bool resizable: false
