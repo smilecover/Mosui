@@ -848,6 +848,15 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosRadio"
+            type: "QVariantMap"
+            read: "MosRadio"
+            notify: "MosRadioChanged"
+            index: 18
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -862,6 +871,7 @@ Module {
         Signal { name: "MosToolTipChanged" }
         Signal { name: "MosPopupChanged" }
         Signal { name: "MosRadioBlockChanged" }
+        Signal { name: "MosRadioChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }

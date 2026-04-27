@@ -15,6 +15,7 @@ MosMenu 1.0 qml/MosMenu.qml
 MosMenuButton 1.0 qml/MosMenuButton.qml
 MosMoveMouseArea 1.0 qml/MosMoveMouseArea.qml
 MosPopup 1.0 qml/MosPopup.qml
+MosRadio 1.0 qml/MosRadio.qml
 MosRadioBlock 1.0 qml/MosRadioBlock.qml
 MosResizeMouseArea 1.0 qml/MosResizeMouseArea.qml
 MosRotateIconButton 1.0 qml/MosRotateIconButton.qml

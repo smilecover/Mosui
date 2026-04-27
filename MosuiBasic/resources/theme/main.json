@@ -111,6 +111,7 @@
         "MosDivider": ":/theme/theme/MosDivider.json",
         "MosToolTip": ":/theme/theme/MosToolTip.json",
         "MosPopup": ":/theme/theme/MosPopup.json",
-        "MosRadioBlock": ":/theme/theme/MosRadioBlock.json"
+        "MosRadioBlock": ":/theme/theme/MosRadioBlock.json",
+        "MosRadio": ":/theme/theme/MosRadio.json"
     }
 }

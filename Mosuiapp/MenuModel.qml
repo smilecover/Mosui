@@ -52,7 +52,7 @@ QtObject{
                     item.badgeState = hasUpdate ? 'Update' : '';
             }
             __menus.push(item);
-        }
+        } 
         menus = __menus;
         options = __options.sort((a, b) => a.key.localeCompare(b.key));
         updates = __updates.sort(

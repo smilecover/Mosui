@@ -38,7 +38,7 @@ T.Control{
     property int popupMaxHeight: height
     property int defaultMenuIconSize: font.pixelSize + 2
     property int defaultMenuIconSpacing: 8
-    property int defaultMenuWidth: 300
+    property int defaultMenuWidth: 200
     property int defaultMenuTopPadding: 10
     property int defaultMenuBottomPadding: 10
     property int defaultMenuSpacing: 4

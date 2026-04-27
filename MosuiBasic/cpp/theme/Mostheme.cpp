@@ -207,6 +207,7 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosToolTip);
         ADD_COMPONENT_PROPERTY(MosPopup);
         ADD_COMPONENT_PROPERTY(MosRadioBlock);
+        ADD_COMPONENT_PROPERTY(MosRadio);
 
     }
 }

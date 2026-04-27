@@ -1,6 +1,6 @@
 {
     "__init__": {
-        "__import__": ["HusButton"]
+        "__import__": ["MosButton"]
     },
     "__style__": {
         "colorText": "@colorTextBase",

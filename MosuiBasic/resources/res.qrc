@@ -13,6 +13,7 @@
         <file>theme/MosToolTip.json</file>
         <file>theme/MosPopup.json</file>
         <file>theme/MosRadioBlock.json</file>
+        <file>theme/MosRadio.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>

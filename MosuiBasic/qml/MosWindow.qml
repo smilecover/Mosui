@@ -16,6 +16,25 @@ Window {
     property string windowIcon: ''
 
     title: windowAgent.windowTitle
+    // 页面效果
+    enum Effect {
+        Effect_None = 0,
+        Effect_dwm_blur,
+        Effect_acrylic_material,
+        Effect_mica,
+        Effect_mica_alt
+    }
+    property int effect: MosWindow.Effect_acrylic_material
+    property string effectName: {
+        switch (effect) {
+            case MosWindow.Effect_None: return "";
+            case MosWindow.Effect_dwm_blur: return "dwm-blur";
+            case MosWindow.Effect_acrylic_material: return "acrylic-material";
+            case MosWindow.Effect_mica: return "mica";
+            case MosWindow.Effect_mica_alt: return "mica-alt";
+            default: return "";
+        }
+    }
 
 
     MosCaptionbar {
@@ -36,11 +55,10 @@ Window {
         id: windowAgent
 
         Component.onCompleted: {
-            setup(root)
             setTitleBar(captionbar)
-
-            setWindowAttribute("dwm-blur", true)
-            // setWindowAttribute("mica", true)
+            if(effect != MosWindow.Effect_None) {
+                setWindowAttribute(root.effectName, true)
+            }
             
             captionbar.windowAgent = windowAgent
             root.visible = true

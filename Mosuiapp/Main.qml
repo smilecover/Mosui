@@ -8,26 +8,19 @@ MosWindow{
     visible: true
     width: 1200
     height: 800
-    // color: MosTheme.Primary.colorBgBase
     title: "MosUI"
     windowIcon: "qrc:/image/image/cangshu.svg"
     MenuModel{id: menumodel}
     MosRouter {id: galleryRouter}
-    C.Data{id: appData
-    onMenuTypeChanged: {
-        console.log("menuType: "+appData.menuType)
-        }
-    }
+    C.Data{id: appData}
 
     MosMenu{
         id: menu
-        width: root.width/5>200?200:root.width/5
         anchors.top: captionbar.bottom
         anchors.left: parent.left
         anchors.bottom: linemenutosetting.top
         showEdge: true
         compactMode: appData.menuType
-        // popupMode: true
 
         initModel: menumodel.menus
         defaultSelectedKeys: ['HomePage']
@@ -36,15 +29,6 @@ MosWindow{
             if (data.source) 
             {
                 galleryRouter.push(data.source)
-            }
-        }
-        onCompactModeChanged: {
-            if (compactMode == 0) {
-                menu.width = root.width/5>200?200:root.width/5
-            } else if (compactMode == 1) {
-                menu.width = root.width/5>100?100:root.width/5
-            } else {
-                menu.width = root.width/10>50?50:root.width/10
             }
         }
     }
@@ -88,7 +72,7 @@ MosWindow{
         anchors.top: captionbar.bottom
         anchors.bottom: parent.bottom
         anchors.margins: 5
-        // clip: true
+        clip: true
 
         Loader{
             id: nextpage
@@ -97,6 +81,8 @@ MosWindow{
         Loader {
             id: containerLoader
             source: galleryRouter.currentUrl
+            width: Math.min(parent.width, 600)
+            anchors.horizontalCenter: parent.horizontalCenter
         }
     }
 
