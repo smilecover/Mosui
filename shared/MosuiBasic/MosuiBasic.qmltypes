@@ -857,6 +857,33 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosCopyableText"
+            type: "QVariantMap"
+            read: "MosCopyableText"
+            notify: "MosCopyableTextChanged"
+            index: 19
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosMessage"
+            type: "QVariantMap"
+            read: "MosMessage"
+            notify: "MosMessageChanged"
+            index: 20
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosInput"
+            type: "QVariantMap"
+            read: "MosInput"
+            notify: "MosInputChanged"
+            index: 21
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -872,6 +899,9 @@ Module {
         Signal { name: "MosPopupChanged" }
         Signal { name: "MosRadioBlockChanged" }
         Signal { name: "MosRadioChanged" }
+        Signal { name: "MosCopyableTextChanged" }
+        Signal { name: "MosMessageChanged" }
+        Signal { name: "MosInputChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }

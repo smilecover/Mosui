@@ -208,6 +208,9 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosPopup);
         ADD_COMPONENT_PROPERTY(MosRadioBlock);
         ADD_COMPONENT_PROPERTY(MosRadio);
+        ADD_COMPONENT_PROPERTY(MosCopyableText);
+        ADD_COMPONENT_PROPERTY(MosMessage);
+        ADD_COMPONENT_PROPERTY(MosInput);
 
     }
 }

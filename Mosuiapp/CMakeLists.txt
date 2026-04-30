@@ -7,7 +7,8 @@ set(QT_QML_MODULE_IMPORT_PATH ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE STRING "Q
 set(QT_QML_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE PATH "QML module output directory" FORCE)
 qt_add_executable(${PROJECT_NAME})
 
-file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml")
+file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/Universal/*.qml")
+
 
 qt_add_qml_module(
     ${PROJECT_NAME}
@@ -26,6 +27,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Core
     Qt6::Qml
     Qt6::Quick
+    Qt6::QuickControls2
 )
  
 # QML 模块搜索路径

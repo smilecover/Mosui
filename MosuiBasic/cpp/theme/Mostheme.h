@@ -37,6 +37,9 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosPopup);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosRadioBlock);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosRadio);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCopyableText);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosMessage);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosInput);
 
 
 public:

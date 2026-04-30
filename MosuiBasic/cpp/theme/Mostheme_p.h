@@ -25,8 +25,6 @@ enum class Function : uint16_t
 
     Multiply
 };
-
-
 // 定义哈希表的键值对类型
 struct ThemeData
 {
@@ -97,7 +95,6 @@ public:
 
     qreal numberFromIndexTable(const QString &tokenName);
 };
-
 
 
 

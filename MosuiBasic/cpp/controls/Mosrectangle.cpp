@@ -153,6 +153,7 @@ MosRectangle::MosRectangle(QQuickItem *parent)
     : QQuickPaintedItem{parent}
     , d_ptr(new MosRectanglePrivate)
 {
+    
 
 }
 

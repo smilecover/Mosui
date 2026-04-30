@@ -103,49 +103,21 @@ T.Control {
         }
         checkable: true
         background: Item {
-            MosRectangleInternal {
-                id: __effect
-                width: __bg.width
-                height: __bg.height
-                anchors.centerIn: parent
-                visible: __rootItem.effectEnabled
+            MosRippleEffect {
+                id: __ripple
+                animationEnabled: __rootItem.animationEnabled
+                effectEnabled: __rootItem.effectEnabled
+                effectColor: root.themeSource.colorEffectBg
+                targetWidth: __bg.width
+                targetHeight: __bg.height
                 topLeftRadius: __bg.topLeftRadius
                 topRightRadius: __bg.topRightRadius
                 bottomLeftRadius: __bg.bottomLeftRadius
                 bottomRightRadius: __bg.bottomRightRadius
-                color: 'transparent'
-                border.width: 0
-                border.color: __rootItem.enabled ? root.themeSource.colorEffectBg : 'transparent'
-                opacity: 0.2
-
-                ParallelAnimation {
-                    id: __animation
-                    onFinished: __effect.border.width = 0;
-                    NumberAnimation {
-                        target: __effect; property: 'width'; from: __bg.width + 3; to: __bg.width + 8;
-                        duration: MosTheme.Primary.durationFast
-                        easing.type: Easing.OutQuart
-                    }
-                    NumberAnimation {
-                        target: __effect; property: 'height'; from: __bg.height + 3; to: __bg.height + 8;
-                        duration: MosTheme.Primary.durationFast
-                        easing.type: Easing.OutQuart
-                    }
-                    NumberAnimation {
-                        target: __effect; property: 'opacity'; from: 0.2; to: 0;
-                        duration: MosTheme.Primary.durationSlow
-                    }
-                }
-
-                Connections {
-                    target: __rootItem
-                    function onReleased() {
-                        if (__rootItem.animationEnabled && __rootItem.effectEnabled) {
-                            __effect.border.width = 8;
-                            __animation.restart();
-                        }
-                    }
-                }
+            }
+            Connections {
+                target: __rootItem
+                function onReleased() { __ripple.trigger(); }
             }
 
             MosRectangleInternal {

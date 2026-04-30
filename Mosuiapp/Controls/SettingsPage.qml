@@ -6,12 +6,13 @@ import MosuiBasic
 Flickable {
     id:root
     contentHeight: settingsColumn.height
+    // 在item中居中
+    anchors.fill: parent
     ScrollBar.vertical: MosScrollBar {
         anchors.right: parent.right
         anchors.rightMargin: 5
         
     }
-    property var hostWindow: Window.window
     component SettingsItem: Item {
         id: settingsItem
         implicitWidth: parent.width
@@ -47,8 +48,9 @@ Flickable {
     }
     ColumnLayout {
         id: settingsColumn
+        anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        width: root.width
+        width: Math.min(root.width, 500)
         spacing: 30
         SettingsItem {
             title: "导航栏设置"
@@ -79,64 +81,77 @@ Flickable {
                 }
             }
         }
+
         SettingsItem {
-            title: "页面主题效果"
+            title: qsTr('窗口效果')
+            itemDelegate: Column {
+                spacing: 10
 
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignCenter
+                ButtonGroup { id: specialEffectGroup }
 
-            itemDelegate: Column{
-                id: pageEffectColumn
-                spacing: 2
-
-                Component.onCompleted: {
-                    pageEffectButtonGroup.checkedButton = pageEffectColumn.children[root.hostWindow.effect]
-                }
-                ButtonGroup{
-                    id: pageEffectButtonGroup
-                    onClicked: function(button) {
-                        var oldEffectName = root.hostWindow.effectName
-                        if (oldEffectName !== "") {
-                            console.log(oldEffectName)
-                            root.hostWindow.windowAgent.setWindowAttribute(oldEffectName, false)
+                Repeater {
+                    delegate: MosRadio {
+                        property int effectValue: modelData.value
+                        text: modelData.label
+                        ButtonGroup.group: specialEffectGroup
+                        onClicked: {
+                            if (!rootWindow.setEffect(modelData.value)) {
+                                for (let i = 0; i < specialEffectGroup.buttons.length; i++) {
+                                    specialEffectGroup.buttons[i].checked =
+                                        specialEffectGroup.buttons[i].effectValue === rootWindow.effect;
+                                }
+                            }
                         }
-
-                        switch (button.index) {
-                        case 0: root.hostWindow.effect = MosWindow.Effect_None; break
-                        case 1: root.hostWindow.effect = MosWindow.Effect_dwm_blur; break
-                        case 2: root.hostWindow.effect = MosWindow.Effect_acrylic_material; break
-                        case 3: root.hostWindow.effect = MosWindow.Effect_mica; break
-                        case 4: root.hostWindow.effect = MosWindow.Effect_mica_alt; break
+                        Component.onCompleted: {
+                            checked = rootWindow.effect === modelData.value;
                         }
                     }
-
-                }
-                MosRadio{
-                    text: qsTr('无')
-                    ButtonGroup.group: pageEffectButtonGroup
-                }
-                MosRadio{
-                    text: qsTr('DWM模糊')
-                    ButtonGroup.group: pageEffectButtonGroup
-                }
-                MosRadio{
-                    text: qsTr('亚克力')
-                    ButtonGroup.group: pageEffectButtonGroup
-                }
-                MosRadio{
-                    text: qsTr('云母')
-                    ButtonGroup.group: pageEffectButtonGroup
-                }
-                MosRadio{
-                    text: qsTr('云母Alt')
-                    ButtonGroup.group: pageEffectButtonGroup
+                    Component.onCompleted: {
+                        if (Qt.platform.os === 'windows'){
+                            model = [
+                                        { 'label': qsTr('无'), 'value': MosWindow.Effect_None },
+                                        { 'label': qsTr('模糊'), 'value': MosWindow.Effect_dwm_blur },
+                                        { 'label': qsTr('亚克力'), 'value': MosWindow.Effect_acrylic_material },
+                                        { 'label': qsTr('云母'), 'value': MosWindow.Effect_mica },
+                                        { 'label': qsTr('云母变体'), 'value': MosWindow.Effect_mica_alt }
+                                    ];
+                        }
+                    }
                 }
             }
-            Connections {
-                target: root.hostWindow
-                function onEffectChanged() {
-                    console.log("000000000000000000000")
-                    
+        }
+
+        SettingsItem {
+            title: qsTr('应用主题')
+            itemDelegate: Column {
+                spacing: 10
+
+                ButtonGroup { id: themeGroup }
+
+                Repeater {
+                    model: [
+                        { 'label': qsTr('浅色'), 'value': MosTheme.Light },
+                        { 'label': qsTr('深色'), 'value': MosTheme.Dark },
+                        { 'label': qsTr('跟随系统'), 'value': MosTheme.System }
+                    ]
+                    delegate: MosRadio {
+                        id: darkModeRadio
+                        text: modelData.label
+                        ButtonGroup.group: themeGroup
+                        onClicked: {
+                            MosTheme.darkMode = modelData.value;
+                        }
+                        Component.onCompleted: {
+                            checked = MosTheme.darkMode === modelData.value;
+                        }
+
+                        Connections {
+                            target: MosTheme
+                            function onDarkModeChanged() {
+                                darkModeRadio.checked = MosTheme.darkMode === modelData.value;
+                            }
+                        }
+                    }
                 }
             }
         }

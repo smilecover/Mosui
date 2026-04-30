@@ -14,8 +14,22 @@ QtObject{
             iconSource: MosIcon.HomeOutlined,
             source: './Controls/HomePage.qml',
         },
+        {
+            key: 'Universal',
+            label: qsTr('通用控件'),
+            // iconSource: MosIcon.UniversalOutlined,
+            menuChildren: [
+                {
+                    key: 'ExpMosButton',
+                    label: qsTr('MosButton 按钮'),
+                    // iconSource: MosIcon.ButtonOutlined,
+                    source: './Controls/Universal/ExpMosButton.qml',
+                    addVersion: '0.0.1',
+                },
+            ]
+        },
 
-    ]
+       ]
     Component.onCompleted:{
         /*! 创建菜单等 */
         let __menus = [], __options = [], __updates = [];

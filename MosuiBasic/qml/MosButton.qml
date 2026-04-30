@@ -84,15 +84,15 @@ T.Button {
                                                               themeSource.colorFillBg;
                 }
             case MosButton.Type_Text:
-                // if (MosTheme.isDark) {
-                //     return root.active ? themeSource.colorFillBgDarkActive:
-                //                             root.hovered ? themeSource.colorFillBgDarkHover :
-                //                                               themeSource.colorTextBg;
-                // } else {
-                //     return root.active ? themeSource.colorTextBgActive:
-                //                             root.hovered ? themeSource.colorTextBgHover :
-                //                                               themeSource.colorTextBg;
-                // }
+                if (MosTheme.isDark) {
+                    return root.active ? themeSource.colorFillBgDarkActive:
+                                            root.hovered ? themeSource.colorFillBgDarkHover :
+                                                              themeSource.colorTextBg;
+                } else {
+                    return root.active ? themeSource.colorTextBgActive:
+                                            root.hovered ? themeSource.colorTextBgHover :
+                                                              themeSource.colorTextBg;
+                }
             default: return themeSource.colorBg;
             }
         } else {
@@ -140,49 +140,22 @@ T.Button {
         Behavior on color { enabled: root.animationEnabled; ColorAnimation { duration: MosTheme.Primary.durationFast } }
     }
     background: Item {
-        MosRectangleInternal {
-            id: __effect
-            width: __bg.width
-            height: __bg.height
+        MosRippleEffect {
+            id: __ripple
+            animationEnabled: root.animationEnabled
+            effectEnabled: root.effectEnabled && root.type != MosButton.Type_Link
+            effectColor: root.themeSource.colorBorderHover
+            targetWidth: __bg.width
+            targetHeight: __bg.height
             radius: __bg.r
             topLeftRadius: __bg.tl
             topRightRadius: __bg.tr
             bottomLeftRadius: __bg.bl
             bottomRightRadius: __bg.br
-            anchors.centerIn: parent
-            visible: root.effectEnabled && root.type != MosButton.Type_Link
-            color: "transparent"
-            border.width: 0
-            border.color: root.enabled ? root.themeSource.colorBorderHover : "transparent"
-            opacity: 0.2
-
-            ParallelAnimation {
-                id: __animation
-                onFinished: __effect.border.width = 0;
-                NumberAnimation {
-                    target: __effect; property: 'width'; from: __bg.width + 3; to: __bg.width + 8;
-                    duration: MosTheme.Primary.durationFast
-                    easing.type: Easing.OutQuart
-                }
-                NumberAnimation {
-                    target: __effect; property: 'height'; from: __bg.height + 3; to: __bg.height + 8;
-                    duration: MosTheme.Primary.durationFast
-                    easing.type: Easing.OutQuart
-                }
-                NumberAnimation {
-                    target: __effect; property: 'opacity'; from:0.2 ; to: 0;
-                    duration: MosTheme.Primary.durationSlow
-                }
-            }
-            Connections {
-                target: root
-                function onReleased() {
-                    if (root.animationEnabled && root.effectEnabled) {
-                        __effect.border.width = 8;
-                        __animation.restart();
-                    }
-                }
-            }
+        }
+        Connections {
+            target: root
+            function onReleased() { __ripple.trigger(); }
         }
 
         Loader {

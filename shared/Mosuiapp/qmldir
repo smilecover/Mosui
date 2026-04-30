@@ -1,9 +1,11 @@
 module Mosuiapp
 typeinfo Mosuiapp.qmltypes
 prefer :/qt/qml/Mosuiapp/
+CodeBox 1.0 Controls/CodeBox.qml
 Data 1.0 Controls/Data.qml
 HomePage 1.0 Controls/HomePage.qml
 SettingsPage 1.0 Controls/SettingsPage.qml
+ExpMosButton 1.0 Controls/Universal/ExpMosButton.qml
 Main 1.0 Main.qml
 MenuModel 1.0 MenuModel.qml
 

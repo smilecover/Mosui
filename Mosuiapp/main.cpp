@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QDebug>
+#include <QQuickStyle>
 
 #include "Mosapp.h"
 // #include "Mostheme.h"
@@ -8,6 +9,7 @@
 
 int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
+    QQuickStyle::setStyle("Fusion");
 
     QQmlApplicationEngine engine;
     engine.addImportPath("E:/QtWork/Mosui/shared");

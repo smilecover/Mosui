@@ -14,6 +14,9 @@
         <file>theme/MosPopup.json</file>
         <file>theme/MosRadioBlock.json</file>
         <file>theme/MosRadio.json</file>
+        <file>theme/MosCopyableText.json</file>
+        <file>theme/MosMessage.json</file>
+        <file>theme/MosInput.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>

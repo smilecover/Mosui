@@ -3,12 +3,14 @@ import QtQuick.Controls
 import QtQuick.Effects
 import MosuiBasic
 import "./Controls" as C
+
 MosWindow{
-    id: root
+    id: rootWindow
     visible: true
     width: 1200
     height: 800
     title: "MosUI"
+    
     windowIcon: "qrc:/image/image/cangshu.svg"
     MenuModel{id: menumodel}
     MosRouter {id: galleryRouter}
@@ -59,7 +61,7 @@ MosWindow{
             anchors.fill: parent
             id: settingsButtonLoader
             sourceComponent: settingItem.settingButtonComponent
-            visible: settingItem.settingButtonComponent !== null && root.visible
+            visible: settingItem.settingButtonComponent !== null && rootWindow.visible
         }
     }
 
@@ -80,11 +82,9 @@ MosWindow{
         }
         Loader {
             id: containerLoader
+            anchors.fill: parent
             source: galleryRouter.currentUrl
-            width: Math.min(parent.width, 600)
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }
-
-
 }
