@@ -6,6 +6,9 @@ Data 1.0 Controls/Data.qml
 HomePage 1.0 Controls/HomePage.qml
 SettingsPage 1.0 Controls/SettingsPage.qml
 ExpMosButton 1.0 Controls/Universal/ExpMosButton.qml
+ExpMosButtonBlock 1.0 Controls/Universal/ExpMosButtonBlock.qml
+ExpMosCaptionButton 1.0 Controls/Universal/ExpMosCaptionButton.qml
+ExpMosCaptionbar 1.0 Controls/Universal/ExpMosCaptionbar.qml
 Main 1.0 Main.qml
 MenuModel 1.0 MenuModel.qml
 

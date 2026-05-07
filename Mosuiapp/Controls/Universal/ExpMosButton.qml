@@ -419,7 +419,6 @@ contentDescription | string | '' | 内容描述
                                     expBtn.type = radioData.value;
                                 }
                             Component.onCompleted: {
-                                // 初始化选中第一个选项
                                 currentCheckedIndex = expBtn.type;
                             }
                         }

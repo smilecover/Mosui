@@ -148,7 +148,7 @@ T.Control{
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             visible: menuButton.showExpanded
-            // iconSource: (root.compactMode !== MosMenu.Mode_Relaxed || root.popupMode) ? MosIcon.RightOutlined : MosIcon.DownOutlined
+            iconSource: (root.compactMode !== MosMenu.Mode_Relaxed || root.popupMode) ? MosIcon.RightOutlined : MosIcon.DownOutlined
             colorIcon: menuButton.colorText
             transform: Rotation {
                 origin {

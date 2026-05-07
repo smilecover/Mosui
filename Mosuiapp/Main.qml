@@ -65,8 +65,6 @@ MosWindow{
         }
     }
 
-
-
     Item{
         id: item
         anchors.left: menu.right

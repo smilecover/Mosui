@@ -19,6 +19,14 @@ qt_add_qml_module(
         Main.qml
         MenuModel.qml
     SOURCES main.cpp
+    RESOURCES
+        resources/res.qrc
+)
+qt_add_shaders(${PROJECT_NAME} "shaders"
+    PREFIX "/"
+    FILES
+        shaders/Fractal_Land.vert
+        shaders/Fractal_Land.frag
 )
 
 # 链接库

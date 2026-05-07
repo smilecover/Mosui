@@ -126,6 +126,8 @@ Rectangle {
                         Row {
                             height: parent.implicitHeight
                             anchors.horizontalCenter: parent.horizontalCenter
+                            padding: 2
+
                             MosIconText {
                                 anchors.verticalCenter: parent.verticalCenter
                                 iconSize: MosTheme.Primary.fontPrimarySize - 4

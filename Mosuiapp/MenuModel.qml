@@ -17,18 +17,38 @@ QtObject{
         {
             key: 'Universal',
             label: qsTr('通用控件'),
-            // iconSource: MosIcon.UniversalOutlined,
+            iconSource: MosIcon.UniversalOutlined,
             menuChildren: [
                 {
                     key: 'ExpMosButton',
                     label: qsTr('MosButton 按钮'),
-                    // iconSource: MosIcon.ButtonOutlined,
+                    iconSource: MosIcon.ButtonOutlined,
                     source: './Controls/Universal/ExpMosButton.qml',
                     addVersion: '0.0.1',
                 },
+                {
+                    key: 'ExpMosButtonBlock',
+                    label: qsTr('MosButtonBlock 按钮块'),
+                    iconSource: MosIcon.ButtonOutlined,
+                    source: './Controls/Universal/ExpMosButtonBlock.qml',
+                    addVersion: '0.0.2',
+                },
+                {
+                    key: 'ExpMosCaptionbar',
+                    label: qsTr('MosCaptionbar 标题栏'),
+                    iconSource: MosIcon.CaptionbarOutlined,
+                    source: './Controls/Universal/ExpMosCaptionbar.qml',
+                    addVersion: '0.0.2',
+                },
+                {
+                    key: 'ExpMosCaptionButton',
+                    label: qsTr('MosCaptionButton 标题按钮'),
+                    iconSource: MosIcon.CaptionbarOutlined,
+                    source: './Controls/Universal/ExpMosCaptionButton.qml',
+                    addVersion: '0.0.2',
+                },
             ]
         },
-
        ]
     Component.onCompleted:{
         /*! 创建菜单等 */

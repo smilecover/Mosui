@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QDebug>
 #include <QQuickStyle>
+#include <QIcon>
 
 #include "Mosapp.h"
 // #include "Mostheme.h"
@@ -13,6 +14,9 @@ int main(int argc, char *argv[]) {
 
     QQmlApplicationEngine engine;
     engine.addImportPath("E:/QtWork/Mosui/shared");
+
+    QIcon icon(":/logo.png");
+    app.setWindowIcon(icon);
     
     QObject::connect(
         &engine,

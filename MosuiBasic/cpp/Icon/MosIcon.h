@@ -15,6 +15,16 @@ public:
     enum class Type : uint16_t {
         HomeOutlined = 0xe600,
         SettingsOutlined = 0xe851,
+        UniversalOutlined = 0xe63e,
+        ButtonOutlined = 0xe6fc,
+        CaptionbarOutlined = 0xe686,
+        LeftOutlined = 0xe70e,
+        RightOutlined = 0xec97,
+        MinusOutlined = 0xe621,
+        CodeOutlined = 0xe74f,
+        CopyOutlined = 0xe65f,
+        PlayCircleOutlined = 0xe65d,
+        CloseOutlined = 0xeb1b
         
         
     };

@@ -1,37 +1,34 @@
 import QtQuick
 import MosuiBasic
-MosRectangle {
-    width: 200
-    height: 200
-    color: "blue"
-    radius: 10
-    property int mode: 0
+Rectangle {
+    id: root
+    color: '#80000000'
+    
 
-    // 直接套上这个组件
-    MosResizeMouseArea {
+    property Component shaderEffect: ShaderEffect {
         anchors.fill: parent
-        target: parent               // 控制自己
-        resizable: true              // 允许缩放
-        movable: true                
-        minimumWidth: 100           
-        minimumHeight: 100           
-        maximumWidth: 500
-        maximumHeight: 500
-    }
-    MosButton{
-        id: menuButton
-        text: "Menu"
-        anchors.centerIn: parent
-        onClicked: {
-            if (mode == 0) {
-                mode = 1
-                menu.compactMode = 2
-                
-            } else {
-                mode = 0
-                menu.compactMode = 0
+        vertexShader: 'qrc:/shaders/Fractal_Land.vert.qsb'
+        fragmentShader: 'qrc:/shaders/Fractal_Land.frag.qsb'
+        opacity: 0.5
+        property vector3d iResolution: Qt.vector3d(width, height, 0)
+        property real iTime: 0
+        property variant iChannel1: ""
+        property variant iChannel0: ""
+        property vector4d iMouse: "0 0 0 0" 
+
+        Timer {
+            running: true
+            repeat: true
+            interval: 16
+            onTriggered: {
+                parent.iTime += 0.005;
             }
         }
     }
-
+    Loader {
+        id: loader
+        anchors.fill: parent
+        visible: root.visible && loader.status === Component.Ready && shaderEffect !== undefined
+        sourceComponent: shaderEffect
+    }
 }
