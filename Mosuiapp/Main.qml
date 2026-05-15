@@ -6,15 +6,23 @@ import "./Controls" as C
 
 MosWindow{
     id: rootWindow
+
     visible: true
     width: 1200
     height: 800
     title: "MosUI"
     
-    windowIcon: "qrc:/image/image/cangshu.svg"
+    windowIcon: "qrc:/logo.png"
     MenuModel{id: menumodel}
-    MosRouter {id: galleryRouter}
+    MosRouter{id: galleryRouter}
     C.Data{id: appData}
+
+    Rectangle {
+        id: rootBackground
+        anchors.fill: parent
+        color:MosTheme.Primary.colorBgBase
+        opacity: 0.2
+    }
 
     MosMenu{
         id: menu

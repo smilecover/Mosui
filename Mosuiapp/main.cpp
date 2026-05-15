@@ -3,6 +3,8 @@
 #include <QDebug>
 #include <QQuickStyle>
 #include <QIcon>
+#include <QCoreApplication>
+#include <QDir>
 
 #include "Mosapp.h"
 // #include "Mostheme.h"
@@ -12,8 +14,15 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
     QQuickStyle::setStyle("Fusion");
 
+    QDir appDir(app.applicationDirPath());
+    app.setLibraryPaths(QStringList() << appDir.absolutePath() << app.libraryPaths().join(";"));
+
     QQmlApplicationEngine engine;
-    engine.addImportPath("E:/QtWork/Mosui/shared");
+
+    // 添加 QML 模块搜索路径
+    QString sharedPath = appDir.absoluteFilePath("shared");
+    engine.addImportPath(sharedPath);
+    qDebug() << "QML import path:" << sharedPath;
 
     QIcon icon(":/logo.png");
     app.setWindowIcon(icon);

@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 
-add_subdirectory(qwindowkit)
+add_subdirectory(party3lib/qwindowkit)
  
 # 动态库目录
 if(NOT DEFINED LIBRARY_SHARED_OUTPUT_DIRECTORY OR NOT EXISTS ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
@@ -28,6 +28,7 @@ file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "cpp/controls/*.cpp" "cpp/controls/*.h"
     "cpp/utils/*.cpp" "cpp/utils/*.h"
     "cpp/Icon/*.cpp" "cpp/Icon/*.h"
+    "cpp/tools/*.cpp" "cpp/tools/*.h"
 )
 
 # 动态库
@@ -57,7 +58,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt6::QuickPrivate
     Qt6::QuickTemplates2
     Qt6::QuickTemplates2Private
-
+    Qt6::WebView
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -102,4 +103,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/controls
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/Icon
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools
 )

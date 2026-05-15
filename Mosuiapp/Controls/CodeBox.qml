@@ -81,7 +81,7 @@ Rectangle {
                     onLinkActivated:
                         (link) => {
                             if (link.startsWith('internal://'))
-                                galleryMenu.gotoMenu(link.slice(11));
+                                menu.gotoMenu(link.slice(11));
                             else
                                 Qt.openUrlExternally(link);
                         }

@@ -5,10 +5,16 @@ CodeBox 1.0 Controls/CodeBox.qml
 Data 1.0 Controls/Data.qml
 HomePage 1.0 Controls/HomePage.qml
 SettingsPage 1.0 Controls/SettingsPage.qml
+ExpCopyableText 1.0 Controls/Universal/ExpCopyableText.qml
 ExpMosButton 1.0 Controls/Universal/ExpMosButton.qml
 ExpMosButtonBlock 1.0 Controls/Universal/ExpMosButtonBlock.qml
 ExpMosCaptionButton 1.0 Controls/Universal/ExpMosCaptionButton.qml
 ExpMosCaptionbar 1.0 Controls/Universal/ExpMosCaptionbar.qml
+MosTools 1.0 Tools/MosTools.qml
+PLC_APP 1.0 Tools/PLC_APP/PLC_APP.qml
+PLC_APPWord 1.0 Tools/PLC_APP/PLC_APPWord.qml
+TPInv 1.0 Tools/TPInv/TPInv.qml
+TPInvWord 1.0 Tools/TPInv/TPInvWord.qml
 Main 1.0 Main.qml
 MenuModel 1.0 MenuModel.qml
 

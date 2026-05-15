@@ -47,8 +47,37 @@ QtObject{
                     source: './Controls/Universal/ExpMosCaptionButton.qml',
                     addVersion: '0.0.2',
                 },
+                {
+                    key: 'ExpCopyableText',
+                    label: qsTr('MosCopyableText 可复制文本'),
+                    iconSource: MosIcon.CopyOutlined,
+                    source: './Controls/Universal/ExpCopyableText.qml',
+                    addVersion: '0.0.2',
+                }
             ]
         },
+        {
+            key: 'Tools',
+            label: qsTr('Mos工具'),
+            iconSource: MosIcon.ToolsOutlined,
+            source: './Tools/MosTools.qml',
+            menuChildren: [
+                {
+                    key: 'TPInv',
+                    label: qsTr('逆变器工具'),
+                    iconSource: MosIcon.ToolsOutlined,
+                    source: './Tools/TPInv/TPInvWord.qml',
+                    addVersion: '0.0.1',
+                },
+                {
+                    key: 'PLC_APP',
+                    label: qsTr('PLC_APP 工具'),
+                    iconSource: MosIcon.ToolsOutlined,
+                    source: './Tools/PLC_APP/PLC_APPWord.qml',
+                    addVersion: '0.0.1',
+                }
+            ]
+        }
        ]
     Component.onCompleted:{
         /*! 创建菜单等 */

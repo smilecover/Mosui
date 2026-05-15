@@ -617,6 +617,16 @@ Module {
         Signal { name: "locationChanged" }
     }
     Component {
+        file: "MosSerialPortManager.h"
+        name: "MosSerialPortManager"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosSerialPortManager 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
         file: "Mossizegenerator.h"
         name: "MosSizeGenerator"
         accessSemantics: "reference"

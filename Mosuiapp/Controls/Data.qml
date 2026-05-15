@@ -6,5 +6,9 @@ QtObject {
     id: root
 
     property int menuType: 0
+    property int currentBackground: 1
+
+
+
 
 }

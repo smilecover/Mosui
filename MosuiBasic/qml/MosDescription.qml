@@ -12,6 +12,7 @@ Item {
     property alias desc: descText.text
     property alias titleVisible: titleText.visible
     property alias descVisible: descText.visible
+    // property var rootmenu: menu
 
     // 新增：文本格式控制（自动/纯文本/富文本/Markdown）
     property int descTextFormat: Text.MarkdownText
@@ -49,7 +50,7 @@ Item {
             onLinkActivated: link => {
                 if (!link) return
                 if (link.startsWith('internal://')) {
-                    galleryMenu.gotoMenu(link.slice(11))
+                    menu.gotoMenu(link.slice(11))
                 } else {
                     Qt.openUrlExternally(link)
                 }

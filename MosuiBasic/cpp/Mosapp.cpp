@@ -3,6 +3,11 @@
 #include <QtGui/QFontDatabase>
 #include <QtCore/QCoreApplication>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 // 在 QGuiApplication 构造完成后、QML 引擎创建前注册字体
 static void loadFonts()
 {

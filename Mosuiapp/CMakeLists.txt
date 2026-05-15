@@ -7,7 +7,8 @@ set(QT_QML_MODULE_IMPORT_PATH ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE STRING "Q
 set(QT_QML_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE PATH "QML module output directory" FORCE)
 qt_add_executable(${PROJECT_NAME})
 
-file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/Universal/*.qml")
+file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/Universal/*.qml" "Tools/*.qml" "Tools/TPInv/*.qml" "Tools/PLC_APP/*.qml")
+
 
 
 qt_add_qml_module(
@@ -27,7 +28,12 @@ qt_add_shaders(${PROJECT_NAME} "shaders"
     FILES
         shaders/Fractal_Land.vert
         shaders/Fractal_Land.frag
+        shaders/boykisser.vert
+        shaders/boykisser.frag
+        shaders/Hyperkart.vert
+        shaders/Hyperkart.frag
 )
+
 
 # 链接库
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -36,6 +42,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    Qt6::WebView
+    Qt6::Graphs
+    Qt6::Charts
 )
  
 # QML 模块搜索路径

@@ -11,6 +11,7 @@ Window {
     property alias captionbar: captionbar
     property bool initialized: false
     property bool followThemeSwitch: true
+    property real rootOpacity: 1.0
     
 
     property color captionbarcolor: "Transparent"
@@ -18,6 +19,7 @@ Window {
     property string windowIcon: ''
 
     title: windowAgent.windowTitle
+    opacity: rootOpacity
     // 页面效果
     enum Effect {
         Effect_None = 0,
@@ -54,7 +56,7 @@ Window {
 
         if (windowAgent.setWindowAttribute(name, true)) {
             root.effect = newEffect;
-            root.color = 'transparent';
+            root.color = "transparent";
             return true;
         }
         return false;
