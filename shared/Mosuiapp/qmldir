@@ -15,6 +15,11 @@ PLC_APP 1.0 Tools/PLC_APP/PLC_APP.qml
 PLC_APPWord 1.0 Tools/PLC_APP/PLC_APPWord.qml
 TPInv 1.0 Tools/TPInv/TPInv.qml
 TPInvWord 1.0 Tools/TPInv/TPInvWord.qml
+TPInvSerialport 1.0 Tools/TPInv/TPinvPage/TPInvSerialport.qml
+TPInvhome 1.0 Tools/TPInv/TPinvPage/TPInvhome.qml
+TplnvData 1.0 Tools/TPInv/TplnvData.qml
+TplnvMenuModel 1.0 Tools/TPInv/TplnvMenuModel.qml
+Tplnvsetting 1.0 Tools/TPInv/Tplnvsetting.qml
 Main 1.0 Main.qml
 MenuModel 1.0 MenuModel.qml
 

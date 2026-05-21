@@ -211,7 +211,12 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosCopyableText);
         ADD_COMPONENT_PROPERTY(MosMessage);
         ADD_COMPONENT_PROPERTY(MosInput);
-
+        ADD_COMPONENT_PROPERTY(MosSlider);
+        ADD_COMPONENT_PROPERTY(MosSelect);
+        ADD_COMPONENT_PROPERTY(MosCheckBox);
+        ADD_COMPONENT_PROPERTY(MosGroupBox);
+        ADD_COMPONENT_PROPERTY(MosTextArea);
+        ADD_COMPONENT_PROPERTY(MosTableView);
     }
 }
 // @brief 注册默认组件主题
@@ -246,8 +251,7 @@ void MosThemePrivate::registerComponentTheme(QObject *themeObject, const QString
     if (!themeObject || !themeMap) return;
 
     if (!dataMap.contains(themeObject))
-    dataMap[themeObject] = ThemeData{};
-
+        dataMap[themeObject] = ThemeData{};
     if (dataMap.contains(themeObject)) {
         dataMap[themeObject].themeObject = themeObject;
         dataMap[themeObject].componentMap[component].path = themePath;

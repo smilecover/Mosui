@@ -9,14 +9,18 @@ MosButtonBlock 1.0 qml/MosButtonBlock.qml
 MosCaptionButton 1.0 qml/MosCaptionButton.qml
 MosCaptionbar 1.0 qml/MosCaptionbar.qml
 MosCard 1.0 qml/MosCard.qml
+MosCheckBox 1.0 qml/MosCheckBox.qml
 MosCodeRunner 1.0 qml/MosCodeRunner.qml
 MosContextMenu 1.0 qml/MosContextMenu.qml
 MosCopyableText 1.0 qml/MosCopyableText.qml
 MosDescription 1.0 qml/MosDescription.qml
 MosDivider 1.0 qml/MosDivider.qml
+MosGroupBox 1.0 qml/MosGroupBox.qml
 MosIconButton 1.0 qml/MosIconButton.qml
 MosIconText 1.0 qml/MosIconText.qml
 MosInput 1.0 qml/MosInput.qml
+MosInputInteger 1.0 qml/MosInputInteger.qml
+MosInputNumber 1.0 qml/MosInputNumber.qml
 MosMenu 1.0 qml/MosMenu.qml
 MosMenuButton 1.0 qml/MosMenuButton.qml
 MosMessage 1.0 qml/MosMessage.qml
@@ -28,8 +32,13 @@ MosResizeMouseArea 1.0 qml/MosResizeMouseArea.qml
 MosRippleEffect 1.0 qml/MosRippleEffect.qml
 MosRotateIconButton 1.0 qml/MosRotateIconButton.qml
 MosScrollBar 1.0 qml/MosScrollBar.qml
+MosSelect 1.0 qml/MosSelect.qml
 MosShadow 1.0 qml/MosShadow.qml
+MosSlider 1.0 qml/MosSlider.qml
+MosSpace 1.0 qml/MosSpace.qml
+MosTableView 1.0 qml/MosTableView.qml
 MosText 1.0 qml/MosText.qml
+MosTextArea 1.0 qml/MosTextArea.qml
 MosToolTip 1.0 qml/MosToolTip.qml
 MosWindow 1.0 qml/MosWindow.qml
 

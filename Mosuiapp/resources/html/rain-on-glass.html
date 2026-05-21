@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rain on Glass</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
@@ -18,7 +17,6 @@
 </style>
 </head>
 <body>
-<div class="label">Rain on Glass</div>
 <canvas id="canvas"></canvas>
 <script>
 // ─────────────────────────────────────────────
@@ -466,6 +464,11 @@
       }
     }
     return rainDrops;
+  }
+  function updateRainvalue(RAINvalue, REFRACTIONvalue){
+    RAIN_AMOUNT = parseFloat(RAINvalue);
+    REFRACTION = parseFloat(REFRACTIONvalue);
+    console.log('Updated RAIN_AMOUNT to', RAIN_AMOUNT, 'and REFRACTION to', REFRACTION);
   }
 
   function updateDroplets(timeScale) {
@@ -998,8 +1001,10 @@
   canvas.addEventListener('touchend', function() { rainMouseDown = false; });
 
   requestAnimationFrame(render);
+  window.updateRainvalue = updateRainvalue;
 })();
+
 </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"216c03e5eb1b42998a91f716785010f9","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<!-- <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"216c03e5eb1b42998a91f716785010f9","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script> -->
 </body>
 </html>

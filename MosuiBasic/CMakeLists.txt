@@ -60,6 +60,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt6::QuickTemplates2Private
     Qt6::WebView
     Qt6::SerialPort
+
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

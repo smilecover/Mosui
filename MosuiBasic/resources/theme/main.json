@@ -39,6 +39,7 @@
                 "durationSlow": "300",
 
                 "colorBorder": "$alpha(@colorTextBase, 0.15)",
+                "colorBorderDisabled": "$alpha(@colorTextBase, 0.1)",
                 "colorBorderSecondary": "$brightness(@colorBgBase, 106, 119)",
 
                 "colorPrimaryBg": "@colorPrimaryBase-1",
@@ -78,6 +79,7 @@
                 "radiusPrimarySM": "@radiusBase-3",
                 "radiusPrimaryXS": "@radiusBase-4",
                 "radiusPrimaryOuter": "@radiusBase-5",
+
 
                 "colorSplit": "$alpha(@colorTextBase, 0.1)",
 
@@ -158,6 +160,12 @@
                 "MosRadio": ":/theme/theme/MosRadio.json",
                 "MosCopyableText": ":/theme/theme/MosCopyableText.json",
                 "MosMessage": ":/theme/theme/MosMessage.json",
-                "MosInput": ":/theme/theme/MosInput.json"
+                "MosInput": ":/theme/theme/MosInput.json",
+                "MosSlider": ":/theme/theme/MosSlider.json",
+                "MosSelect": ":/theme/theme/MosSelect.json",
+                "MosCheckBox": ":/theme/theme/MosCheckBox.json",
+                "MosGroupBox": ":/theme/theme/MosGroupBox.json",
+                "MosTextArea": ":/theme/theme/MosTextArea.json",
+                "MosTableView": ":/theme/theme/MosTableView.json"
         }
 }

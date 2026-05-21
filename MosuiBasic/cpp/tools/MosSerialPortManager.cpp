@@ -12,6 +12,7 @@ MosSerialPortManager::MosSerialPortManager(QObject *parent)
 
 MosSerialPortManager::~MosSerialPortManager()
 {
+    
 }
 
 // 单例实例

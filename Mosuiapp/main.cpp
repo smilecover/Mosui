@@ -5,12 +5,14 @@
 #include <QIcon>
 #include <QCoreApplication>
 #include <QDir>
-
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include "Mosapp.h"
 // #include "Mostheme.h"
 
 
 int main(int argc, char *argv[]) {
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QtWebEngineQuick::initialize();
     QGuiApplication app(argc, argv);
     QQuickStyle::setStyle("Fusion");
 

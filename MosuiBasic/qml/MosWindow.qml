@@ -18,7 +18,7 @@ Window {
 
     property string windowIcon: ''
 
-    title: windowAgent.windowTitle
+    title: windowAgent.windowTitle? windowAgent.windowTitle : ""
     opacity: rootOpacity
     // 页面效果
     enum Effect {

@@ -17,6 +17,12 @@
         <file>theme/MosCopyableText.json</file>
         <file>theme/MosMessage.json</file>
         <file>theme/MosInput.json</file>
+        <file>theme/MosSlider.json</file>
+        <file>theme/MosSelect.json</file>
+        <file>theme/MosCheckBox.json</file>
+        <file>theme/MosGroupBox.json</file>
+        <file>theme/MosTextArea.json</file>
+        <file>theme/MosTableView.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>

@@ -20,6 +20,8 @@ public:
         CaptionbarOutlined = 0xe686,
         LeftOutlined = 0xe70e,
         RightOutlined = 0xec97,
+        UpOutlined = 0xec98,
+        DownOutlined = 0xec99,
         MinusOutlined = 0xe621,
         CodeOutlined = 0xe74f,
         CopyOutlined = 0xe65f,

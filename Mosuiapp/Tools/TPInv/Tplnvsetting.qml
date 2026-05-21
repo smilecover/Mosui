@@ -171,24 +171,74 @@ Flickable {
                     text: modelData.label
                     ButtonGroup.group: backgroundGroup
                     onClicked: {
-                        appData.currentBackground = modelData.value;
+                        appTplnvData.currentBackground = modelData.value;
                     }
                     Component.onCompleted: {
-                        checked = appData.currentBackground === modelData.value;
+                        checked = appTplnvData.currentBackground === modelData.value;
                     }
                 }
 
             }
             Connections {
-                target: appData
+                target: appTplnvData
                 function onCurrentBackgroundChanged() {
                     for (let i = 0; i < backgroundGroup.buttons.length; i++) {
                         backgroundGroup.buttons[i].checked =
-                            backgroundGroup.buttons[i].bgValue === appData.currentBackground;
+                            backgroundGroup.buttons[i].bgValue === appTplnvData.currentBackground;
                     }
                 }
             }
         }
     }
+
+        SettingsItem{
+            title: qsTr('主界面雨滴效果设置')
+            itemDelegate: Column {
+                spacing: 10
+
+                // 降雨量滑块
+                MosSlider {
+                    width: root.width * 0.3
+                    height: root.height * 0.05
+                    snapMode: MosSlider.NoSnap
+                    min: 0.0
+                    max: 10.0
+                    stepSize: 0.01
+                    value: appTplnvData.rainAmount
+                    onFirstMoved:{
+                        appTplnvData.rainAmount = currentValue
+                    }
+
+                    MosCopyableText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.right
+                        anchors.leftMargin: 10
+                        text: parent.currentValue.toFixed(2)
+                    }
+                }
+                // 折射率滑块
+                MosSlider {
+                    width: root.width * 0.3
+                    height: root.height * 0.05
+                    snapMode: MosSlider.NoSnap
+                    min: 0.0
+                    max: 5.0
+                    stepSize: 0.01
+                    value: appTplnvData.refraction
+                    onFirstMoved:{
+                        appTplnvData.refraction = currentValue
+                    }
+                    MosCopyableText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.right
+                        anchors.leftMargin: 10
+                        text: parent.currentValue.toFixed(2)
+                    }
+                }
+            }
+
+        }
+    }
+    
 }
-}
+

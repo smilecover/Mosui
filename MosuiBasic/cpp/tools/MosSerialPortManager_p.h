@@ -12,6 +12,4 @@ class MosSerialPortManagerPrivate
 
         QList<QSerialPortInfo> portInfoList;
 
-
-    
 };

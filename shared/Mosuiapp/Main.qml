@@ -38,9 +38,12 @@ MosWindow{
         {
             if (data.source) 
             {
-                galleryRouter.push(data.source)
+                galleryRouter.push(Qt.resolvedUrl(data.source))
             }
         }
+    }
+    Component.onCompleted: {
+        galleryRouter.push(Qt.resolvedUrl('./Controls/HomePage.qml'))
     }
     MosDivider{
         id: linemenutosetting
@@ -61,7 +64,7 @@ MosWindow{
             iconSource: MosIcon.SettingsOutlined
             iconSize: 30
             onClicked: {
-                galleryRouter.push('./Controls/SettingsPage.qml')
+                galleryRouter.push(Qt.resolvedUrl('./Controls/SettingsPage.qml'))
                 menu.clearSelection()
             }
         }
@@ -79,7 +82,7 @@ MosWindow{
         anchors.right: parent.right
         anchors.top: captionbar.bottom
         anchors.bottom: parent.bottom
-        anchors.margins: 5
+        anchors.margins: 0
         clip: true
 
         Loader{

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtQml/qqml.h>
+#include <qcontainerfwd.h>
 #include "Mosglobal.h"
 #include "Mosdefinitions.h"
 
@@ -40,7 +41,12 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCopyableText);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosMessage);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosInput);
-
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSlider);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSelect);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCheckBox);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosGroupBox);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTextArea);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTableView);
 
 public:
     ~MosTheme();

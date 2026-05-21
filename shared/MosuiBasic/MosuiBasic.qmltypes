@@ -289,6 +289,8 @@ Module {
                 "CaptionbarOutlined",
                 "LeftOutlined",
                 "RightOutlined",
+                "UpOutlined",
+                "DownOutlined",
                 "MinusOutlined",
                 "CodeOutlined",
                 "CopyOutlined",
@@ -625,6 +627,25 @@ Module {
         isCreatable: false
         isSingleton: true
         exportMetaObjectRevisions: [256]
+        Property {
+            name: "portInfoList"
+            type: "QSerialPortInfo"
+            isList: true
+            read: "portInfoList"
+            notify: "portInfoListChanged"
+            index: 0
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "portInfoListChanged" }
+        Method {
+            name: "CreateSerialPort"
+            type: "QSerialPort"
+            isPointer: true
+            Parameter { name: "ClassName"; type: "QString"; isPointer: true }
+            Parameter { name: "con"; type: "quint8" }
+        }
+        Method { name: "GetSerialPortInfo" }
     }
     Component {
         file: "Mossizegenerator.h"
@@ -907,6 +928,60 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosSlider"
+            type: "QVariantMap"
+            read: "MosSlider"
+            notify: "MosSliderChanged"
+            index: 22
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosSelect"
+            type: "QVariantMap"
+            read: "MosSelect"
+            notify: "MosSelectChanged"
+            index: 23
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosCheckBox"
+            type: "QVariantMap"
+            read: "MosCheckBox"
+            notify: "MosCheckBoxChanged"
+            index: 24
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosGroupBox"
+            type: "QVariantMap"
+            read: "MosGroupBox"
+            notify: "MosGroupBoxChanged"
+            index: 25
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTextArea"
+            type: "QVariantMap"
+            read: "MosTextArea"
+            notify: "MosTextAreaChanged"
+            index: 26
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTableView"
+            type: "QVariantMap"
+            read: "MosTableView"
+            notify: "MosTableViewChanged"
+            index: 27
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -925,6 +1000,12 @@ Module {
         Signal { name: "MosCopyableTextChanged" }
         Signal { name: "MosMessageChanged" }
         Signal { name: "MosInputChanged" }
+        Signal { name: "MosSliderChanged" }
+        Signal { name: "MosSelectChanged" }
+        Signal { name: "MosCheckBoxChanged" }
+        Signal { name: "MosGroupBoxChanged" }
+        Signal { name: "MosTextAreaChanged" }
+        Signal { name: "MosTableViewChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }
