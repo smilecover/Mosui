@@ -376,6 +376,7 @@ MosRectangle{
         property int renderedCommandByteCount: 20
         property var pendingCommandPayloads: []
         property int pendingCommandIndex: 0
+        property int autoCommandIndex: 0
         property bool commandLoopEnabled: false
 
         MosRectangle {
@@ -433,6 +434,7 @@ MosRectangle{
             }
 
             commandTableRefreshPending = true
+            autoCommandIndex = 0
             commandTableLoader.active = false
             Qt.callLater(function() {
                 renderedCommandCount = serialportPage.commandCount
@@ -471,7 +473,8 @@ MosRectangle{
             interval: serialportPage.autoSendInterval
             repeat: true
             running: serialportPage.sendAutoEnabled && MosSerialPortManager.isOpen
-            onTriggered: rightItem.sendTextData()
+            onTriggered: rightItem.sendAutoData()
+            onRunningChanged: if (!running) rightItem.autoCommandIndex = 0
         }
 
         Timer {
@@ -511,6 +514,22 @@ MosRectangle{
                 return MosSerialPortManager.writeHex(data)
             }
             return MosSerialPortManager.writeText(data)
+        }
+
+        function sendAutoData() {
+            const payloads = buildCommandPayloads()
+            if (payloads.length === 0) {
+                autoCommandIndex = 0
+                return sendTextData()
+            }
+
+            if (autoCommandIndex >= payloads.length) {
+                autoCommandIndex = 0
+            }
+
+            const ok = MosSerialPortManager.writeHex(payloads[autoCommandIndex])
+            autoCommandIndex = (autoCommandIndex + 1) % payloads.length
+            return ok
         }
 
         function normalizeByteCell(value) {
