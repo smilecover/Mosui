@@ -45,6 +45,12 @@ MosRectangleInternal {
 
     property color colorGridLine: themeSource.colorGridLine
     property color colorResizeBlockBg: themeSource.colorResizeBlockBg
+    property color colorCellBg: themeSource.colorCellBg
+    property color colorCellOddBg: themeSource.colorCellOddBg
+    property color colorCellBgHover: themeSource.colorCellBgHover
+    property color colorCellBgChecked: MosTheme.isDark ? themeSource.colorCellBgDarkChecked : themeSource.colorCellBgChecked
+    property color colorCellBgHoverChecked: MosTheme.isDark ? themeSource.colorCellBgDarkHoverChecked : themeSource.colorCellBgHoverChecked
+    property color colorCellBgDisabled: themeSource.colorBgDisabled
     property MosRadius radiusBg: MosRadius {
         topLeft: themeSource.radiusBg
         topRight: themeSource.radiusBg
@@ -994,22 +1000,20 @@ MosRectangleInternal {
                 implicitWidth: root.columns[column].width
                 implicitHeight: Math.max(root.minimumRowHeight, Math.min(root.rowHeightProvider(row, key), root.maximumRowHeight))
                 visible: isHide ? false : implicitHeight >= 0
-                enabled: isEnabled
+                                enabled: isEnabled
                 clip: true
                 color: {
-                    if (!enabled) return root.themeSource.colorBgDisabled;
+                    if (!enabled) return root.colorCellBgDisabled;
                     if (__private.checkedKeysSet.has(key)) {
                         if (row == __cellView.currentHoverRow) {
-                            return MosTheme.isDark ? root.themeSource.colorCellBgDarkHoverChecked :
-                                                     root.themeSource.colorCellBgHoverChecked;
+                            return root.colorCellBgHoverChecked;
                         } else {
-                            return MosTheme.isDark ? root.themeSource.colorCellBgDarkChecked :
-                                                     root.themeSource.colorCellBgChecked;
+                            return root.colorCellBgChecked;
                         }
                     } else {
-                        return row == __cellView.currentHoverRow ? root.themeSource.colorCellBgHover :
+                        return row == __cellView.currentHoverRow ? root.colorCellBgHover :
                                                                    root.alternatingRow && __rootItem.row % 2 !== 0 ?
-                                                                       root.themeSource.colorCellOddBg : root.themeSource.colorCellBg;
+                                                                       root.colorCellOddBg : root.colorCellBg;
                     }
                 }
 

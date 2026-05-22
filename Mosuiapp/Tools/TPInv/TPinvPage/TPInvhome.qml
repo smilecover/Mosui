@@ -83,7 +83,7 @@ MosRectangle{
             spacing: 20
 
             Item {
-                width: MosTheme.Primary.fontPrimarySize * 20
+                width: MosTheme.Primary.fontPrimarySize * 30
                 height: MosTheme.Primary.fontPrimarySize + 32
                 anchors.horizontalCenter: parent.horizontalCenter
 

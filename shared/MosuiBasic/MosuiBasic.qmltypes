@@ -629,23 +629,91 @@ Module {
         exportMetaObjectRevisions: [256]
         Property {
             name: "portInfoList"
-            type: "QSerialPortInfo"
-            isList: true
+            type: "QVariantList"
             read: "portInfoList"
             notify: "portInfoListChanged"
             index: 0
             isReadonly: true
             isFinal: true
         }
-        Signal { name: "portInfoListChanged" }
-        Method {
-            name: "CreateSerialPort"
-            type: "QSerialPort"
-            isPointer: true
-            Parameter { name: "ClassName"; type: "QString"; isPointer: true }
-            Parameter { name: "con"; type: "quint8" }
+        Property {
+            name: "isOpen"
+            type: "bool"
+            read: "isOpen"
+            notify: "isOpenChanged"
+            index: 1
+            isReadonly: true
+            isFinal: true
         }
-        Method { name: "GetSerialPortInfo" }
+        Property {
+            name: "currentPortName"
+            type: "QString"
+            read: "currentPortName"
+            notify: "currentPortNameChanged"
+            index: 2
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "errorString"
+            type: "QString"
+            read: "errorString"
+            notify: "errorStringChanged"
+            index: 3
+            isReadonly: true
+            isFinal: true
+        }
+        Signal { name: "portInfoListChanged" }
+        Signal { name: "isOpenChanged" }
+        Signal { name: "currentPortNameChanged" }
+        Signal { name: "errorStringChanged" }
+        Signal {
+            name: "dataReceived"
+            Parameter { name: "data"; type: "QByteArray" }
+            Parameter { name: "text"; type: "QString" }
+            Parameter { name: "hex"; type: "QString" }
+        }
+        Signal {
+            name: "bytesWritten"
+            Parameter { name: "bytes"; type: "qlonglong" }
+        }
+        Signal {
+            name: "errorOccurred"
+            Parameter { name: "message"; type: "QString" }
+        }
+        Method { name: "refreshPorts"; type: "QVariantList" }
+        Method {
+            name: "openPort"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
+            Parameter { name: "baudRate"; type: "int" }
+            Parameter { name: "dataBits"; type: "int" }
+            Parameter { name: "parity"; type: "QString" }
+            Parameter { name: "stopBits"; type: "QString" }
+            Parameter { name: "flowControl"; type: "QString" }
+        }
+        Method { name: "closePort" }
+        Method {
+            name: "writeText"
+            type: "bool"
+            Parameter { name: "text"; type: "QString" }
+        }
+        Method {
+            name: "writeHex"
+            type: "bool"
+            Parameter { name: "hexText"; type: "QString" }
+        }
+        Method {
+            name: "writeBytes"
+            type: "bool"
+            Parameter { name: "data"; type: "QByteArray" }
+        }
+        Method { name: "clearError" }
+        Method {
+            name: "bytesToHex"
+            type: "QString"
+            Parameter { name: "data"; type: "QByteArray" }
+        }
     }
     Component {
         file: "Mossizegenerator.h"

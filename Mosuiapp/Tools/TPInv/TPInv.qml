@@ -13,38 +13,38 @@ MosWindow{
     TplnvMenuModel{id: menumodel}
     MosRouter{id: tplnvRouter}
     TplnvData{id: appTplnvData
-        onRainAmountChanged: {
-            webView.updateWebParams()
-        }
-        onRefractionChanged: {
-            webView.updateWebParams()
-        }
+        // onRainAmountChanged: {
+        //     webView.updateWebParams()
+        // }
+        // onRefractionChanged: {
+        //     webView.updateWebParams()
+        // }
     }
-    Item{
-        anchors.fill: parent
-        WebEngineView {
-            id: webView
-            anchors.fill: parent
-            url: "qrc:/html/rain-on-glass.html"
-            settings {
-                localContentCanAccessRemoteUrls: true
-                localContentCanAccessFileUrls: true
-                javascriptEnabled: true
-            }
-            function updateWebParams() {
-                runJavaScript("updateRainvalue(" + appTplnvData.rainAmount + "," + appTplnvData.refraction + ")");
-            }
-            onLoadingChanged: function(loadRequest) {
-                if (loadRequest.status === WebEngineView.LoadSucceededStatus) {
-                    updateWebParams()
-                }
-            }
-        }
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton                
-        }
-    }
+    // Item{
+    //     anchors.fill: parent
+    //     WebEngineView {
+    //         id: webView
+    //         anchors.fill: parent
+    //         url: "qrc:/html/rain-on-glass.html"
+    //         settings {
+    //             localContentCanAccessRemoteUrls: true
+    //             localContentCanAccessFileUrls: true
+    //             javascriptEnabled: true
+    //         }
+    //         function updateWebParams() {
+    //             runJavaScript("updateRainvalue(" + appTplnvData.rainAmount + "," + appTplnvData.refraction + ")");
+    //         }
+    //         onLoadingChanged: function(loadRequest) {
+    //             if (loadRequest.status === WebEngineView.LoadSucceededStatus) {
+    //                 updateWebParams()
+    //             }
+    //         }
+    //     }
+    //     MouseArea {
+    //         anchors.fill: parent
+    //         acceptedButtons: Qt.RightButton                
+    //     }
+    // }
 
     MosMenu{
         id: menu

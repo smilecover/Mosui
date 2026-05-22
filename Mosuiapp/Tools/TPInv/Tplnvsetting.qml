@@ -95,15 +95,15 @@ Flickable {
                         text: modelData.label
                         ButtonGroup.group: specialEffectGroup
                         onClicked: {
-                            if (!rootWindow.setEffect(modelData.value)) {
+                            if (!tpinvwindow.setEffect(modelData.value)) {
                                 for (let i = 0; i < specialEffectGroup.buttons.length; i++) {
                                     specialEffectGroup.buttons[i].checked =
-                                        specialEffectGroup.buttons[i].effectValue === rootWindow.effect;
+                                        specialEffectGroup.buttons[i].effectValue === tpinvwindow.effect;
                                 }
                             }
                         }
                         Component.onCompleted: {
-                            checked = rootWindow.effect === modelData.value;
+                            checked = tpinvwindow.effect === modelData.value;
                         }
                     }
                     Component.onCompleted: {
