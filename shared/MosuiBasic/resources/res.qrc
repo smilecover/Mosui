@@ -23,6 +23,8 @@
         <file>theme/MosGroupBox.json</file>
         <file>theme/MosTextArea.json</file>
         <file>theme/MosTableView.json</file>
+        <file>theme/MosTag.json</file>
+        <file>theme/MosCanvasChart.json</file>
     </qresource>
     <qresource prefix="/font">
         <file>font/iconfont.ttf</file>

@@ -166,6 +166,8 @@
                 "MosCheckBox": ":/theme/theme/MosCheckBox.json",
                 "MosGroupBox": ":/theme/theme/MosGroupBox.json",
                 "MosTextArea": ":/theme/theme/MosTextArea.json",
-                "MosTableView": ":/theme/theme/MosTableView.json"
+                "MosTableView": ":/theme/theme/MosTableView.json",
+                "MosTag": ":/theme/theme/MosTag.json",
+                "MosCanvasChart": ":/theme/theme/MosCanvasChart.json"
         }
 }

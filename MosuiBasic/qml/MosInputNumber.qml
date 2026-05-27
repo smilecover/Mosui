@@ -50,10 +50,12 @@ T.Control {
     property alias colorText: __input.colorText
     property alias colorBg: __input.colorBg
     property color colorShadow: enabled ? themeSource.colorShadow : 'transparent'
+    property color colorBorder: enabled ? themeSource.colorBorder : themeSource.colorBorderDisabled
     property MosRadius radiusBg: MosRadius { all: themeSource.radiusBg }
     property string sizeHint: 'normal'
     property real sizeRatio: MosTheme.sizeHint[sizeHint]
     property var themeSource: MosTheme.MosInput
+
 
     property alias input: __input
 
@@ -62,8 +64,7 @@ T.Control {
         topLeftRadius: root.radiusBg.topLeft
         bottomLeftRadius: root.radiusBg.bottomLeft
         color: root.colorBg
-        border.color: enabled ? root.themeSource.colorBorder :
-                                root.themeSource.colorBorderDisabled
+        border.color: root.colorBorder
 
         Loader {
             id: __beforeCompLoader
@@ -77,8 +78,7 @@ T.Control {
         topRightRadius: root.radiusBg.topRight
         bottomRightRadius: root.radiusBg.bottomRight
         color: root.colorBg
-        border.color: enabled ? root.themeSource.colorBorder :
-                                root.themeSource.colorBorderDisabled
+        border.color: root.colorBorder
 
         Loader {
             id: __afterCompLoader
@@ -99,8 +99,7 @@ T.Control {
         property real halfHeight: height * 0.5
         property real hoverHeight: height * 0.6
         property real noHoverHeight: height * 0.4
-        property color colorBorder: enabled ? root.themeSource.colorBorder :
-                                              root.themeSource.colorBorderDisabled
+        property color colorBorder: root.colorBorder
         property color colorHandlerBg: 'transparent'
 
         Behavior on width {
@@ -274,6 +273,7 @@ T.Control {
             animationEnabled: root.animationEnabled
             sizeRatio: root.sizeRatio
             themeSource: root.themeSource
+            colorBorder: root.colorBorder
             validator: root.validator
             font: root.font
             radiusBg.all: root.radiusBg.all

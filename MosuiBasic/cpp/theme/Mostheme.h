@@ -47,6 +47,8 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosGroupBox);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosTextArea);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosTableView);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTag);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCanvasChart);
 
 public:
     ~MosTheme();

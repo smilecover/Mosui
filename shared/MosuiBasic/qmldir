@@ -4,8 +4,10 @@ optional plugin MosuiBasicplugin
 classname MosuiBasicPlugin
 typeinfo MosuiBasic.qmltypes
 prefer :/qt/qml/MosuiBasic/
+MosAvatar 1.0 qml/MosAvatar.qml
 MosButton 1.0 qml/MosButton.qml
 MosButtonBlock 1.0 qml/MosButtonBlock.qml
+MosCanvasChart 1.0 qml/MosCanvasChart.qml
 MosCaptionButton 1.0 qml/MosCaptionButton.qml
 MosCaptionbar 1.0 qml/MosCaptionbar.qml
 MosCard 1.0 qml/MosCard.qml
@@ -37,6 +39,7 @@ MosShadow 1.0 qml/MosShadow.qml
 MosSlider 1.0 qml/MosSlider.qml
 MosSpace 1.0 qml/MosSpace.qml
 MosTableView 1.0 qml/MosTableView.qml
+MosTag 1.0 qml/MosTag.qml
 MosText 1.0 qml/MosText.qml
 MosTextArea 1.0 qml/MosTextArea.qml
 MosToolTip 1.0 qml/MosToolTip.qml

@@ -44,6 +44,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Graphs
     Qt6::Charts
     Qt6::WebEngineQuick
+    Qt6::Core5Compat
 )
  
 # QML 模块搜索路径

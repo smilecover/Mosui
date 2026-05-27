@@ -9,16 +9,34 @@ QtObject{
 
     property var galleryModel: [
         {
-            key: 'HomePage',
+            key: 'TPInvhome',
             label: qsTr('首页'),
             iconSource: MosIcon.HomeOutlined,
             source: './TPinvPage/TPInvhome.qml',
         },
         {
-            key: 'Serialport',
+            key: 'TPInvSerialport',
             label: qsTr('串口助手'),
             iconSource: MosIcon.SerialportOutlined,
             source: './TPinvPage/TPInvSerialport.qml',
+        },
+        {
+            key: 'TPInvfault',
+            label: qsTr('故障查询'),
+            iconSource: MosIcon.FaultOutlined,
+            source: './TPinvPage/TPInvfault.qml',
+        },
+        {
+            key: 'TPInvcontrol',
+            label: qsTr('逆变器控制'),
+            iconSource: MosIcon.ControlOutlined,
+            source: './TPinvPage/TPInvcontrol.qml',
+        },
+        {
+            key: 'TPInvwave',
+            label: qsTr('在线示波器'),
+            iconSource: MosIcon.WaveOutlined,
+            source: './TPinvPage/TPInvwave.qml',
         }
        ]
     Component.onCompleted:{

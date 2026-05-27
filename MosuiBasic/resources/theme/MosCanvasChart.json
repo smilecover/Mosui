@@ -1,0 +1,52 @@
+{
+    "__style__": {
+        "MosCanvasChartBlue": "$genColor(#Preset_Blue)",
+        "MosCanvasChartCyan": "$genColor(#Preset_Cyan)",
+        "MosCanvasChartGold": "$genColor(#Preset_Gold)",
+        "MosCanvasChartRed": "$genColor(#Preset_Red)",
+        "MosCanvasChartPurple": "$genColor(#Preset_Purple)",
+        "MosCanvasChartGreen": "$genColor(#Preset_Green)",
+        "MosCanvasChartMagenta": "$genColor(#Preset_Magenta)",
+
+        "fontFamily": "@fontPrimaryFamily",
+        "fontSizeTitle": "@fontPrimarySizeHeading5",
+        "fontSizeSubtitle": "@fontPrimarySize",
+        "fontSizeLabel": "12",
+        "fontSizeValue": "@fontPrimarySize",
+        "fontLineHeight": "1.0",
+
+        "colorBg": "@colorBgBase",
+        "colorBgDark": "@colorMain-11",
+        "colorPlotBg": "@colorMain-2",
+        "colorPlotBgDark": "@colorMain-12",
+        "colorText": "@colorTextBase",
+        "colorTextSecondary": "@colorTextSecondary",
+        "colorGrid": "@colorSplit",
+        "colorAxis": "@colorBorder",
+        "colorShadow": "@colorTextBase",
+        "colorTooltipBg": "@colorBgBase",
+        "colorTooltipBgDark": "@colorMain-10",
+        "colorTooltipBorder": "@colorBorder",
+
+        "colorSeries1": "@MosCanvasChartBlue-6",
+        "colorSeries2": "@MosCanvasChartCyan-6",
+        "colorSeries3": "@MosCanvasChartGold-6",
+        "colorSeries4": "@MosCanvasChartRed-6",
+        "colorSeries5": "@MosCanvasChartPurple-6",
+        "colorSeries6": "@MosCanvasChartGreen-6",
+        "colorSeries7": "@MosCanvasChartMagenta-6",
+        "colorSeries8": "@MosCanvasChartBlue-4",
+        "colorSeries9": "@MosCanvasChartCyan-4",
+        "colorSeries10": "@MosCanvasChartGold-4",
+
+        "lineWidth": "2.4",
+        "pointSize": "4.5",
+        "barRadius": "6",
+        "gridLineWidth": "1",
+        "axisLineWidth": "1",
+        "areaFillOpacity": "0.18",
+        "radarFillOpacity": "0.18",
+        "doughnutWidthRatio": "0.38",
+        "radiusBg": "@radiusPrimary"
+    }
+}

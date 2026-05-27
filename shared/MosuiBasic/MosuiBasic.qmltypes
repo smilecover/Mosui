@@ -89,6 +89,14 @@ Module {
         Method { name: "libVersion"; type: "QString" }
     }
     Component {
+        file: "MosHighperchart.h"
+        name: "MosAreaChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosAreaChart 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
         file: "Mosasynchasher.h"
         name: "MosAsyncHasher"
         accessSemantics: "reference"
@@ -181,6 +189,14 @@ Module {
         }
     }
     Component {
+        file: "MosHighperchart.h"
+        name: "MosBarChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosBarChart 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
         file: "Moscolorgenerator.h"
         name: "MosColorGenerator"
         accessSemantics: "reference"
@@ -269,6 +285,196 @@ Module {
         }
     }
     Component {
+        file: "MosHighperchart.h"
+        name: "MosDonutChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosDonutChart 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
+        file: "MosHighperchart.h"
+        name: "MosHighperchart"
+        accessSemantics: "reference"
+        defaultProperty: "data"
+        parentProperty: "parent"
+        prototype: "QQuickItem"
+        exports: ["MosuiBasic/MosHighperchart 1.0"]
+        exportMetaObjectRevisions: [256]
+        Enum {
+            name: "ChartType"
+            values: [
+                "Line",
+                "Bar",
+                "Pie",
+                "Donut",
+                "Area",
+                "Scatter",
+                "Radar"
+            ]
+        }
+        Property {
+            name: "chartType"
+            type: "ChartType"
+            read: "chartType"
+            write: "setChartType"
+            notify: "chartTypeChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "values"
+            type: "QVariantList"
+            read: "values"
+            write: "setValues"
+            notify: "valuesChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "colors"
+            type: "QVariantList"
+            read: "colors"
+            write: "setColors"
+            notify: "colorsChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
+            name: "backgroundColor"
+            type: "QColor"
+            read: "backgroundColor"
+            write: "setBackgroundColor"
+            notify: "backgroundColorChanged"
+            index: 3
+            isFinal: true
+        }
+        Property {
+            name: "gridColor"
+            type: "QColor"
+            read: "gridColor"
+            write: "setGridColor"
+            notify: "gridColorChanged"
+            index: 4
+            isFinal: true
+        }
+        Property {
+            name: "axisColor"
+            type: "QColor"
+            read: "axisColor"
+            write: "setAxisColor"
+            notify: "axisColorChanged"
+            index: 5
+            isFinal: true
+        }
+        Property {
+            name: "showGrid"
+            type: "bool"
+            read: "showGrid"
+            write: "setShowGrid"
+            notify: "showGridChanged"
+            index: 6
+            isFinal: true
+        }
+        Property {
+            name: "showAxis"
+            type: "bool"
+            read: "showAxis"
+            write: "setShowAxis"
+            notify: "showAxisChanged"
+            index: 7
+            isFinal: true
+        }
+        Property {
+            name: "showPoints"
+            type: "bool"
+            read: "showPoints"
+            write: "setShowPoints"
+            notify: "showPointsChanged"
+            index: 8
+            isFinal: true
+        }
+        Property {
+            name: "padding"
+            type: "double"
+            read: "padding"
+            write: "setPadding"
+            notify: "paddingChanged"
+            index: 9
+            isFinal: true
+        }
+        Property {
+            name: "lineWidth"
+            type: "double"
+            read: "lineWidth"
+            write: "setLineWidth"
+            notify: "lineWidthChanged"
+            index: 10
+            isFinal: true
+        }
+        Property {
+            name: "pointSize"
+            type: "double"
+            read: "pointSize"
+            write: "setPointSize"
+            notify: "pointSizeChanged"
+            index: 11
+            isFinal: true
+        }
+        Property {
+            name: "innerRadius"
+            type: "double"
+            read: "innerRadius"
+            write: "setInnerRadius"
+            notify: "innerRadiusChanged"
+            index: 12
+            isFinal: true
+        }
+        Property {
+            name: "barSpacing"
+            type: "double"
+            read: "barSpacing"
+            write: "setBarSpacing"
+            notify: "barSpacingChanged"
+            index: 13
+            isFinal: true
+        }
+        Property {
+            name: "gridLineCount"
+            type: "int"
+            read: "gridLineCount"
+            write: "setGridLineCount"
+            notify: "gridLineCountChanged"
+            index: 14
+            isFinal: true
+        }
+        Property {
+            name: "animationProgress"
+            type: "double"
+            read: "animationProgress"
+            write: "setAnimationProgress"
+            notify: "animationProgressChanged"
+            index: 15
+            isFinal: true
+        }
+        Signal { name: "chartTypeChanged" }
+        Signal { name: "valuesChanged" }
+        Signal { name: "colorsChanged" }
+        Signal { name: "backgroundColorChanged" }
+        Signal { name: "gridColorChanged" }
+        Signal { name: "axisColorChanged" }
+        Signal { name: "showGridChanged" }
+        Signal { name: "showAxisChanged" }
+        Signal { name: "showPointsChanged" }
+        Signal { name: "paddingChanged" }
+        Signal { name: "lineWidthChanged" }
+        Signal { name: "pointSizeChanged" }
+        Signal { name: "innerRadiusChanged" }
+        Signal { name: "barSpacingChanged" }
+        Signal { name: "gridLineCountChanged" }
+        Signal { name: "animationProgressChanged" }
+    }
+    Component {
         file: "MosIcon.h"
         name: "MosIcon"
         accessSemantics: "reference"
@@ -299,6 +505,14 @@ Module {
             ]
         }
         Method { name: "allIconNames"; type: "QVariantMap" }
+    }
+    Component {
+        file: "MosHighperchart.h"
+        name: "MosLineChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosLineChart 1.0"]
+        exportMetaObjectRevisions: [256]
     }
     Component {
         file: "Mosrectangle.h"
@@ -337,6 +551,22 @@ Module {
         Signal { name: "widthChanged" }
         Signal { name: "colorChanged" }
         Signal { name: "styleChanged" }
+    }
+    Component {
+        file: "MosHighperchart.h"
+        name: "MosPieChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosPieChart 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
+        file: "MosHighperchart.h"
+        name: "MosRadarChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosRadarChart 1.0"]
+        exportMetaObjectRevisions: [256]
     }
     Component {
         file: "Mosrectangle.h"
@@ -619,6 +849,14 @@ Module {
         Signal { name: "locationChanged" }
     }
     Component {
+        file: "MosHighperchart.h"
+        name: "MosScatterChart"
+        accessSemantics: "reference"
+        prototype: "MosHighperchart"
+        exports: ["MosuiBasic/MosScatterChart 1.0"]
+        exportMetaObjectRevisions: [256]
+    }
+    Component {
         file: "MosSerialPortManager.h"
         name: "MosSerialPortManager"
         accessSemantics: "reference"
@@ -663,12 +901,38 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "openPortNames"
+            type: "QStringList"
+            read: "openPortNames"
+            notify: "openPortsChanged"
+            index: 4
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "openPortList"
+            type: "QVariantList"
+            read: "openPortList"
+            notify: "openPortsChanged"
+            index: 5
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "portInfoListChanged" }
         Signal { name: "isOpenChanged" }
         Signal { name: "currentPortNameChanged" }
         Signal { name: "errorStringChanged" }
+        Signal { name: "openPortsChanged" }
         Signal {
             name: "dataReceived"
+            Parameter { name: "data"; type: "QByteArray" }
+            Parameter { name: "text"; type: "QString" }
+            Parameter { name: "hex"; type: "QString" }
+        }
+        Signal {
+            name: "dataReceivedFromPort"
+            Parameter { name: "portName"; type: "QString" }
             Parameter { name: "data"; type: "QByteArray" }
             Parameter { name: "text"; type: "QString" }
             Parameter { name: "hex"; type: "QString" }
@@ -678,10 +942,30 @@ Module {
             Parameter { name: "bytes"; type: "qlonglong" }
         }
         Signal {
+            name: "bytesWrittenFromPort"
+            Parameter { name: "portName"; type: "QString" }
+            Parameter { name: "bytes"; type: "qlonglong" }
+        }
+        Signal {
             name: "errorOccurred"
             Parameter { name: "message"; type: "QString" }
         }
+        Signal {
+            name: "errorOccurredFromPort"
+            Parameter { name: "portName"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+        }
         Method { name: "refreshPorts"; type: "QVariantList" }
+        Method {
+            name: "selectPort"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
+        }
+        Method {
+            name: "isPortOpen"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
+        }
         Method {
             name: "openPort"
             type: "bool"
@@ -694,8 +978,19 @@ Module {
         }
         Method { name: "closePort" }
         Method {
+            name: "closePort"
+            Parameter { name: "portName"; type: "QString" }
+        }
+        Method { name: "closeAllPorts" }
+        Method {
             name: "writeText"
             type: "bool"
+            Parameter { name: "text"; type: "QString" }
+        }
+        Method {
+            name: "writeTextToPort"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
             Parameter { name: "text"; type: "QString" }
         }
         Method {
@@ -704,8 +999,20 @@ Module {
             Parameter { name: "hexText"; type: "QString" }
         }
         Method {
+            name: "writeHexToPort"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
+            Parameter { name: "hexText"; type: "QString" }
+        }
+        Method {
             name: "writeBytes"
             type: "bool"
+            Parameter { name: "data"; type: "QByteArray" }
+        }
+        Method {
+            name: "writeBytesToPort"
+            type: "bool"
+            Parameter { name: "portName"; type: "QString" }
             Parameter { name: "data"; type: "QByteArray" }
         }
         Method { name: "clearError" }
@@ -1050,6 +1357,24 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosTag"
+            type: "QVariantMap"
+            read: "MosTag"
+            notify: "MosTagChanged"
+            index: 28
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosCanvasChart"
+            type: "QVariantMap"
+            read: "MosCanvasChart"
+            notify: "MosCanvasChartChanged"
+            index: 29
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -1074,6 +1399,8 @@ Module {
         Signal { name: "MosGroupBoxChanged" }
         Signal { name: "MosTextAreaChanged" }
         Signal { name: "MosTableViewChanged" }
+        Signal { name: "MosTagChanged" }
+        Signal { name: "MosCanvasChartChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }

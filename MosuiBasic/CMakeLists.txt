@@ -28,7 +28,7 @@ file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
     "cpp/controls/*.cpp" "cpp/controls/*.h"
     "cpp/utils/*.cpp" "cpp/utils/*.h"
     "cpp/Icon/*.cpp" "cpp/Icon/*.h"
-    "cpp/tools/*.cpp" "cpp/tools/*.h"
+    "cpp/tools/*/*.cpp" "cpp/tools/*/*.h"
 )
 
 # 动态库
@@ -105,5 +105,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/controls
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/utils
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp/Icon
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosSerialPort
+    ${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosCharts
 )
