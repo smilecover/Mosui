@@ -53,6 +53,20 @@ QtObject{
                     iconSource: MosIcon.CopyOutlined,
                     source: './Controls/Universal/ExpCopyableText.qml',
                     addVersion: '0.0.2',
+                },
+                {
+                    key: 'ExpCanvasChart',
+                    label: qsTr('MosCanvasChart 图表'),
+                    iconSource: MosIcon.ChartOutlined,
+                    source: './Controls/Universal/ExpCanvasChart.qml',
+                    addVersion: '0.0.2',
+                },
+                {
+                    key: 'ExpMosHighperchart',
+                    label: qsTr('MosHighperchart 图表'),
+                    iconSource: MosIcon.ChartOutlined,
+                    source: './Controls/Universal/ExpMosHighperchart.qml',
+                    addVersion: '0.0.2',
                 }
             ]
         },

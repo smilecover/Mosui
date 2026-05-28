@@ -32,6 +32,9 @@ class MOSUIBASIC_EXPORT MosHighperchart : public QQuickItem
     Q_PROPERTY(qreal barSpacing READ barSpacing WRITE setBarSpacing NOTIFY barSpacingChanged FINAL)
     Q_PROPERTY(int gridLineCount READ gridLineCount WRITE setGridLineCount NOTIFY gridLineCountChanged FINAL)
     Q_PROPERTY(qreal animationProgress READ animationProgress WRITE setAnimationProgress NOTIFY animationProgressChanged FINAL)
+    Q_PROPERTY(bool highPerformanceMode READ highPerformanceMode WRITE setHighPerformanceMode NOTIFY highPerformanceModeChanged FINAL)
+    Q_PROPERTY(int highPerformancePointLimit READ highPerformancePointLimit WRITE setHighPerformancePointLimit NOTIFY highPerformancePointLimitChanged FINAL)
+    Q_PROPERTY(bool edgeAntialiasing READ edgeAntialiasing WRITE setEdgeAntialiasing NOTIFY edgeAntialiasingChanged FINAL)
 
     QML_NAMED_ELEMENT(MosHighperchart)
 
@@ -99,6 +102,15 @@ public:
     qreal animationProgress() const;
     void setAnimationProgress(qreal progress);
 
+    bool highPerformanceMode() const;
+    void setHighPerformanceMode(bool enabled);
+
+    int highPerformancePointLimit() const;
+    void setHighPerformancePointLimit(int limit);
+
+    bool edgeAntialiasing() const;
+    void setEdgeAntialiasing(bool enabled);
+
 Q_SIGNALS:
     void chartTypeChanged();
     void valuesChanged();
@@ -116,6 +128,9 @@ Q_SIGNALS:
     void barSpacingChanged();
     void gridLineCountChanged();
     void animationProgressChanged();
+    void highPerformanceModeChanged();
+    void highPerformancePointLimitChanged();
+    void edgeAntialiasingChanged();
 
 protected:
     QSGNode *updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data) override;
@@ -123,69 +138,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(MosHighperchart)
     QScopedPointer<MosHighperchartPrivate> d_ptr;
-};
-
-class MOSUIBASIC_EXPORT MosLineChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosLineChart)
-
-public:
-    explicit MosLineChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Line); }
-};
-
-class MOSUIBASIC_EXPORT MosBarChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosBarChart)
-
-public:
-    explicit MosBarChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Bar); }
-};
-
-class MOSUIBASIC_EXPORT MosPieChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosPieChart)
-
-public:
-    explicit MosPieChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Pie); }
-};
-
-class MOSUIBASIC_EXPORT MosDonutChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosDonutChart)
-
-public:
-    explicit MosDonutChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Donut); }
-};
-
-class MOSUIBASIC_EXPORT MosAreaChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosAreaChart)
-
-public:
-    explicit MosAreaChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Area); }
-};
-
-class MOSUIBASIC_EXPORT MosScatterChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosScatterChart)
-
-public:
-    explicit MosScatterChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Scatter); }
-};
-
-class MOSUIBASIC_EXPORT MosRadarChart : public MosHighperchart
-{
-    Q_OBJECT
-    QML_NAMED_ELEMENT(MosRadarChart)
-
-public:
-    explicit MosRadarChart(QQuickItem *parent = nullptr) : MosHighperchart(parent) { setChartType(Radar); }
 };
 
 #endif // MOSHIGHPERCHART_H

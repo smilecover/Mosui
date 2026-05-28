@@ -89,7 +89,7 @@ Module {
         Method { name: "libVersion"; type: "QString" }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosAreaChart.h"
         name: "MosAreaChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -189,7 +189,7 @@ Module {
         }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosBarChart.h"
         name: "MosBarChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -285,7 +285,7 @@ Module {
         }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosDonutChart.h"
         name: "MosDonutChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -457,6 +457,33 @@ Module {
             index: 15
             isFinal: true
         }
+        Property {
+            name: "highPerformanceMode"
+            type: "bool"
+            read: "highPerformanceMode"
+            write: "setHighPerformanceMode"
+            notify: "highPerformanceModeChanged"
+            index: 16
+            isFinal: true
+        }
+        Property {
+            name: "highPerformancePointLimit"
+            type: "int"
+            read: "highPerformancePointLimit"
+            write: "setHighPerformancePointLimit"
+            notify: "highPerformancePointLimitChanged"
+            index: 17
+            isFinal: true
+        }
+        Property {
+            name: "edgeAntialiasing"
+            type: "bool"
+            read: "edgeAntialiasing"
+            write: "setEdgeAntialiasing"
+            notify: "edgeAntialiasingChanged"
+            index: 18
+            isFinal: true
+        }
         Signal { name: "chartTypeChanged" }
         Signal { name: "valuesChanged" }
         Signal { name: "colorsChanged" }
@@ -473,6 +500,9 @@ Module {
         Signal { name: "barSpacingChanged" }
         Signal { name: "gridLineCountChanged" }
         Signal { name: "animationProgressChanged" }
+        Signal { name: "highPerformanceModeChanged" }
+        Signal { name: "highPerformancePointLimitChanged" }
+        Signal { name: "edgeAntialiasingChanged" }
     }
     Component {
         file: "MosIcon.h"
@@ -507,7 +537,7 @@ Module {
         Method { name: "allIconNames"; type: "QVariantMap" }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosLineChart.h"
         name: "MosLineChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -553,7 +583,7 @@ Module {
         Signal { name: "styleChanged" }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosPieChart.h"
         name: "MosPieChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -561,7 +591,7 @@ Module {
         exportMetaObjectRevisions: [256]
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosRadarChart.h"
         name: "MosRadarChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"
@@ -849,7 +879,7 @@ Module {
         Signal { name: "locationChanged" }
     }
     Component {
-        file: "MosHighperchart.h"
+        file: "MosScatterChart.h"
         name: "MosScatterChart"
         accessSemantics: "reference"
         prototype: "MosHighperchart"

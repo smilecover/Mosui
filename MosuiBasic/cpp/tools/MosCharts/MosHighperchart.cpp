@@ -18,10 +18,21 @@ struct MosChartRange
     qreal maxY { 1.0 };
 };
 
+struct MosColoredVertex
+{
+    QPointF point;
+    QColor color;
+};
+
+static constexpr int largeValueListCompareLimit = 4096;
+static constexpr int autoDecimatePointThreshold = 30000;
+static constexpr int maxVerticesPerNode = 60000;
+
 static qreal bounded(qreal value, qreal minValue, qreal maxValue)
 {
     return qMax(minValue, qMin(value, maxValue));
 }
+
 
 static qreal eased(qreal progress)
 {
@@ -97,15 +108,24 @@ static QList<QVector<QPointF>> readSeriesList(const QVariantList &values, MosHig
 
     bool hasNestedSeries = false;
     if (chartType != MosHighperchart::Scatter) {
-        for (const QVariant &value : values) {
-            if (!value.canConvert<QVariantList>()) {
-                continue;
-            }
-            const QVariantList list = value.toList();
+        const bool firstIsList = values.constFirst().canConvert<QVariantList>();
+        if (firstIsList) {
+            const QVariantList list = values.constFirst().toList();
             const bool looksLikePoint = list.size() == 2 && isNumberVariant(list.at(0)) && isNumberVariant(list.at(1));
-            if (!looksLikePoint || chartType == MosHighperchart::Bar || chartType == MosHighperchart::Radar) {
-                hasNestedSeries = true;
-                break;
+            hasNestedSeries = !looksLikePoint || chartType == MosHighperchart::Bar || chartType == MosHighperchart::Radar;
+        }
+
+        if (!hasNestedSeries && chartType != MosHighperchart::Line && chartType != MosHighperchart::Area) {
+            for (const QVariant &value : values) {
+                if (!value.canConvert<QVariantList>()) {
+                    continue;
+                }
+                const QVariantList list = value.toList();
+                const bool looksLikePoint = list.size() == 2 && isNumberVariant(list.at(0)) && isNumberVariant(list.at(1));
+                if (!looksLikePoint || chartType == MosHighperchart::Bar || chartType == MosHighperchart::Radar) {
+                    hasNestedSeries = true;
+                    break;
+                }
             }
         }
     }
@@ -128,6 +148,124 @@ static QList<QVector<QPointF>> readSeriesList(const QVariantList &values, MosHig
     }
 
     return seriesList;
+}
+
+static QVector<QPointF> decimatePeakSeries(const QVector<QPointF> &series, int pointLimit)
+{
+    if (pointLimit <= 0 || series.size() <= pointLimit) {
+        return series;
+    }
+
+    const int bucketCount = qMax(1, (pointLimit - 2) / 2);
+    const int sourceMiddleCount = qMax(0, series.size() - 2);
+    QVector<QPointF> result;
+    result.reserve(qMin(series.size(), bucketCount * 2 + 2));
+    result.push_back(series.constFirst());
+
+    for (int bucket = 0; bucket < bucketCount; ++bucket) {
+        const int begin = 1 + bucket * sourceMiddleCount / bucketCount;
+        const int end = 1 + (bucket + 1) * sourceMiddleCount / bucketCount;
+        if (begin >= end) {
+            continue;
+        }
+
+        int minIndex = begin;
+        int maxIndex = begin;
+        qreal minY = series.at(begin).y();
+        qreal maxY = minY;
+        for (int i = begin + 1; i < end; ++i) {
+            const qreal y = series.at(i).y();
+            if (y < minY) {
+                minY = y;
+                minIndex = i;
+            }
+            if (y > maxY) {
+                maxY = y;
+                maxIndex = i;
+            }
+        }
+
+        if (minIndex == maxIndex) {
+            result.push_back(series.at(minIndex));
+        } else if (minIndex < maxIndex) {
+            result.push_back(series.at(minIndex));
+            result.push_back(series.at(maxIndex));
+        } else {
+            result.push_back(series.at(maxIndex));
+            result.push_back(series.at(minIndex));
+        }
+    }
+
+    result.push_back(series.constLast());
+    return result;
+}
+
+static QVector<QPointF> decimateStrideSeries(const QVector<QPointF> &series, int pointLimit)
+{
+    if (pointLimit <= 0 || series.size() <= pointLimit) {
+        return series;
+    }
+
+    const int step = qMax(1, qCeil(qreal(series.size()) / pointLimit));
+    QVector<QPointF> result;
+    result.reserve(pointLimit + 1);
+    for (int i = 0; i < series.size(); i += step) {
+        result.push_back(series.at(i));
+    }
+    if (result.isEmpty() || result.constLast() != series.constLast()) {
+        result.push_back(series.constLast());
+    }
+    return result;
+}
+
+static QList<QVector<QPointF>> decimateSeriesList(const QList<QVector<QPointF>> &seriesList,
+                                                  const MosHighperchartPrivate *d,
+                                                  int pointLimit,
+                                                  bool preservePeaks)
+{
+    if (pointLimit <= 0) {
+        return seriesList;
+    }
+
+    QList<QVector<QPointF>> result;
+    result.reserve(seriesList.size());
+    const int perSeriesLimit = qMax(2, pointLimit / qMax(1, seriesList.size()));
+    for (const QVector<QPointF> &series : seriesList) {
+        result.push_back(preservePeaks ? decimatePeakSeries(series, perSeriesLimit)
+                                       : decimateStrideSeries(series, perSeriesLimit));
+    }
+    return result;
+}
+
+static int totalPointCount(const QList<QVector<QPointF>> &seriesList)
+{
+    int count = 0;
+    for (const QVector<QPointF> &series : seriesList) {
+        count += series.size();
+    }
+    return count;
+}
+
+static int effectivePointLimit(const QList<QVector<QPointF>> &seriesList,
+                               const MosHighperchartPrivate *d,
+                               const QRectF &rect,
+                               bool preservePeaks)
+{
+    const int totalCount = totalPointCount(seriesList);
+    if (totalCount <= 0) {
+        return 0;
+    }
+
+    const int pixelLimit = qMax(512, qCeil(rect.width()) * (preservePeaks ? 3 : 2));
+    if (d->highPerformanceMode) {
+        return qMax(2, qMin(d->highPerformancePointLimit, pixelLimit));
+    }
+
+    if (totalCount > autoDecimatePointThreshold) {
+        return qMax(2, pixelLimit);
+    }
+
+    return 0;
 }
 
 static QVector<qreal> readPieValues(const QVariantList &values)
@@ -255,6 +393,57 @@ static void appendSegment(QVector<QPointF> *vertices, QPointF a, QPointF b, qrea
     vertices->push_back(b - normal);
 }
 
+static void appendAntialiasedSegment(QVector<MosColoredVertex> *vertices,
+                                     QPointF a,
+                                     QPointF b,
+                                     qreal width,
+                                     const QColor &color)
+{
+    const QPointF delta = b - a;
+    const qreal length = qSqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    if (length <= 0.001 || color.alpha() <= 0) {
+        return;
+    }
+
+    QColor transparent = color;
+    transparent.setAlpha(0);
+
+    const qreal halfWidth = width * 0.5;
+    const qreal feather = qBound<qreal>(1.0, width * 0.72, 1.8);
+    const qreal coreHalfWidth = qMax<qreal>(0.18, halfWidth - feather * 0.45);
+    const QPointF unitNormal(-delta.y() / length, delta.x() / length);
+    const QPointF inner = unitNormal * coreHalfWidth;
+    const QPointF outer = unitNormal * (halfWidth + feather);
+
+    const QPointF aOuterTop = a + outer;
+    const QPointF aInnerTop = a + inner;
+    const QPointF aInnerBottom = a - inner;
+    const QPointF aOuterBottom = a - outer;
+    const QPointF bOuterTop = b + outer;
+    const QPointF bInnerTop = b + inner;
+    const QPointF bInnerBottom = b - inner;
+    const QPointF bOuterBottom = b - outer;
+
+    auto append = [vertices](const QPointF &point, const QColor &vertexColor) {
+        vertices->push_back({ point, vertexColor });
+    };
+    auto appendQuad = [&append](const QPointF &a0, const QColor &c0,
+                                const QPointF &a1, const QColor &c1,
+                                const QPointF &b0, const QColor &c2,
+                                const QPointF &b1, const QColor &c3) {
+        append(a0, c0);
+        append(a1, c1);
+        append(b0, c2);
+        append(b0, c2);
+        append(a1, c1);
+        append(b1, c3);
+    };
+
+    appendQuad(aOuterTop, transparent, aInnerTop, color, bOuterTop, transparent, bInnerTop, color);
+    appendQuad(aInnerTop, color, aInnerBottom, color, bInnerTop, color, bInnerBottom, color);
+    appendQuad(aInnerBottom, color, aOuterBottom, transparent, bInnerBottom, color, bOuterBottom, transparent);
+}
+
 static void appendCircle(QVector<QPointF> *vertices, QPointF center, qreal radius, int segmentCount = 28)
 {
     if (radius <= 0.0) {
@@ -270,19 +459,65 @@ static void appendCircle(QVector<QPointF> *vertices, QPointF center, qreal radiu
     }
 }
 
-static QSGGeometryNode *createFlatNode(const QVector<QPointF> &vertices, const QColor &color)
+static void appendAntialiasedCircle(QVector<MosColoredVertex> *vertices,
+                                    QPointF center,
+                                    qreal radius,
+                                    const QColor &color,
+                                    int segmentCount = 28)
 {
-    if (vertices.isEmpty() || color.alpha() <= 0) {
+    if (radius <= 0.0 || color.alpha() <= 0) {
+        return;
+    }
+
+    QColor transparent = color;
+    transparent.setAlpha(0);
+
+    const qreal feather = qBound<qreal>(0.65, radius * 0.25, 1.15);
+    const qreal outerRadius = radius + feather;
+    const qreal step = M_PI * 2.0 / segmentCount;
+
+    auto append = [vertices](const QPointF &point, const QColor &vertexColor) {
+        vertices->push_back({ point, vertexColor });
+    };
+
+    for (int i = 0; i < segmentCount; ++i) {
+        const qreal a0 = i * step;
+        const qreal a1 = (i + 1) * step;
+        const QPointF inner0 = center + QPointF(qCos(a0) * radius, qSin(a0) * radius);
+        const QPointF inner1 = center + QPointF(qCos(a1) * radius, qSin(a1) * radius);
+        const QPointF outer0 = center + QPointF(qCos(a0) * outerRadius, qSin(a0) * outerRadius);
+        const QPointF outer1 = center + QPointF(qCos(a1) * outerRadius, qSin(a1) * outerRadius);
+
+        append(center, color);
+        append(inner0, color);
+        append(inner1, color);
+
+        append(inner0, color);
+        append(outer0, transparent);
+        append(inner1, color);
+        append(inner1, color);
+        append(outer0, transparent);
+        append(outer1, transparent);
+    }
+}
+
+static QSGGeometryNode *createFlatGeometryNode(const QVector<QPointF> &vertices,
+                                               int offset,
+                                               int count,
+                                               const QColor &color)
+{
+    if (count <= 0 || color.alpha() <= 0) {
         return nullptr;
     }
 
     QSGGeometryNode *node = new QSGGeometryNode;
-    QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), vertices.size());
+    QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_Point2D(), count);
     geometry->setDrawingMode(QSGGeometry::DrawTriangles);
 
     QSGGeometry::Point2D *data = geometry->vertexDataAsPoint2D();
-    for (int i = 0; i < vertices.size(); ++i) {
-        data[i].set(vertices.at(i).x(), vertices.at(i).y());
+    for (int i = 0; i < count; ++i) {
+        const QPointF point = vertices.at(offset + i);
+        data[i].set(point.x(), point.y());
     }
 
     QSGFlatColorMaterial *material = new QSGFlatColorMaterial;
@@ -296,13 +531,90 @@ static QSGGeometryNode *createFlatNode(const QVector<QPointF> &vertices, const Q
     return node;
 }
 
-static QSGGeometryNode *createGradientAreaNode(const QVector<QPointF> &top, qreal baseline, const QColor &color)
+static QSGNode *createFlatNode(const QVector<QPointF> &vertices, const QColor &color)
 {
-    if (top.size() < 2 || color.alpha() <= 0) {
+    if (vertices.isEmpty() || color.alpha() <= 0) {
         return nullptr;
     }
 
-    const int vertexCount = (top.size() - 1) * 6;
+    if (vertices.size() <= maxVerticesPerNode) {
+        return createFlatGeometryNode(vertices, 0, vertices.size(), color);
+    }
+
+    QSGNode *group = new QSGNode;
+    const int chunkSize = maxVerticesPerNode - (maxVerticesPerNode % 3);
+    for (int offset = 0; offset < vertices.size(); offset += chunkSize) {
+        const int count = qMin(chunkSize, vertices.size() - offset);
+        const int triangleAlignedCount = count - (count % 3);
+        if (QSGGeometryNode *node = createFlatGeometryNode(vertices, offset, triangleAlignedCount, color)) {
+            group->appendChildNode(node);
+        }
+    }
+    return group;
+}
+
+static QSGGeometryNode *createColoredGeometryNode(const QVector<MosColoredVertex> &vertices,
+                                                  int offset,
+                                                  int count)
+{
+    if (count <= 0) {
+        return nullptr;
+    }
+
+    QSGGeometryNode *node = new QSGGeometryNode;
+    QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), count);
+    geometry->setDrawingMode(QSGGeometry::DrawTriangles);
+
+    QSGGeometry::ColoredPoint2D *data = geometry->vertexDataAsColoredPoint2D();
+    for (int i = 0; i < count; ++i) {
+        const MosColoredVertex &vertex = vertices.at(offset + i);
+        data[i].set(vertex.point.x(), vertex.point.y(),
+                    vertex.color.red(), vertex.color.green(), vertex.color.blue(), vertex.color.alpha());
+    }
+
+    QSGVertexColorMaterial *material = new QSGVertexColorMaterial;
+    material->setFlag(QSGMaterial::Blending, true);
+
+    node->setGeometry(geometry);
+    node->setMaterial(material);
+    node->setFlag(QSGNode::OwnsGeometry);
+    node->setFlag(QSGNode::OwnsMaterial);
+    return node;
+}
+
+static QSGNode *createColoredNode(const QVector<MosColoredVertex> &vertices)
+{
+    if (vertices.isEmpty()) {
+        return nullptr;
+    }
+
+    if (vertices.size() <= maxVerticesPerNode) {
+        return createColoredGeometryNode(vertices, 0, vertices.size());
+    }
+
+    QSGNode *group = new QSGNode;
+    const int chunkSize = maxVerticesPerNode - (maxVerticesPerNode % 3);
+    for (int offset = 0; offset < vertices.size(); offset += chunkSize) {
+        const int count = qMin(chunkSize, vertices.size() - offset);
+        const int triangleAlignedCount = count - (count % 3);
+        if (QSGGeometryNode *node = createColoredGeometryNode(vertices, offset, triangleAlignedCount)) {
+            group->appendChildNode(node);
+        }
+    }
+    return group;
+}
+
+static QSGGeometryNode *createGradientAreaGeometryNode(const QVector<QPointF> &top,
+                                                       int firstSegment,
+                                                       int segmentCount,
+                                                       qreal baseline,
+                                                       const QColor &color)
+{
+    if (segmentCount <= 0 || color.alpha() <= 0) {
+        return nullptr;
+    }
+
+    const int vertexCount = segmentCount * 6;
     QSGGeometryNode *node = new QSGGeometryNode;
     QSGGeometry *geometry = new QSGGeometry(QSGGeometry::defaultAttributes_ColoredPoint2D(), vertexCount);
     geometry->setDrawingMode(QSGGeometry::DrawTriangles);
@@ -319,7 +631,8 @@ static QSGGeometryNode *createGradientAreaNode(const QVector<QPointF> &top, qrea
                            vertexColor.red(), vertexColor.green(), vertexColor.blue(), vertexColor.alpha());
     };
 
-    for (int i = 0; i < top.size() - 1; ++i) {
+    const int endSegment = firstSegment + segmentCount;
+    for (int i = firstSegment; i < endSegment; ++i) {
         const QPointF a = top.at(i);
         const QPointF b = top.at(i + 1);
         const QPointF ba(a.x(), baseline);
@@ -343,6 +656,28 @@ static QSGGeometryNode *createGradientAreaNode(const QVector<QPointF> &top, qrea
     return node;
 }
 
+static QSGNode *createGradientAreaNode(const QVector<QPointF> &top, qreal baseline, const QColor &color)
+{
+    if (top.size() < 2 || color.alpha() <= 0) {
+        return nullptr;
+    }
+
+    const int segmentCount = top.size() - 1;
+    const int maxSegmentsPerNode = qMax(1, maxVerticesPerNode / 6);
+    if (segmentCount <= maxSegmentsPerNode) {
+        return createGradientAreaGeometryNode(top, 0, segmentCount, baseline, color);
+    }
+
+    QSGNode *group = new QSGNode;
+    for (int firstSegment = 0; firstSegment < segmentCount; firstSegment += maxSegmentsPerNode) {
+        const int count = qMin(maxSegmentsPerNode, segmentCount - firstSegment);
+        if (QSGGeometryNode *node = createGradientAreaGeometryNode(top, firstSegment, count, baseline, color)) {
+            group->appendChildNode(node);
+        }
+    }
+    return group;
+}
+
 static void appendGrid(QSGNode *root, const QRectF &rect, const MosHighperchartPrivate *d)
 {
     if (!d->showGrid && !d->showAxis) {
@@ -350,38 +685,60 @@ static void appendGrid(QSGNode *root, const QRectF &rect, const MosHighperchartP
     }
 
     QVector<QPointF> grid;
+    QVector<MosColoredVertex> antialiasedGrid;
     const int count = qMax(1, d->gridLineCount);
     if (d->showGrid) {
         for (int i = 0; i <= count; ++i) {
             const qreal y = rect.top() + rect.height() * i / count;
-            appendSegment(&grid, QPointF(rect.left(), y), QPointF(rect.right(), y), 1.0);
+            if (d->edgeAntialiasing) {
+                appendAntialiasedSegment(&antialiasedGrid, QPointF(rect.left(), y), QPointF(rect.right(), y), 1.0, d->gridColor);
+            } else {
+                appendSegment(&grid, QPointF(rect.left(), y), QPointF(rect.right(), y), 1.0);
+            }
         }
     }
-    if (!grid.isEmpty()) {
-        if (QSGGeometryNode *node = createFlatNode(grid, d->gridColor)) {
+    if (d->edgeAntialiasing && !antialiasedGrid.isEmpty()) {
+        if (QSGNode *node = createColoredNode(antialiasedGrid)) {
+            root->appendChildNode(node);
+        }
+    } else if (!grid.isEmpty()) {
+        if (QSGNode *node = createFlatNode(grid, d->gridColor)) {
             root->appendChildNode(node);
         }
     }
 
     if (d->showAxis) {
         QVector<QPointF> axis;
-        appendSegment(&axis, rect.bottomLeft(), rect.bottomRight(), 1.25);
-        appendSegment(&axis, rect.bottomLeft(), rect.topLeft(), 1.25);
-        if (QSGGeometryNode *node = createFlatNode(axis, d->axisColor)) {
-            root->appendChildNode(node);
+        QVector<MosColoredVertex> antialiasedAxis;
+        if (d->edgeAntialiasing) {
+            appendAntialiasedSegment(&antialiasedAxis, rect.bottomLeft(), rect.bottomRight(), 1.25, d->axisColor);
+            appendAntialiasedSegment(&antialiasedAxis, rect.bottomLeft(), rect.topLeft(), 1.25, d->axisColor);
+            if (QSGNode *node = createColoredNode(antialiasedAxis)) {
+                root->appendChildNode(node);
+            }
+        } else {
+            appendSegment(&axis, rect.bottomLeft(), rect.bottomRight(), 1.25);
+            appendSegment(&axis, rect.bottomLeft(), rect.topLeft(), 1.25);
+            if (QSGNode *node = createFlatNode(axis, d->axisColor)) {
+                root->appendChildNode(node);
+            }
         }
     }
 }
 
 static void drawLineLike(QSGNode *root, const QRectF &rect, const MosHighperchartPrivate *d, bool area)
 {
-    const QList<QVector<QPointF>> seriesList = readSeriesList(d->values, d->chartType);
-    if (seriesList.isEmpty()) {
+    const QList<QVector<QPointF>> rawSeriesList = readSeriesList(d->values, d->chartType);
+    if (rawSeriesList.isEmpty()) {
         return;
     }
 
     appendGrid(root, rect, d);
-    const MosChartRange range = rangeForSeries(seriesList);
+    const MosChartRange range = rangeForSeries(rawSeriesList);
+    const QList<QVector<QPointF>> seriesList = decimateSeriesList(rawSeriesList,
+                                                                  d,
+                                                                  effectivePointLimit(rawSeriesList, d, rect, true),
+                                                                  true);
     const qreal baseline = zeroY(rect, range);
     const qreal progress = eased(d->animationProgress);
 
@@ -401,26 +758,51 @@ static void drawLineLike(QSGNode *root, const QRectF &rect, const MosHighperchar
 
         const QColor color = colorAt(d, seriesIndex);
         if (area) {
-            if (QSGGeometryNode *areaNode = createGradientAreaNode(mapped, baseline, color)) {
+            if (QSGNode *areaNode = createGradientAreaNode(mapped, baseline, color)) {
                 root->appendChildNode(areaNode);
             }
         }
 
-        QVector<QPointF> line;
-        for (int i = 0; i < mapped.size() - 1; ++i) {
-            appendSegment(&line, mapped.at(i), mapped.at(i + 1), qMax<qreal>(1.0, d->lineWidth));
-        }
-        if (QSGGeometryNode *node = createFlatNode(line, color)) {
-            root->appendChildNode(node);
+        if (d->edgeAntialiasing) {
+            QVector<MosColoredVertex> line;
+            const qreal strokeWidth = qMax<qreal>(1.0, d->lineWidth);
+            for (int i = 0; i < mapped.size() - 1; ++i) {
+                appendAntialiasedSegment(&line, mapped.at(i), mapped.at(i + 1), strokeWidth, color);
+            }
+            for (const QPointF &point : mapped) {
+                appendAntialiasedCircle(&line, point, strokeWidth * 0.52, color, 20);
+            }
+            if (QSGNode *node = createColoredNode(line)) {
+                root->appendChildNode(node);
+            }
+        } else {
+            QVector<QPointF> line;
+            for (int i = 0; i < mapped.size() - 1; ++i) {
+                appendSegment(&line, mapped.at(i), mapped.at(i + 1), qMax<qreal>(1.0, d->lineWidth));
+            }
+            if (QSGNode *node = createFlatNode(line, color)) {
+                root->appendChildNode(node);
+            }
         }
 
         if (d->showPoints) {
-            QVector<QPointF> points;
-            for (const QPointF &point : mapped) {
-                appendCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.5), 24);
-            }
-            if (QSGGeometryNode *node = createFlatNode(points, color.lighter(112))) {
-                root->appendChildNode(node);
+            const QColor pointColor = color.lighter(112);
+            if (d->edgeAntialiasing) {
+                QVector<MosColoredVertex> points;
+                for (const QPointF &point : mapped) {
+                    appendAntialiasedCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.5), pointColor, 24);
+                }
+                if (QSGNode *node = createColoredNode(points)) {
+                    root->appendChildNode(node);
+                }
+            } else {
+                QVector<QPointF> points;
+                for (const QPointF &point : mapped) {
+                    appendCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.5), 24);
+                }
+                if (QSGNode *node = createFlatNode(points, pointColor)) {
+                    root->appendChildNode(node);
+                }
             }
         }
     }
@@ -428,24 +810,40 @@ static void drawLineLike(QSGNode *root, const QRectF &rect, const MosHighperchar
 
 static void drawScatter(QSGNode *root, const QRectF &rect, const MosHighperchartPrivate *d)
 {
-    const QList<QVector<QPointF>> seriesList = readSeriesList(d->values, d->chartType);
-    if (seriesList.isEmpty()) {
+    const QList<QVector<QPointF>> rawSeriesList = readSeriesList(d->values, d->chartType);
+    if (rawSeriesList.isEmpty()) {
         return;
     }
 
     appendGrid(root, rect, d);
-    const MosChartRange range = rangeForSeries(seriesList);
+    const MosChartRange range = rangeForSeries(rawSeriesList);
+    const QList<QVector<QPointF>> seriesList = decimateSeriesList(rawSeriesList,
+                                                                  d,
+                                                                  effectivePointLimit(rawSeriesList, d, rect, false),
+                                                                  false);
     const qreal progress = eased(d->animationProgress);
 
     for (int seriesIndex = 0; seriesIndex < seriesList.size(); ++seriesIndex) {
         QVector<QPointF> circles;
+        QVector<MosColoredVertex> antialiasedCircles;
         const QVector<QPointF> &series = seriesList.at(seriesIndex);
+        const QColor color = colorAt(d, seriesIndex, 220);
         for (const QPointF &point : series) {
             QPointF visual = point;
             visual.setY(point.y() * progress);
-            appendCircle(&circles, mapPoint(visual, rect, range), qMax<qreal>(1.0, d->pointSize * 0.64), 26);
+            const QPointF mapped = mapPoint(visual, rect, range);
+            const qreal radius = qMax<qreal>(1.0, d->pointSize * 0.64);
+            if (d->edgeAntialiasing) {
+                appendAntialiasedCircle(&antialiasedCircles, mapped, radius, color, 26);
+            } else {
+                appendCircle(&circles, mapped, radius, 26);
+            }
         }
-        if (QSGGeometryNode *node = createFlatNode(circles, colorAt(d, seriesIndex, 220))) {
+        if (d->edgeAntialiasing) {
+            if (QSGNode *node = createColoredNode(antialiasedCircles)) {
+                root->appendChildNode(node);
+            }
+        } else if (QSGNode *node = createFlatNode(circles, color)) {
             root->appendChildNode(node);
         }
     }
@@ -453,10 +851,14 @@ static void drawScatter(QSGNode *root, const QRectF &rect, const MosHighperchart
 
 static void drawBar(QSGNode *root, const QRectF &rect, const MosHighperchartPrivate *d)
 {
-    const QList<QVector<QPointF>> seriesList = readSeriesList(d->values, d->chartType);
-    if (seriesList.isEmpty()) {
+    const QList<QVector<QPointF>> rawSeriesList = readSeriesList(d->values, d->chartType);
+    if (rawSeriesList.isEmpty()) {
         return;
     }
+    const QList<QVector<QPointF>> seriesList = decimateSeriesList(rawSeriesList,
+                                                                  d,
+                                                                  effectivePointLimit(rawSeriesList, d, rect, true),
+                                                                  true);
 
     appendGrid(root, rect, d);
 
@@ -514,10 +916,10 @@ static void drawBar(QSGNode *root, const QRectF &rect, const MosHighperchartPriv
             highlight.setHeight(qMin<qreal>(3.0, bar.height()));
             appendRect(&shine, highlight);
         }
-        if (QSGGeometryNode *node = createFlatNode(bars, colorAt(d, seriesIndex, 218))) {
+        if (QSGNode *node = createFlatNode(bars, colorAt(d, seriesIndex, 218))) {
             root->appendChildNode(node);
         }
-        if (QSGGeometryNode *node = createFlatNode(shine, QColor(255, 255, 255, 78))) {
+        if (QSGNode *node = createFlatNode(shine, QColor(255, 255, 255, 78))) {
             root->appendChildNode(node);
         }
     }
@@ -574,7 +976,7 @@ static void drawPieLike(QSGNode *root, const QRectF &rect, const MosHighperchart
             }
         }
 
-        if (QSGGeometryNode *node = createFlatNode(slice, colorAt(d, i, 232))) {
+        if (QSGNode *node = createFlatNode(slice, colorAt(d, i, 232))) {
             root->appendChildNode(node);
         }
         start += M_PI * 2.0 * values.at(i) / total;
@@ -583,7 +985,7 @@ static void drawPieLike(QSGNode *root, const QRectF &rect, const MosHighperchart
     if (donut) {
         QVector<QPointF> centerCircle;
         appendCircle(&centerCircle, center, inner * 0.96, 72);
-        if (QSGGeometryNode *node = createFlatNode(centerCircle, d->backgroundColor.alpha() > 0
+        if (QSGNode *node = createFlatNode(centerCircle, d->backgroundColor.alpha() > 0
                                                                   ? d->backgroundColor
                                                                   : QColor(255, 255, 255, 245))) {
             root->appendChildNode(node);
@@ -617,25 +1019,44 @@ static void drawRadar(QSGNode *root, const QRectF &rect, const MosHighperchartPr
 
     if (d->showGrid) {
         QVector<QPointF> grid;
+        QVector<MosColoredVertex> antialiasedGrid;
         for (int ring = 1; ring <= rings; ++ring) {
             const qreal ringRadius = radius * ring / rings;
             for (int i = 0; i < count; ++i) {
                 const QPointF a = polarPoint(center, ringRadius, -M_PI_2 + i * stepAngle);
                 const QPointF b = polarPoint(center, ringRadius, -M_PI_2 + ((i + 1) % count) * stepAngle);
-                appendSegment(&grid, a, b, 1.0);
+                if (d->edgeAntialiasing) {
+                    appendAntialiasedSegment(&antialiasedGrid, a, b, 1.0, d->gridColor);
+                } else {
+                    appendSegment(&grid, a, b, 1.0);
+                }
             }
         }
-        if (QSGGeometryNode *node = createFlatNode(grid, d->gridColor)) {
+        if (d->edgeAntialiasing) {
+            if (QSGNode *node = createColoredNode(antialiasedGrid)) {
+                root->appendChildNode(node);
+            }
+        } else if (QSGNode *node = createFlatNode(grid, d->gridColor)) {
             root->appendChildNode(node);
         }
     }
 
     if (d->showAxis) {
         QVector<QPointF> axis;
+        QVector<MosColoredVertex> antialiasedAxis;
         for (int i = 0; i < count; ++i) {
-            appendSegment(&axis, center, polarPoint(center, radius, -M_PI_2 + i * stepAngle), 1.0);
+            const QPointF endPoint = polarPoint(center, radius, -M_PI_2 + i * stepAngle);
+            if (d->edgeAntialiasing) {
+                appendAntialiasedSegment(&antialiasedAxis, center, endPoint, 1.0, d->axisColor);
+            } else {
+                appendSegment(&axis, center, endPoint, 1.0);
+            }
         }
-        if (QSGGeometryNode *node = createFlatNode(axis, d->axisColor)) {
+        if (d->edgeAntialiasing) {
+            if (QSGNode *node = createColoredNode(antialiasedAxis)) {
+                root->appendChildNode(node);
+            }
+        } else if (QSGNode *node = createFlatNode(axis, d->axisColor)) {
             root->appendChildNode(node);
         }
     }
@@ -659,25 +1080,47 @@ static void drawRadar(QSGNode *root, const QRectF &rect, const MosHighperchartPr
             fill.push_back(polygon.at(i));
             fill.push_back(polygon.at((i + 1) % polygon.size()));
         }
-        if (QSGGeometryNode *node = createFlatNode(fill, colorAt(d, seriesIndex, 48))) {
+        if (QSGNode *node = createFlatNode(fill, colorAt(d, seriesIndex, 48))) {
             root->appendChildNode(node);
         }
 
-        QVector<QPointF> outline;
-        for (int i = 0; i < polygon.size(); ++i) {
-            appendSegment(&outline, polygon.at(i), polygon.at((i + 1) % polygon.size()), qMax<qreal>(1.0, d->lineWidth));
-        }
-        if (QSGGeometryNode *node = createFlatNode(outline, colorAt(d, seriesIndex, 228))) {
-            root->appendChildNode(node);
+        const QColor outlineColor = colorAt(d, seriesIndex, 228);
+        if (d->edgeAntialiasing) {
+            QVector<MosColoredVertex> outline;
+            for (int i = 0; i < polygon.size(); ++i) {
+                appendAntialiasedSegment(&outline, polygon.at(i), polygon.at((i + 1) % polygon.size()), qMax<qreal>(1.0, d->lineWidth), outlineColor);
+            }
+            if (QSGNode *node = createColoredNode(outline)) {
+                root->appendChildNode(node);
+            }
+        } else {
+            QVector<QPointF> outline;
+            for (int i = 0; i < polygon.size(); ++i) {
+                appendSegment(&outline, polygon.at(i), polygon.at((i + 1) % polygon.size()), qMax<qreal>(1.0, d->lineWidth));
+            }
+            if (QSGNode *node = createFlatNode(outline, outlineColor)) {
+                root->appendChildNode(node);
+            }
         }
 
         if (d->showPoints) {
-            QVector<QPointF> points;
-            for (const QPointF &point : polygon) {
-                appendCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.42), 18);
-            }
-            if (QSGGeometryNode *node = createFlatNode(points, colorAt(d, seriesIndex))) {
-                root->appendChildNode(node);
+            const QColor pointColor = colorAt(d, seriesIndex);
+            if (d->edgeAntialiasing) {
+                QVector<MosColoredVertex> points;
+                for (const QPointF &point : polygon) {
+                    appendAntialiasedCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.42), pointColor, 18);
+                }
+                if (QSGNode *node = createColoredNode(points)) {
+                    root->appendChildNode(node);
+                }
+            } else {
+                QVector<QPointF> points;
+                for (const QPointF &point : polygon) {
+                    appendCircle(&points, point, qMax<qreal>(1.0, d->pointSize * 0.42), 18);
+                }
+                if (QSGNode *node = createFlatNode(points, pointColor)) {
+                    root->appendChildNode(node);
+                }
             }
         }
     }
@@ -697,8 +1140,9 @@ MosHighperchart::MosHighperchart(QQuickItem *parent)
     : QQuickItem(parent)
     , d_ptr(new MosHighperchartPrivate(this))
 {
+    Q_D(MosHighperchart);
     setFlag(ItemHasContents, true);
-    setAntialiasing(true);
+    setAntialiasing(d->edgeAntialiasing);
 }
 
 MosHighperchart::~MosHighperchart()
@@ -731,7 +1175,7 @@ QVariantList MosHighperchart::values() const
 void MosHighperchart::setValues(const QVariantList &values)
 {
     Q_D(MosHighperchart);
-    if (d->values == values) {
+    if (values.size() <= largeValueListCompareLimit && d->values == values) {
         return;
     }
     d->values = values;
@@ -984,6 +1428,59 @@ void MosHighperchart::setAnimationProgress(qreal progress)
     update();
 }
 
+bool MosHighperchart::highPerformanceMode() const
+{
+    Q_D(const MosHighperchart);
+    return d->highPerformanceMode;
+}
+
+void MosHighperchart::setHighPerformanceMode(bool enabled)
+{
+    Q_D(MosHighperchart);
+    if (d->highPerformanceMode == enabled) {
+        return;
+    }
+    d->highPerformanceMode = enabled;
+    emit highPerformanceModeChanged();
+    update();
+}
+
+int MosHighperchart::highPerformancePointLimit() const
+{
+    Q_D(const MosHighperchart);
+    return d->highPerformancePointLimit;
+}
+
+void MosHighperchart::setHighPerformancePointLimit(int limit)
+{
+    Q_D(MosHighperchart);
+    limit = qMax(2, limit);
+    if (d->highPerformancePointLimit == limit) {
+        return;
+    }
+    d->highPerformancePointLimit = limit;
+    emit highPerformancePointLimitChanged();
+    update();
+}
+
+bool MosHighperchart::edgeAntialiasing() const
+{
+    Q_D(const MosHighperchart);
+    return d->edgeAntialiasing;
+}
+
+void MosHighperchart::setEdgeAntialiasing(bool enabled)
+{
+    Q_D(MosHighperchart);
+    if (d->edgeAntialiasing == enabled) {
+        return;
+    }
+    d->edgeAntialiasing = enabled;
+    setAntialiasing(enabled);
+    emit edgeAntialiasingChanged();
+    update();
+}
+
 QSGNode *MosHighperchart::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData *data)
 {
     Q_UNUSED(data)
@@ -1001,7 +1498,7 @@ QSGNode *MosHighperchart::updatePaintNode(QSGNode *oldNode, UpdatePaintNodeData 
     if (d->backgroundColor.alpha() > 0) {
         QVector<QPointF> background;
         appendRect(&background, bounds);
-        if (QSGGeometryNode *node = createFlatNode(background, d->backgroundColor)) {
+        if (QSGNode *node = createFlatNode(background, d->backgroundColor)) {
             root->appendChildNode(node);
         }
     }

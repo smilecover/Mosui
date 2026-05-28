@@ -3,7 +3,7 @@
 
 #include <QtCore/QtGlobal> 
 // 全局宏定义
-#if defined(MOSUIBASIC_LIBRARY)
+#if defined(MOSUIBASIC_LIBRARY) || defined(MosuiBasic_EXPORTS)
 #define MOSUIBASIC_EXPORT Q_DECL_EXPORT
 #else
 #define MOSUIBASIC_EXPORT Q_DECL_IMPORT

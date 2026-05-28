@@ -37,6 +37,9 @@ public:
     qreal barSpacing { 0.22 };
     int gridLineCount { 4 };
     qreal animationProgress { 1.0 };
+    bool highPerformanceMode { false };
+    int highPerformancePointLimit { 8000 };
+    bool edgeAntialiasing { true };
 };
 
 #endif // MOSHIGHPERCHART_P_H
