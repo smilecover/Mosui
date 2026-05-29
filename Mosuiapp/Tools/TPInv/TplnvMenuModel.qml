@@ -37,6 +37,12 @@ QtObject{
             label: qsTr('在线示波器'),
             iconSource: MosIcon.WaveOutlined,
             source: './TPinvPage/TPInvwave.qml',
+        },
+        {
+            key: 'TPLInvSamp',
+            label: qsTr('线性校正'),
+            iconSource: MosIcon.SettingsOutlined,
+            source: './TPinvPage/TPLInvSamp.qml',
         }
        ]
     Component.onCompleted:{
