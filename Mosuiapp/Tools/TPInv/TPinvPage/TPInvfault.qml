@@ -12,6 +12,10 @@ MosRectangle {
 
     property real faultValue: 0
     property bool updatingFaultInputs: false
+    readonly property color textStrong: MosTheme.Primary.colorTextPrimary
+    readonly property color textMuted: MosTheme.Primary.colorTextSecondary
+    readonly property color textSubtle: MosTheme.Primary.colorTextTertiary
+    readonly property color borderColor: MosTheme.Primary.colorSplit
     readonly property var faultItems: [
         { bit: 0, label: "A相慢速过压" },
         { bit: 1, label: "B相慢速过压" },
@@ -169,8 +173,8 @@ MosRectangle {
                 Layout.topMargin: 26
                 Layout.minimumWidth: 500
                 borderWidth: 1
-                colorBg: '#00101829'
-                colorBorder: '#0755ff'
+                colorBg: MosTheme.Primary.colorFillQuaternary
+                colorBorder: MosTheme.Primary.colorPrimaryBorder
                 radiusBg.all: 28
                 titleDelegate: Item { implicitHeight: 0 }
                 coverDelegate: Item { implicitHeight: 0 }
@@ -201,12 +205,12 @@ MosRectangle {
                                     spacing: 6
                                     MosText {
                                         text: "🔢"
-                                        color: "#76a7ff"
+                                        color: MosTheme.Primary.colorPrimaryText
                                         font.pixelSize: 13
                                     }
                                     MosText {
                                         text: "十进制 (DEC)"
-                                        color: "#c7d5ff"
+                                        color: tpinvFault.textMuted
                                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                                     }
                                 }
@@ -219,11 +223,11 @@ MosRectangle {
                                     text: String(tpinvFault.faultValue)
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     colorBg: "transparent"
-                                    colorText: "#f4f7ff"
+                                    colorText: tpinvFault.textStrong
                                     onTextEdited: tpinvFault.setFaultValue(tpinvFault.parseDec(text))
                                     bgDelegate: MosRectangle {
-                                        color: decInput.activeFocus ? "#142a58" : decInput.hovered ? "#111f3b" : "transparent"
-                                        border.color: decInput.activeFocus ? "#2f7bff" : decInput.hovered ? "#4d6fc2" : "#314a86"
+                                        color: decInput.activeFocus ? MosTheme.Primary.colorFillPrimary : decInput.hovered ? MosTheme.Primary.colorFillQuaternary : "transparent"
+                                        border.color: decInput.activeFocus ? MosTheme.Primary.colorPrimaryBorder : decInput.hovered ? MosTheme.Primary.colorBorder : tpinvFault.borderColor
                                         border.width: decInput.activeFocus ? 2 : 1
                                         radius: 20
 
@@ -242,12 +246,12 @@ MosRectangle {
                                     spacing: 6
                                     MosText {
                                         text: "🧬"
-                                        color: "#7b8dff"
+                                        color: MosTheme.Primary.colorInfoText
                                         font.pixelSize: 13
                                     }
                                     MosText {
                                         text: "十六进制 (HEX)"
-                                        color: "#c7d5ff"
+                                        color: tpinvFault.textMuted
                                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                                     }
                                 }
@@ -259,11 +263,11 @@ MosRectangle {
                                     verticalAlignment: Text.AlignVCenter
                                     text: tpinvFault.hexText(tpinvFault.faultValue)
                                     colorBg: "transparent"
-                                    colorText: "#f4f7ff"
+                                    colorText: tpinvFault.textStrong
                                     onTextEdited: tpinvFault.setFaultValue(tpinvFault.parseHex(text))
                                     bgDelegate: MosRectangle {
-                                        color: hexInput.activeFocus ? "#142a58" : hexInput.hovered ? "#111f3b" : "transparent"
-                                        border.color: hexInput.activeFocus ? "#2f7bff" : hexInput.hovered ? "#4d6fc2" : "#314a86"
+                                        color: hexInput.activeFocus ? MosTheme.Primary.colorFillPrimary : hexInput.hovered ? MosTheme.Primary.colorFillQuaternary : "transparent"
+                                        border.color: hexInput.activeFocus ? MosTheme.Primary.colorPrimaryBorder : hexInput.hovered ? MosTheme.Primary.colorBorder : tpinvFault.borderColor
                                         border.width: hexInput.activeFocus ? 2 : 1
                                         radius: 20
 
@@ -282,12 +286,12 @@ MosRectangle {
                                     spacing: 6
                                     MosText {
                                         text: "⚡"
-                                        color: "#ffb14a"
+                                        color: MosTheme.Primary.colorWarningText
                                         font.pixelSize: 13
                                     }
                                     MosText {
                                         text: "二进制 (BIN / " + tpinvFault.faultBitCount + "位)"
-                                        color: "#c7d5ff"
+                                        color: tpinvFault.textMuted
                                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                                     }
                                 }
@@ -300,12 +304,12 @@ MosRectangle {
                                     text: tpinvFault.binText(tpinvFault.faultValue)
                                     inputMethodHints: Qt.ImhDigitsOnly
                                     colorBg: "transparent"
-                                    colorText: "#f4f7ff"
+                                    colorText: tpinvFault.textStrong
                                     font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                                     onTextEdited: tpinvFault.setFaultValue(tpinvFault.parseBin(text))
                                     bgDelegate: MosRectangle {
-                                        color: binInput.activeFocus ? "#142a58" : binInput.hovered ? "#111f3b" : "transparent"
-                                        border.color: binInput.activeFocus ? "#2f7bff" : binInput.hovered ? "#4d6fc2" : "#314a86"
+                                        color: binInput.activeFocus ? MosTheme.Primary.colorFillPrimary : binInput.hovered ? MosTheme.Primary.colorFillQuaternary : "transparent"
+                                        border.color: binInput.activeFocus ? MosTheme.Primary.colorPrimaryBorder : binInput.hovered ? MosTheme.Primary.colorBorder : tpinvFault.borderColor
                                         border.width: binInput.activeFocus ? 2 : 1
                                         radius: 20
 
@@ -333,7 +337,7 @@ MosRectangle {
                                     MosText {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: tpinvFault.activeFaultCount()
-                                        color: "#e9f0ff"
+                                        color: tpinvFault.textStrong
                                         font.pixelSize: 28
                                         font.bold: true
                                     }
@@ -341,7 +345,7 @@ MosRectangle {
                                     MosText {
                                         anchors.horizontalCenter: parent.horizontalCenter
                                         text: "活跃故障"
-                                        color: "#9cb1db"
+                                        color: tpinvFault.textMuted
                                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 4
                                     }
                                 }
@@ -351,8 +355,8 @@ MosRectangle {
                                     text: "✕ 全部清零"
                                     radiusBg.all: 19
                                     // colorBg: down ? "#12204c" : hovered ? "#263a72" : "#1b2850"
-                                    colorBorder: down ? "#4973dd" : hovered ? "#5f82e8" : "#35509a"
-                                    colorText: hovered ? "#ffffff" : "#f4f7ff"
+                                    colorBorder: down ? MosTheme.Primary.colorPrimaryBorderActive : hovered ? MosTheme.Primary.colorPrimaryBorderHover : MosTheme.Primary.colorBorder
+                                    colorText: tpinvFault.textStrong
                                     font.bold: true
                                     onClicked: tpinvFault.setFaultValue(0)
                                 }
@@ -363,8 +367,8 @@ MosRectangle {
                                     text: "自动检测"
                                     radiusBg.all: 19
                                     // colorBg: down ? "#12204c" : hovered ? "#263a72" : "#1b2850"
-                                    colorBorder: down ? "#4973dd" : hovered ? "#5f82e8" : "#35509a"
-                                    colorText: hovered ? "#ffffff" : "#f4f7ff"
+                                    colorBorder: down ? MosTheme.Primary.colorPrimaryBorderActive : hovered ? MosTheme.Primary.colorPrimaryBorderHover : MosTheme.Primary.colorBorder
+                                    colorText: tpinvFault.textStrong
                                     font.bold: true
                                     // onClicked: tpinvFault.setFaultValue(0xA0810080)
                                 }
@@ -393,7 +397,7 @@ MosRectangle {
                 Layout.topMargin: 10
                 Layout.preferredHeight: 44
                 color: "transparent"
-                border.color: '#0755ff'
+                border.color: MosTheme.Primary.colorPrimaryBorder
                 radius: 28
                 border.width: 1
                 RowLayout {
@@ -403,19 +407,19 @@ MosRectangle {
                     MosText {
                         Layout.alignment: Qt.AlignVCenter
                         text: "📡"
-                        color: '#d26c7bdb'
+                        color: MosTheme.Primary.colorPrimaryText
                         font.pixelSize: 13
                     } 
                     MosText {
                         Layout.alignment: Qt.AlignVCenter
                         text: "当前故障位流 |"
-                        color: "#c7d5ff"
+                        color: tpinvFault.textMuted
                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                     }
                     MosText {
                         Layout.alignment: Qt.AlignVCenter
                         text: tpinvFault.binText(tpinvFault.faultValue)
-                        color: "#c7d5ff"
+                        color: tpinvFault.textStrong
                         font.pixelSize: MosTheme.Primary.fontPrimarySize - 2
                     }
                 }
@@ -451,9 +455,9 @@ MosRectangle {
                             Layout.fillWidth: true
                             Layout.preferredHeight: 52
                             radius: 18
-                            color: active ? "#182746" : hoverHandler.hovered ? '#9d4b7ad3' : '#0061718a'
+                            color: active ? MosTheme.Primary.colorPrimaryBg : hoverHandler.hovered ? MosTheme.Primary.colorFillPrimary : "transparent"
                             border.width: 1
-                            border.color: active ? "#2f7bff" : hoverHandler.hovered ? "#315ba5" : "#17315e"
+                            border.color: active ? MosTheme.Primary.colorPrimaryBorder : hoverHandler.hovered ? MosTheme.Primary.colorBorder : tpinvFault.borderColor
 
                             RowLayout {
                                 anchors.fill: parent
@@ -473,7 +477,7 @@ MosRectangle {
                                     Layout.fillWidth: true
                                     Layout.alignment: Qt.AlignVCenter
                                     text: faultBitCard.modelData.label
-                                    color: faultBitCard.highlighted ? "#ffffff" : "#d9e4ff"
+                                    color: faultBitCard.highlighted ? tpinvFault.textStrong : tpinvFault.textMuted
                                     font.pixelSize: MosTheme.Primary.fontPrimarySize - 1
                                     font.bold: faultBitCard.highlighted
                                     elide: Text.ElideRight
@@ -484,7 +488,7 @@ MosRectangle {
                                     text: "bit" + faultBitCard.modelData.bit
                                     presetColor: "geekblue"
                                     radiusBg.all: 10
-                                    colorText: "#b7c8ff"
+                                    colorText: tpinvFault.textMuted
                                 }
 
                                 MosTag {
@@ -492,7 +496,7 @@ MosRectangle {
                                     text: faultBitCard.active ? "1" : "0"
                                     presetColor: faultBitCard.active ? "orange" : "geekblue"
                                     radiusBg.all: 10
-                                    colorText: faultBitCard.active ? "#ffd9b4" : "#dce6ff"
+                                    colorText: faultBitCard.active ? MosTheme.Primary.colorWarningText : tpinvFault.textMuted
                                 }
                             }
 

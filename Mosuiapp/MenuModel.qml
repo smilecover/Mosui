@@ -67,6 +67,14 @@ QtObject{
                     iconSource: MosIcon.ChartOutlined,
                     source: './Controls/Universal/ExpMosHighperchart.qml',
                     addVersion: '0.0.2',
+                },
+                {
+                    key:'ExpSerialPortManager',
+                    label:qsTr('串口管理器'),
+                    iconSource: MosIcon.SerialPortOutlined,
+                    source: './Controls/Universal/ExpSerialPortManager.qml',
+                    addVersion: '0.0.2'
+                    
                 }
             ]
         },
@@ -90,6 +98,7 @@ QtObject{
                     source: './Tools/PLC_APP/PLC_APPWord.qml',
                     addVersion: '0.0.1',
                 }
+   
             ]
         }
        ]

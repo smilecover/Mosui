@@ -112,8 +112,8 @@ MosRectangle{
 
                 MosText {
                     id: huskaruiTitle
-                    text: 'TPInv - 逆变器工具箱'
-                    color: '#000000'
+                    text: '智能设备集成管理平台'
+                    color: MosTheme.Primary.colorTextPrimary
                     font.pixelSize: MosTheme.Primary.fontPrimarySize + 32
                     font.bold: true
                 }

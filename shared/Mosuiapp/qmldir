@@ -12,6 +12,7 @@ ExpMosButtonBlock 1.0 Controls/Universal/ExpMosButtonBlock.qml
 ExpMosCaptionButton 1.0 Controls/Universal/ExpMosCaptionButton.qml
 ExpMosCaptionbar 1.0 Controls/Universal/ExpMosCaptionbar.qml
 ExpMosHighperchart 1.0 Controls/Universal/ExpMosHighperchart.qml
+ExpSerialPortManager 1.0 Controls/Universal/ExpSerialPortManager.qml
 MosTools 1.0 Tools/MosTools.qml
 PLC_APP 1.0 Tools/PLC_APP/PLC_APP.qml
 PLC_APPWord 1.0 Tools/PLC_APP/PLC_APPWord.qml

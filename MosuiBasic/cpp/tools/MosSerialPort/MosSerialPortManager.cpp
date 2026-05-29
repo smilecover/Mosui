@@ -1,20 +1,32 @@
 #include "MosSerialPortManager.h"
 #include "MosSerialPortManager_p.h"
 
+#include <QHash>
 #include <QIODevice>
+#include <QMetaObject>
 #include <QQmlEngine>
+#include <QSemaphore>
+#include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QStringList>
+#include <QThread>
 #include <QVariantMap>
+
+#include <functional>
+#include <memory>
+#include <optional>
 
 namespace {
 
-QString toHexString(const QByteArray &data) // 将字节数组转换为十六进制字符串
+constexpr int SerialOperationTimeoutMs = 1500;
+constexpr int SerialShutdownTimeoutMs = 3000;
+
+QString toHexString(const QByteArray &data)
 {
     return QString::fromLatin1(data.toHex(' ').toUpper());
 }
 
-void setError(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, const QString &message)// 设置错误信息
+void setError(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, const QString &message)
 {
     if (d->errorString == message) {
         emit q->errorOccurred(message);
@@ -26,56 +38,16 @@ void setError(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, const QSt
     emit q->errorOccurred(message);
 }
 
-void setOpen(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, bool open)// 设置打开状态
+void setOpen(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, bool open)
 {
-    if (d->isOpen == open) {
+    if (d->isOpen == open)
         return;
-    }
 
     d->isOpen = open;
     emit q->isOpenChanged();
 }
 
-bool portIsOpen(const MosSerialPortManagerPrivate *d, const QString &portName)
-{
-    QSerialPort *serialPort = d->serialPorts.value(portName, nullptr);
-    return serialPort && serialPort->isOpen();
-}
-
-void syncCurrentOpenState(MosSerialPortManager *q, MosSerialPortManagerPrivate *d)
-{
-    setOpen(q, d, portIsOpen(d, d->currentPortName));
-}
-
-void emitOpenPortsChanged(MosSerialPortManager *q)
-{
-    emit q->openPortsChanged();
-}
-
-void setCurrentPortName(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, const QString &portName)
-{
-    if (d->currentPortName == portName) {
-        syncCurrentOpenState(q, d);
-        return;
-    }
-
-    d->currentPortName = portName;
-    emit q->currentPortNameChanged();
-    syncCurrentOpenState(q, d);
-}
-
-void setError(MosSerialPortManager *q,
-              MosSerialPortManagerPrivate *d,
-              const QString &portName,
-              const QString &message)
-{
-    setError(q, d, message);
-    if (!portName.isEmpty()) {
-        emit q->errorOccurredFromPort(portName, message);
-    }
-}
-
-QSerialPort::DataBits parseDataBits(int value)// 将数据位解析为QSerialPort::DataBits
+QSerialPort::DataBits parseDataBits(int value)
 {
     switch (value) {
     case 5: return QSerialPort::Data5;
@@ -89,46 +61,38 @@ QSerialPort::DataBits parseDataBits(int value)// 将数据位解析为QSerialPor
 QSerialPort::Parity parseParity(QString value)
 {
     value = value.trimmed().toLower();
-    if (value == "even" || value == "偶") {
+    if (value == "even" || value == "鍋?")
         return QSerialPort::EvenParity;
-    }
-    if (value == "odd" || value == "奇") {
+    if (value == "odd" || value == "濂?")
         return QSerialPort::OddParity;
-    }
-    if (value == "mark") {
+    if (value == "mark")
         return QSerialPort::MarkParity;
-    }
-    if (value == "space") {
+    if (value == "space")
         return QSerialPort::SpaceParity;
-    }
     return QSerialPort::NoParity;
 }
 
 QSerialPort::StopBits parseStopBits(QString value)
 {
     value = value.trimmed().toLower();
-    if (value == "1.5") {
+    if (value == "1.5")
         return QSerialPort::OneAndHalfStop;
-    }
-    if (value == "2") {
+    if (value == "2")
         return QSerialPort::TwoStop;
-    }
     return QSerialPort::OneStop;
 }
 
 QSerialPort::FlowControl parseFlowControl(QString value)
 {
     value = value.trimmed().toLower();
-    if (value == "hardware" || value == "硬件") {
+    if (value == "hardware" || value == "纭欢")
         return QSerialPort::HardwareControl;
-    }
-    if (value == "software" || value == "软件") {
+    if (value == "software" || value == "杞欢")
         return QSerialPort::SoftwareControl;
-    }
     return QSerialPort::NoFlowControl;
 }
 
-QByteArray parseHexText(QString text, bool *ok)// 将十六进制字符串解析为字节数组
+QByteArray parseHexText(QString text, bool *ok)
 {
     text = text.trimmed();
     text.replace("0x", "", Qt::CaseInsensitive);
@@ -159,101 +123,394 @@ QByteArray parseHexText(QString text, bool *ok)// 将十六进制字符串解析
     return QByteArray::fromHex(hex);
 }
 
-QStringList openPortNames(const MosSerialPortManagerPrivate *d)
+QString mapPortName(const QVariantMap &port)
+{
+    return port.value(QStringLiteral("portName")).toString();
+}
+
+bool mapPortIsOpen(const QVariantMap &port)
+{
+    return port.value(QStringLiteral("isOpen")).toBool();
+}
+
+QStringList openPortNames(const QVariantList &ports)
 {
     QStringList names;
-    for (auto it = d->serialPorts.cbegin(); it != d->serialPorts.cend(); ++it) {
-        if (it.value() && it.value()->isOpen()) {
-            names.push_back(it.key());
-        }
+    for (const QVariant &value : ports) {
+        const QVariantMap port = value.toMap();
+        if (mapPortIsOpen(port))
+            names.push_back(mapPortName(port));
     }
     names.sort();
     return names;
 }
 
-QVariantList openPortList(const MosSerialPortManagerPrivate *d)
+bool portIsOpen(const MosSerialPortManagerPrivate *d, const QString &portName)
 {
-    QVariantList ports;
-    const QStringList names = openPortNames(d);
-    ports.reserve(names.size());
-    for (const QString &name : names) {
-        const QSerialPort *serialPort = d->serialPorts.value(name, nullptr);
-        if (!serialPort) {
-            continue;
-        }
-
-        QVariantMap port;
-        port.insert(QStringLiteral("portName"), name);
-        port.insert(QStringLiteral("isOpen"), serialPort->isOpen());
-        port.insert(QStringLiteral("baudRate"), serialPort->baudRate());
-        port.insert(QStringLiteral("dataBits"), static_cast<int>(serialPort->dataBits()));
-        port.insert(QStringLiteral("parity"), static_cast<int>(serialPort->parity()));
-        port.insert(QStringLiteral("stopBits"), static_cast<int>(serialPort->stopBits()));
-        port.insert(QStringLiteral("flowControl"), static_cast<int>(serialPort->flowControl()));
-        port.insert(QStringLiteral("errorString"), serialPort->errorString());
-        ports.push_back(port);
+    for (const QVariant &value : d->openPortList) {
+        const QVariantMap port = value.toMap();
+        if (mapPortName(port) == portName)
+            return mapPortIsOpen(port);
     }
-    return ports;
+    return false;
 }
 
-QSerialPort *ensureSerialPort(MosSerialPortManager *q,
-                              MosSerialPortManagerPrivate *d,
-                              const QString &portName)
+int openPortCount(const MosSerialPortManagerPrivate *d)
 {
-    QSerialPort *serialPort = d->serialPorts.value(portName, nullptr);
-    if (serialPort) {
-        return serialPort;
+    return openPortNames(d->openPortList).size();
+}
+
+void syncCurrentOpenState(MosSerialPortManager *q, MosSerialPortManagerPrivate *d)
+{
+    setOpen(q, d, portIsOpen(d, d->currentPortName));
+}
+
+void emitOpenPortsChanged(MosSerialPortManager *q)
+{
+    emit q->openPortsChanged();
+}
+
+bool setOpenPortList(MosSerialPortManagerPrivate *d, const QVariantList &openPorts)
+{
+    if (d->openPortList == openPorts)
+        return false;
+
+    d->openPortList = openPorts;
+    return true;
+}
+
+void setCurrentPortName(MosSerialPortManager *q, MosSerialPortManagerPrivate *d, const QString &portName)
+{
+    if (d->currentPortName == portName) {
+        syncCurrentOpenState(q, d);
+        return;
     }
 
-    serialPort = new QSerialPort(q);
-    serialPort->setReadBufferSize(1024 * 1024);
-    d->serialPorts.insert(portName, serialPort);
+    d->currentPortName = portName;
+    emit q->currentPortNameChanged();
+    syncCurrentOpenState(q, d);
+}
 
-    QObject::connect(serialPort, &QSerialPort::readyRead, q, [q, serialPort, portName]() {
-        const QByteArray data = serialPort->readAll();
-        if (data.isEmpty()) {
-            return;
-        }
+void setError(MosSerialPortManager *q,
+              MosSerialPortManagerPrivate *d,
+              const QString &portName,
+              const QString &message)
+{
+    setError(q, d, message);
+    if (!portName.isEmpty())
+        emit q->errorOccurredFromPort(portName, message);
+}
 
-        const QString text = QString::fromUtf8(data);
-        const QString hex = toHexString(data);
-        emit q->dataReceivedFromPort(portName, data, text, hex);
-        emit q->dataReceived(data, text, hex);
-    });
+void ensureCurrentOpenPort(MosSerialPortManager *q, MosSerialPortManagerPrivate *d)
+{
+    if (!d->currentPortName.isEmpty() && portIsOpen(d, d->currentPortName)) {
+        syncCurrentOpenState(q, d);
+        return;
+    }
 
-    QObject::connect(serialPort, &QSerialPort::bytesWritten, q, [q, portName](qint64 bytes) {
-        emit q->bytesWrittenFromPort(portName, bytes);
-        emit q->bytesWritten(bytes);
-    });
-
-    QObject::connect(serialPort, &QSerialPort::errorOccurred, q, [q, d, serialPort, portName](QSerialPort::SerialPortError error) {
-        if (error == QSerialPort::NoError) {
-            return;
-        }
-
-        const QString message = serialPort->errorString();
-        if (error == QSerialPort::ResourceError) {
-            serialPort->close();
-            syncCurrentOpenState(q, d);
-            emitOpenPortsChanged(q);
-        }
-        setError(q, d, portName, message);
-    });
-
-    return serialPort;
+    const QStringList names = openPortNames(d->openPortList);
+    setCurrentPortName(q, d, names.isEmpty() ? QString() : names.first());
 }
 
 } // namespace
+
+class MosSerialPortWorker : public QObject
+{
+public:
+    struct OperationResult {
+        bool ok { false };
+        QString error;
+        bool openPortsChanged { false };
+        QVariantList openPorts;
+    };
+
+    using DataCallback = std::function<void(QString, QByteArray, QString, QString)>;
+    using BytesCallback = std::function<void(const QString &, qint64)>;
+    using ErrorCallback = std::function<void(QString, QString, bool, QVariantList)>;
+
+    MosSerialPortWorker(DataCallback dataCallback,
+                        BytesCallback bytesCallback,
+                        ErrorCallback errorCallback)
+        : dataCallback_(std::move(dataCallback)),
+          bytesCallback_(std::move(bytesCallback)),
+          errorCallback_(std::move(errorCallback))
+    {
+    }
+
+    ~MosSerialPortWorker() override
+    {
+        closeAllPorts();
+    }
+
+    OperationResult openPort(const QString &portName,
+                             int baudRate,
+                             int dataBits,
+                             const QString &parity,
+                             const QString &stopBits,
+                             const QString &flowControl)
+    {
+        OperationResult result;
+        QSerialPort *serialPort = ensureSerialPort(portName);
+        if (serialPort->isOpen())
+            serialPort->close();
+
+        serialPort->setPortName(portName);
+        serialPort->setBaudRate(baudRate);
+        serialPort->setDataBits(parseDataBits(dataBits));
+        serialPort->setParity(parseParity(parity));
+        serialPort->setStopBits(parseStopBits(stopBits));
+        serialPort->setFlowControl(parseFlowControl(flowControl));
+
+        result.ok = serialPort->open(QIODevice::ReadWrite);
+        if (result.ok) {
+            serialPort->clear();
+        } else {
+            result.error = serialPort->errorString();
+        }
+
+        result.openPortsChanged = true;
+        result.openPorts = openPortList();
+        return result;
+    }
+
+    OperationResult closePort(const QString &portName)
+    {
+        OperationResult result;
+        QSerialPort *serialPort = serialPorts_.take(portName);
+        if (!serialPort) {
+            result.error = tr("Serial port is not open.");
+            result.openPortsChanged = true;
+            result.openPorts = openPortList();
+            return result;
+        }
+
+        if (serialPort->isOpen())
+            serialPort->close();
+        serialPort->deleteLater();
+
+        result.ok = true;
+        result.openPortsChanged = true;
+        result.openPorts = openPortList();
+        return result;
+    }
+
+    OperationResult closeAllPorts()
+    {
+        OperationResult result;
+        const auto ports = serialPorts_;
+        serialPorts_.clear();
+        for (QSerialPort *serialPort : ports) {
+            if (!serialPort)
+                continue;
+            if (serialPort->isOpen())
+                serialPort->close();
+            serialPort->deleteLater();
+        }
+        result.ok = true;
+        result.openPortsChanged = true;
+        result.openPorts = openPortList();
+        return result;
+    }
+
+    OperationResult writeBytesToPort(const QString &portName, const QByteArray &data)
+    {
+        OperationResult result;
+        QSerialPort *serialPort = serialPorts_.value(portName, nullptr);
+        if (!serialPort || !serialPort->isOpen()) {
+            result.error = tr("Serial port is not open.");
+            result.openPortsChanged = true;
+            result.openPorts = openPortList();
+            return result;
+        }
+
+        if (data.isEmpty()) {
+            result.ok = true;
+            return result;
+        }
+
+        const qint64 written = serialPort->write(data);
+        result.ok = written == data.size();
+        if (!result.ok)
+            result.error = serialPort->errorString();
+        serialPort->flush();
+        return result;
+    }
+
+    QVariantList openPortList() const
+    {
+        QVariantList ports;
+        const QStringList names = openPortNames();
+        ports.reserve(names.size());
+        for (const QString &name : names) {
+            const QSerialPort *serialPort = serialPorts_.value(name, nullptr);
+            if (!serialPort)
+                continue;
+
+            QVariantMap port;
+            port.insert(QStringLiteral("portName"), name);
+            port.insert(QStringLiteral("isOpen"), serialPort->isOpen());
+            port.insert(QStringLiteral("baudRate"), serialPort->baudRate());
+            port.insert(QStringLiteral("dataBits"), static_cast<int>(serialPort->dataBits()));
+            port.insert(QStringLiteral("parity"), static_cast<int>(serialPort->parity()));
+            port.insert(QStringLiteral("stopBits"), static_cast<int>(serialPort->stopBits()));
+            port.insert(QStringLiteral("flowControl"), static_cast<int>(serialPort->flowControl()));
+            port.insert(QStringLiteral("errorString"), serialPort->errorString());
+            ports.push_back(port);
+        }
+        return ports;
+    }
+
+private:
+    QStringList openPortNames() const
+    {
+        QStringList names;
+        for (auto it = serialPorts_.cbegin(); it != serialPorts_.cend(); ++it) {
+            if (it.value() && it.value()->isOpen())
+                names.push_back(it.key());
+        }
+        names.sort();
+        return names;
+    }
+
+    QSerialPort *ensureSerialPort(const QString &portName)
+    {
+        QSerialPort *serialPort = serialPorts_.value(portName, nullptr);
+        if (serialPort)
+            return serialPort;
+
+        serialPort = new QSerialPort(this);
+        serialPort->setReadBufferSize(1024 * 1024);
+        serialPorts_.insert(portName, serialPort);
+
+        QObject::connect(serialPort, &QSerialPort::readyRead, this, [this, serialPort, portName]() {
+            QByteArray data = serialPort->readAll();
+            if (data.isEmpty())
+                return;
+
+            QString text = QString::fromUtf8(data);
+            QString hex = toHexString(data);
+            dataCallback_(portName, std::move(data), std::move(text), std::move(hex));
+        });
+
+        QObject::connect(serialPort, &QSerialPort::bytesWritten, this, [this, portName](qint64 bytes) {
+            bytesCallback_(portName, bytes);
+        });
+
+        QObject::connect(serialPort, &QSerialPort::errorOccurred, this, [this, serialPort, portName](QSerialPort::SerialPortError error) {
+            if (error == QSerialPort::NoError)
+                return;
+
+            const QString message = serialPort->errorString();
+            const bool resourceError = error == QSerialPort::ResourceError;
+            if (resourceError && serialPort->isOpen())
+                serialPort->close();
+            errorCallback_(portName, message, resourceError, resourceError ? openPortList() : QVariantList());
+        });
+
+        return serialPort;
+    }
+
+    QHash<QString, QSerialPort *> serialPorts_;
+    DataCallback dataCallback_;
+    BytesCallback bytesCallback_;
+    ErrorCallback errorCallback_;
+};
+
+template <typename Function>
+std::optional<MosSerialPortWorker::OperationResult> invokeOperation(MosSerialPortWorker *worker,
+                                                                    int timeoutMs,
+                                                                    Function &&function)
+{
+    if (!worker)
+        return std::nullopt;
+    if (QThread::currentThread() == worker->thread())
+        return function();
+
+    struct InvocationState {
+        QSemaphore done { 0 };
+        std::optional<MosSerialPortWorker::OperationResult> result;
+    };
+
+    auto state = std::make_shared<InvocationState>();
+    const bool posted = QMetaObject::invokeMethod(worker,
+                                                  [state, function = std::forward<Function>(function)]() mutable {
+        state->result = function();
+        state->done.release();
+    }, Qt::QueuedConnection);
+
+    if (!posted)
+        return std::nullopt;
+    if (!state->done.tryAcquire(1, timeoutMs))
+        return std::nullopt;
+
+    return std::move(state->result);
+}
 
 MosSerialPortManager::MosSerialPortManager(QObject *parent)
     : QObject{parent}
     , d_ptr(new MosSerialPortManagerPrivate(this))
 {
+    Q_D(MosSerialPortManager);
+
+    d->serialThread = new QThread(this);
+    d->serialThread->setObjectName(QStringLiteral("MosSerialPortThread"));
+    d->worker = new MosSerialPortWorker(
+        [this](QString portName, QByteArray data, QString text, QString hex) {
+            QMetaObject::invokeMethod(this,
+                                      [this,
+                                       portName = std::move(portName),
+                                       data = std::move(data),
+                                       text = std::move(text),
+                                       hex = std::move(hex)]() {
+                emit dataReceivedFromPort(portName, data, text, hex);
+                emit dataReceived(data, text, hex);
+            }, Qt::QueuedConnection);
+        },
+        [this](const QString &portName, qint64 bytes) {
+            QMetaObject::invokeMethod(this, [this, portName, bytes]() {
+                emit bytesWrittenFromPort(portName, bytes);
+                emit bytesWritten(bytes);
+            }, Qt::QueuedConnection);
+        },
+        [this](QString portName, QString message, bool resourceError, QVariantList openPorts) {
+            QMetaObject::invokeMethod(this,
+                                      [this,
+                                       portName = std::move(portName),
+                                       message = std::move(message),
+                                       resourceError,
+                                       openPorts = std::move(openPorts)]() {
+                Q_D(MosSerialPortManager);
+                if (resourceError) {
+                    const bool portsChanged = setOpenPortList(d, openPorts);
+                    ensureCurrentOpenPort(this, d);
+                    if (portsChanged)
+                        emitOpenPortsChanged(this);
+                }
+                setError(this, d, portName, message);
+            }, Qt::QueuedConnection);
+        });
+
+    d->worker->moveToThread(d->serialThread);
+    connect(d->serialThread, &QThread::finished, d->worker, &QObject::deleteLater);
+    d->serialThread->start();
 }
 
 MosSerialPortManager::~MosSerialPortManager()
 {
-    closeAllPorts();
+    Q_D(MosSerialPortManager);
+
+    if (d->worker)
+        invokeOperation(d->worker, SerialShutdownTimeoutMs, [worker = d->worker]() {
+            return worker->closeAllPorts();
+        });
+
+    if (d->serialThread) {
+        d->serialThread->quit();
+        if (!d->serialThread->wait(SerialShutdownTimeoutMs)) {
+            d->serialThread->terminate();
+            d->serialThread->wait();
+        }
+    }
 }
 
 MosSerialPortManager *MosSerialPortManager::instance()
@@ -281,6 +538,17 @@ bool MosSerialPortManager::isOpen() const
     return d->isOpen;
 }
 
+bool MosSerialPortManager::hasOpenPorts() const
+{
+    return openPortCount() > 0;
+}
+
+int MosSerialPortManager::openPortCount() const
+{
+    Q_D(const MosSerialPortManager);
+    return ::openPortCount(d);
+}
+
 QString MosSerialPortManager::currentPortName() const
 {
     Q_D(const MosSerialPortManager);
@@ -296,13 +564,13 @@ QString MosSerialPortManager::errorString() const
 QStringList MosSerialPortManager::openPortNames() const
 {
     Q_D(const MosSerialPortManager);
-    return ::openPortNames(d);
+    return ::openPortNames(d->openPortList);
 }
 
 QVariantList MosSerialPortManager::openPortList() const
 {
     Q_D(const MosSerialPortManager);
-    return ::openPortList(d);
+    return d->openPortList;
 }
 
 QVariantList MosSerialPortManager::refreshPorts()
@@ -324,12 +592,10 @@ QVariantList MosSerialPortManager::refreshPorts()
         port.insert(QStringLiteral("description"), description);
         port.insert(QStringLiteral("manufacturer"), info.manufacturer());
         port.insert(QStringLiteral("serialNumber"), info.serialNumber());
-        if (info.hasVendorIdentifier()) {
+        if (info.hasVendorIdentifier())
             port.insert(QStringLiteral("vendorIdentifier"), info.vendorIdentifier());
-        }
-        if (info.hasProductIdentifier()) {
+        if (info.hasProductIdentifier())
             port.insert(QStringLiteral("productIdentifier"), info.productIdentifier());
-        }
         ports.push_back(port);
     }
 
@@ -373,31 +639,32 @@ bool MosSerialPortManager::openPort(const QString &portName,
         return false;
     }
 
-    QSerialPort *serialPort = ensureSerialPort(this, d, cleanPortName);
-    const bool wasOpen = serialPort->isOpen();
-    if (wasOpen) {
-        serialPort->close();
-    }
-
-    serialPort->setPortName(cleanPortName);
-    serialPort->setBaudRate(baudRate);
-    serialPort->setDataBits(parseDataBits(dataBits));
-    serialPort->setParity(parseParity(parity));
-    serialPort->setStopBits(parseStopBits(stopBits));
-    serialPort->setFlowControl(parseFlowControl(flowControl));
-
-    if (!serialPort->open(QIODevice::ReadWrite)) {
-        setCurrentPortName(this, d, cleanPortName);
-        if (wasOpen) {
-            emitOpenPortsChanged(this);
-        }
-        setError(this, d, cleanPortName, serialPort->errorString());
+    const auto result = invokeOperation(d->worker,
+                                        SerialOperationTimeoutMs,
+                                        [worker = d->worker,
+                                         cleanPortName,
+                                         baudRate,
+                                         dataBits,
+                                         parity,
+                                         stopBits,
+                                         flowControl]() {
+        return worker->openPort(cleanPortName, baudRate, dataBits, parity, stopBits, flowControl);
+    });
+    if (!result) {
+        setError(this, d, cleanPortName, tr("Serial port operation timed out."));
         return false;
     }
 
-    serialPort->clear();
+    const bool portsChanged = result->openPortsChanged && setOpenPortList(d, result->openPorts);
     setCurrentPortName(this, d, cleanPortName);
-    emitOpenPortsChanged(this);
+    if (portsChanged)
+        emitOpenPortsChanged(this);
+
+    if (!result->ok) {
+        setError(this, d, cleanPortName, result->error);
+        return false;
+    }
+
     clearError();
     return true;
 }
@@ -405,9 +672,8 @@ bool MosSerialPortManager::openPort(const QString &portName,
 void MosSerialPortManager::closePort()
 {
     Q_D(MosSerialPortManager);
-    if (d->currentPortName.isEmpty()) {
+    if (d->currentPortName.isEmpty())
         return;
-    }
     closePort(d->currentPortName);
 }
 
@@ -421,43 +687,53 @@ void MosSerialPortManager::closePort(const QString &portName)
         return;
     }
 
-    QSerialPort *serialPort = d->serialPorts.take(cleanPortName);
-    if (!serialPort) {
-        setError(this, d, cleanPortName, tr("Serial port is not open."));
+    const auto result = invokeOperation(d->worker,
+                                        SerialOperationTimeoutMs,
+                                        [worker = d->worker, cleanPortName]() {
+        return worker->closePort(cleanPortName);
+    });
+    if (!result) {
+        setError(this, d, cleanPortName, tr("Serial port operation timed out."));
         return;
     }
 
-    if (serialPort->isOpen()) {
-        serialPort->close();
+    const bool portsChanged = result->openPortsChanged && setOpenPortList(d, result->openPorts);
+    if (!result->ok) {
+        setError(this, d, cleanPortName, result->error);
+        return;
     }
-    serialPort->deleteLater();
 
-    emitOpenPortsChanged(this);
-    syncCurrentOpenState(this, d);
+    if (d->currentPortName == cleanPortName) {
+        const QStringList names = openPortNames();
+        setCurrentPortName(this, d, names.isEmpty() ? QString() : names.first());
+    } else {
+        syncCurrentOpenState(this, d);
+    }
+    if (portsChanged)
+        emitOpenPortsChanged(this);
 }
 
 void MosSerialPortManager::closeAllPorts()
 {
     Q_D(MosSerialPortManager);
 
-    if (d->serialPorts.isEmpty()) {
+    const auto result = invokeOperation(d->worker,
+                                        SerialOperationTimeoutMs,
+                                        [worker = d->worker]() {
+        return worker->closeAllPorts();
+    });
+    if (!result) {
+        const bool portsChanged = !d->openPortList.isEmpty();
         setCurrentPortName(this, d, QString());
+        d->openPortList.clear();
+        if (portsChanged)
+            emitOpenPortsChanged(this);
         return;
     }
 
-    const auto ports = d->serialPorts;
-    d->serialPorts.clear();
-    for (QSerialPort *serialPort : ports) {
-        if (!serialPort) {
-            continue;
-        }
-        if (serialPort->isOpen()) {
-            serialPort->close();
-        }
-        serialPort->deleteLater();
-    }
-
-    emitOpenPortsChanged(this);
+    const bool portsChanged = result->openPortsChanged && setOpenPortList(d, result->openPorts);
+    if (portsChanged)
+        emitOpenPortsChanged(this);
     setCurrentPortName(this, d, QString());
 }
 
@@ -494,7 +770,7 @@ bool MosSerialPortManager::writeHexToPort(const QString &portName, const QString
     return writeBytesToPort(portName, data);
 }
 
-bool MosSerialPortManager::writeBytes(const QByteArray &data)// 写入字节数组
+bool MosSerialPortManager::writeBytes(const QByteArray &data)
 {
     Q_D(MosSerialPortManager);
     if (d->currentPortName.isEmpty()) {
@@ -510,32 +786,36 @@ bool MosSerialPortManager::writeBytesToPort(const QString &portName, const QByte
     Q_D(MosSerialPortManager);
 
     const QString cleanPortName = portName.trimmed();
-    QSerialPort *serialPort = d->serialPorts.value(cleanPortName, nullptr);
-    if (!serialPort || !serialPort->isOpen()) {
-        setError(this, d, cleanPortName, tr("Serial port is not open."));
+    const auto result = invokeOperation(d->worker,
+                                        SerialOperationTimeoutMs,
+                                        [worker = d->worker, cleanPortName, data]() {
+        return worker->writeBytesToPort(cleanPortName, data);
+    });
+    if (!result) {
+        setError(this, d, cleanPortName, tr("Serial port operation timed out."));
         return false;
     }
 
-    if (data.isEmpty()) {
-        return true;
+    if (result->openPortsChanged) {
+        const bool portsChanged = setOpenPortList(d, result->openPorts);
+        ensureCurrentOpenPort(this, d);
+        if (portsChanged)
+            emitOpenPortsChanged(this);
     }
 
-    const qint64 written = serialPort->write(data);
-    if (written != data.size()) {
-        setError(this, d, cleanPortName, serialPort->errorString());
+    if (!result->ok) {
+        setError(this, d, cleanPortName, result->error);
         return false;
     }
 
-    serialPort->flush();
     return true;
 }
 
 void MosSerialPortManager::clearError()
 {
     Q_D(MosSerialPortManager);
-    if (d->errorString.isEmpty()) {
+    if (d->errorString.isEmpty())
         return;
-    }
 
     d->errorString.clear();
     emit errorStringChanged();

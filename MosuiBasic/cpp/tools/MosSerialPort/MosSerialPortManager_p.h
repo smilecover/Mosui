@@ -3,10 +3,12 @@
 
 #include "MosSerialPortManager.h"
 
-#include <QHash>
-#include <QSerialPort>
 #include <QString>
+#include <QStringList>
+#include <QThread>
 #include <QVariantList>
+
+class MosSerialPortWorker;
 
 class MosSerialPortManagerPrivate
 {
@@ -16,8 +18,10 @@ public:
     explicit MosSerialPortManagerPrivate(MosSerialPortManager *q) : q_ptr(q) { }
 
     MosSerialPortManager *q_ptr { nullptr };
-    QHash<QString, QSerialPort *> serialPorts;
+    QThread *serialThread { nullptr };
+    MosSerialPortWorker *worker { nullptr };
     QVariantList portInfoList;
+    QVariantList openPortList;
     bool isOpen { false };
     QString currentPortName;
     QString errorString;

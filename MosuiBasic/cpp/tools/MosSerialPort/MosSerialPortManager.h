@@ -21,6 +21,8 @@ class MOSUIBASIC_EXPORT MosSerialPortManager : public QObject
 
     Q_PROPERTY(QVariantList portInfoList READ portInfoList NOTIFY portInfoListChanged FINAL)
     Q_PROPERTY(bool isOpen READ isOpen NOTIFY isOpenChanged FINAL)
+    Q_PROPERTY(bool hasOpenPorts READ hasOpenPorts NOTIFY openPortsChanged FINAL)
+    Q_PROPERTY(int openPortCount READ openPortCount NOTIFY openPortsChanged FINAL)
     Q_PROPERTY(QString currentPortName READ currentPortName NOTIFY currentPortNameChanged FINAL)
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorStringChanged FINAL)
     Q_PROPERTY(QStringList openPortNames READ openPortNames NOTIFY openPortsChanged FINAL)
@@ -34,6 +36,8 @@ public:
 
     QVariantList portInfoList() const;
     bool isOpen() const;
+    bool hasOpenPorts() const;
+    int openPortCount() const;
     QString currentPortName() const;
     QString errorString() const;
     QStringList openPortNames() const;

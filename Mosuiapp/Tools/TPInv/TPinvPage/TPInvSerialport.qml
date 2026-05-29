@@ -13,6 +13,7 @@ MosRectangle{
     property int autoSendInterval: 100
     property var portOptions: []
     property string selectedPortName: ""
+    property bool selectedPortOpen: false
     property int selectedBaudRate: 9600
     property int selectedDataBits: 8
     property string selectedParity: "none"
@@ -28,41 +29,98 @@ MosRectangle{
         return Math.max(1, Math.floor(Number(value) || 1))
     }
 
+    function syncFromSerialGroup() {
+        portOptions = appTplnvData.serialPortOptions
+        selectedPortName = appTplnvData.controlSerialPortName
+        selectedBaudRate = appTplnvData.controlSerialBaudRate
+        selectedDataBits = appTplnvData.controlSerialDataBits
+        selectedParity = appTplnvData.controlSerialParity
+        selectedStopBits = appTplnvData.controlSerialStopBits
+        selectedFlowControl = appTplnvData.controlSerialFlowControl
+        selectedPortOpen = appTplnvData.controlSerialOpen
+    }
+
+    function syncToSerialGroup() {
+        appTplnvData.controlSerialPortName = selectedPortName
+        appTplnvData.controlSerialBaudRate = selectedBaudRate
+        appTplnvData.controlSerialDataBits = selectedDataBits
+        appTplnvData.controlSerialParity = selectedParity
+        appTplnvData.controlSerialStopBits = selectedStopBits
+        appTplnvData.controlSerialFlowControl = selectedFlowControl
+        appTplnvData.updateSerialConnectionStates()
+        syncFromSerialGroup()
+    }
+
     function refreshSerialPorts() {
-        portOptions = MosSerialPortManager.refreshPorts()
-        let hasSelectedPort = false
-        for (let i = 0; i < portOptions.length; i++) {
-            if (portOptions[i].value === selectedPortName) {
-                hasSelectedPort = true
-                break
-            }
-        }
-        if (portOptions.length > 0 && !hasSelectedPort) {
-            selectedPortName = portOptions[0].value
-        } else if (portOptions.length === 0) {
-            selectedPortName = ""
-        }
+        appTplnvData.refreshSerialPorts("control")
+        syncFromSerialGroup()
     }
 
     function openSerialPort() {
-        return MosSerialPortManager.openPort(
-                    selectedPortName,
-                    selectedBaudRate,
-                    selectedDataBits,
-                    selectedParity,
-                    selectedStopBits,
-                    selectedFlowControl)
+        syncToSerialGroup()
+        const ok = appTplnvData.openControlSerialPort()
+        syncFromSerialGroup()
+        return ok
     }
 
     function toggleSerialPort() {
-        if (MosSerialPortManager.isOpen) {
-            MosSerialPortManager.closePort()
-            return true
-        }
-        return openSerialPort()
+        syncToSerialGroup()
+        const ok = appTplnvData.toggleControlSerialPort()
+        syncFromSerialGroup()
+        return ok
     }
 
-    Component.onCompleted: refreshSerialPorts()
+    function updateSelectedPortOpen() {
+        appTplnvData.updateSerialConnectionStates()
+        syncFromSerialGroup()
+    }
+
+    Component.onCompleted: {
+        refreshSerialPorts()
+        updateSelectedPortOpen()
+    }
+    onSelectedPortNameChanged: if (appTplnvData.controlSerialPortName !== selectedPortName) syncToSerialGroup()
+    onSelectedBaudRateChanged: if (appTplnvData.controlSerialBaudRate !== selectedBaudRate) syncToSerialGroup()
+    onSelectedDataBitsChanged: if (appTplnvData.controlSerialDataBits !== selectedDataBits) syncToSerialGroup()
+    onSelectedParityChanged: if (appTplnvData.controlSerialParity !== selectedParity) syncToSerialGroup()
+    onSelectedStopBitsChanged: if (appTplnvData.controlSerialStopBits !== selectedStopBits) syncToSerialGroup()
+    onSelectedFlowControlChanged: if (appTplnvData.controlSerialFlowControl !== selectedFlowControl) syncToSerialGroup()
+
+    Connections {
+        target: appTplnvData
+
+        function onSerialPortOptionsChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialPortNameChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialBaudRateChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialDataBitsChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialParityChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialStopBitsChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialFlowControlChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+
+        function onControlSerialOpenChanged() {
+            serialportPage.syncFromSerialGroup()
+        }
+    }
 
     property Component leftItemcontrols: Item{
         id : leftItem
@@ -201,10 +259,10 @@ MosRectangle{
                             onClicked: serialportPage.refreshSerialPorts()
                         }
                         MosButton {
-                            text: MosSerialPortManager.isOpen ? "关闭串口" : "打开串口"
+                            text: serialportPage.selectedPortOpen ? "关闭串口" : "打开串口"
                             width: 120
-                            type: MosSerialPortManager.isOpen ? MosButton.Type_Default : MosButton.Type_Primary
-                            enabled: serialportPage.selectedPortName.length > 0 || MosSerialPortManager.isOpen
+                            type: serialportPage.selectedPortOpen ? MosButton.Type_Default : MosButton.Type_Primary
+                            enabled: serialportPage.selectedPortName.length > 0 || serialportPage.selectedPortOpen
                             onClicked: serialportPage.toggleSerialPort()
                         }
                     }
@@ -459,12 +517,20 @@ MosRectangle{
         Connections {
             target: MosSerialPortManager
 
-            function onDataReceived(data, text, hex) {
+            function onDataReceivedFromPort(portName, data, text, hex) {
+                if (portName !== serialportPage.selectedPortName)
+                    return
                 rightItem.appendReceivedData(text, hex)
             }
 
-            function onErrorOccurred(message) {
+            function onErrorOccurredFromPort(portName, message) {
+                if (portName !== serialportPage.selectedPortName)
+                    return
                 rightItem.appendStatusText("错误: " + message)
+            }
+
+            function onOpenPortsChanged() {
+                serialportPage.updateSelectedPortOpen()
             }
         }
 
@@ -472,7 +538,7 @@ MosRectangle{
             id: autoSendTimer
             interval: serialportPage.autoSendInterval
             repeat: true
-            running: serialportPage.sendAutoEnabled && MosSerialPortManager.isOpen
+            running: serialportPage.sendAutoEnabled && serialportPage.selectedPortOpen
             onTriggered: rightItem.sendAutoData()
             onRunningChanged: if (!running) rightItem.autoCommandIndex = 0
         }
@@ -511,9 +577,9 @@ MosRectangle{
                 return true
             }
             if (serialportPage.sendMode === "HEX") {
-                return MosSerialPortManager.writeHex(data)
+                return MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, data)
             }
-            return MosSerialPortManager.writeText(data)
+            return MosSerialPortManager.writeTextToPort(serialportPage.selectedPortName, data)
         }
 
         function sendAutoData() {
@@ -527,7 +593,7 @@ MosRectangle{
                 autoCommandIndex = 0
             }
 
-            const ok = MosSerialPortManager.writeHex(payloads[autoCommandIndex])
+            const ok = MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, payloads[autoCommandIndex])
             autoCommandIndex = (autoCommandIndex + 1) % payloads.length
             return ok
         }
@@ -588,7 +654,7 @@ MosRectangle{
                 return
             }
 
-            MosSerialPortManager.writeHex(pendingCommandPayloads[pendingCommandIndex])
+            MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, pendingCommandPayloads[pendingCommandIndex])
             pendingCommandIndex++
 
             if (pendingCommandIndex >= pendingCommandPayloads.length) {
@@ -689,7 +755,7 @@ MosRectangle{
                                 id: sendTextButton
                                 text: "发送"
                                 Layout.fillWidth: true
-                                enabled: MosSerialPortManager.isOpen
+                                enabled: serialportPage.selectedPortOpen
                                 onClicked: rightItem.sendTextData()
                             }
                         }
@@ -748,7 +814,7 @@ MosRectangle{
                                     id: sendCommandButton
                                     text: "发送指令"
                                     Layout.fillWidth: true
-                                    enabled: MosSerialPortManager.isOpen
+                                    enabled: serialportPage.selectedPortOpen
                                     onClicked: rightItem.sendCommandData()
                                 }
                                 MosCheckBox {

@@ -914,11 +914,29 @@ Module {
             isFinal: true
         }
         Property {
+            name: "hasOpenPorts"
+            type: "bool"
+            read: "hasOpenPorts"
+            notify: "openPortsChanged"
+            index: 2
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "openPortCount"
+            type: "int"
+            read: "openPortCount"
+            notify: "openPortsChanged"
+            index: 3
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
             name: "currentPortName"
             type: "QString"
             read: "currentPortName"
             notify: "currentPortNameChanged"
-            index: 2
+            index: 4
             isReadonly: true
             isFinal: true
         }
@@ -927,7 +945,7 @@ Module {
             type: "QString"
             read: "errorString"
             notify: "errorStringChanged"
-            index: 3
+            index: 5
             isReadonly: true
             isFinal: true
         }
@@ -936,7 +954,7 @@ Module {
             type: "QStringList"
             read: "openPortNames"
             notify: "openPortsChanged"
-            index: 4
+            index: 6
             isReadonly: true
             isFinal: true
         }
@@ -945,7 +963,7 @@ Module {
             type: "QVariantList"
             read: "openPortList"
             notify: "openPortsChanged"
-            index: 5
+            index: 7
             isReadonly: true
             isFinal: true
         }

@@ -12,6 +12,33 @@ MosRectangle {
 
     property string currentTime: ""
     property int contentCompactBreakpoint: 820
+    readonly property color textStrong: MosTheme.Primary.colorTextPrimary
+    readonly property color textMuted: MosTheme.Primary.colorTextSecondary
+    readonly property color textSubtle: MosTheme.Primary.colorTextTertiary
+    readonly property color accent: MosTheme.Primary.colorPrimary
+    readonly property color panelBorder: MosTheme.Primary.colorSplit
+    readonly property color panelBg: MosTheme.Primary.colorFillQuaternary
+    readonly property color fieldBg: MosTheme.Primary.colorFillQuaternary
+
+    readonly property var baudRateOptions: [
+        { label: "9600", value: 9600 },
+        { label: "19200", value: 19200 },
+        { label: "38400", value: 38400 },
+        { label: "115200", value: 115200 }
+    ]
+
+    function optionIndex(options, value) {
+        for (let i = 0; i < options.length; ++i) {
+            if (options[i].value === value)
+                return i
+        }
+        return options.length > 0 ? 0 : -1
+    }
+
+    function refreshControlSerialPorts() {
+        appTplnvData.refreshSerialPorts("control")
+    }
+
     property Component leftloaderComponent: Item {
         id: leftContentRoot
         implicitWidth: leftContentLayout.implicitWidth + leftContentLayout.anchors.margins * 2
@@ -33,7 +60,7 @@ MosRectangle {
 
                 color: 'transparent'
                 border.width: 1
-                border.color: "#244b87"
+                border.color: tpinvControl.panelBorder
                 radius: MosTheme.Primary.radiusPrimaryLG
                 clip: true
 
@@ -54,13 +81,13 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             iconSource: MosIcon.SettingsOutlined
                             iconSize: 24
-                            color: "#2f8dff"
+                            color: tpinvControl.accent
                         }
 
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "参数设置"
-                            color: "#f4f8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 20
                             font.bold: true
                         }
@@ -69,7 +96,7 @@ MosRectangle {
                     MosDivider {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
-                        colorSplit: "#263852"
+                        colorSplit: MosTheme.Primary.colorSplit
                     }
 
                     ColumnLayout {
@@ -111,7 +138,7 @@ MosRectangle {
                                         Layout.alignment: Qt.AlignVCenter
                                         Layout.preferredWidth: 18
                                         text: parameterRow.modelData.icon
-                                        color: "#cfd8e7"
+                                        color: tpinvControl.textMuted
                                         font.pixelSize: 16
                                         horizontalAlignment: Text.AlignHCenter
                                     }
@@ -121,7 +148,7 @@ MosRectangle {
                                         Layout.minimumWidth: 0
                                         Layout.alignment: Qt.AlignVCenter
                                         text: parameterRow.modelData.label
-                                        color: "#cfd8e7"
+                                        color: tpinvControl.textMuted
                                         font.pixelSize: 14
                                         font.bold: true
                                         elide: Text.ElideRight
@@ -142,7 +169,7 @@ MosRectangle {
                                     clip: true
                                     useKeyboard: true
                                     colorBg: 'transparent'
-                                    colorBorder: '#244b87'
+                                    colorBorder: tpinvControl.panelBorder
 
                                     radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                     inputFont.family: "Consolas"
@@ -186,7 +213,7 @@ MosRectangle {
                 Layout.minimumHeight: 200
                 color: "transparent"
                 border.width: 1
-                border.color: "#244b87"
+                border.color: tpinvControl.panelBorder
                 radius: MosTheme.Primary.radiusPrimaryLG
                 clip: true
 
@@ -207,7 +234,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "▣"
-                            color: "#2f8dff"
+                            color: tpinvControl.accent
                             font.pixelSize: 21
                             font.bold: true
                         }
@@ -215,7 +242,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "串口通信 · 高级调试"
-                            color: "#f4f8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 20
                             font.bold: true
                             elide: Text.ElideRight
@@ -240,7 +267,7 @@ MosRectangle {
                             radius: height / 2
                             color: "transparent"
                             border.width: 1
-                            border.color: "#244b87"
+                            border.color: tpinvControl.panelBorder
                             clip: true
 
                             RowLayout {
@@ -252,7 +279,7 @@ MosRectangle {
                                 MosText {
                                     Layout.alignment: Qt.AlignVCenter
                                     text: "🔗"
-                                    color: "#f4f8ff"
+                                    color: tpinvControl.textStrong
                                     font.pixelSize: 18
                                 }
 
@@ -260,15 +287,19 @@ MosRectangle {
                                     Layout.alignment: Qt.AlignVCenter
                                     Layout.fillWidth: true
                                     text: "连接状态:"
-                                    color: "#f4f8ff"
+                                    color: tpinvControl.textStrong
                                     font.pixelSize: 15
                                     font.bold: true
                                 }
 
                                 MosText {
                                     Layout.alignment: Qt.AlignVCenter
-                                    text: "● 未连接"
-                                    color: "#ff801f"
+                                    text: appTplnvData.controlSerialOpen
+                                          ? "● 已连接 · " + appTplnvData.controlSerialPortName
+                                          : "● 未连接"
+                                    color: appTplnvData.controlSerialOpen
+                                           ? MosTheme.Primary.colorSuccessText
+                                           : MosTheme.Primary.colorWarningText
                                     font.pixelSize: 15
                                     font.bold: true
                                 }
@@ -282,38 +313,36 @@ MosRectangle {
                             MosSelect {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 34
-                                model: [
-                                    { label: "COM1", value: "COM1" },
-                                    { label: "COM2", value: "COM2" },
-                                    { label: "COM3", value: "COM3" }
-                                ]
-                                currentIndex: 0
+                                model: appTplnvData.serialPortOptions
+                                currentIndex: tpinvControl.optionIndex(appTplnvData.serialPortOptions,
+                                                                        appTplnvData.controlSerialPortName)
                                 clearEnabled: false
                                 colorBg: "transparent"
-                                colorBorder: "#244b87"
-                                colorText: "#f4f8ff"
+                                colorBorder: tpinvControl.panelBorder
+                                colorText: tpinvControl.textStrong
                                 radiusBg.all: 17
                                 font.family: "Consolas"
                                 font.pixelSize: 13
+                                onActivated: {
+                                    appTplnvData.controlSerialPortName = currentValue
+                                    appTplnvData.updateSerialConnectionStates()
+                                }
                             }
 
                             MosSelect {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 34
-                                model: [
-                                    { label: "9600", value: 9600 },
-                                    { label: "19200", value: 19200 },
-                                    { label: "38400", value: 38400 },
-                                    { label: "115200", value: 115200 }
-                                ]
-                                currentIndex: 0
+                                model: tpinvControl.baudRateOptions
+                                currentIndex: tpinvControl.optionIndex(tpinvControl.baudRateOptions,
+                                                                        appTplnvData.controlSerialBaudRate)
                                 clearEnabled: false
                                 colorBg: "transparent"
-                                colorBorder: "#244b87"
-                                colorText: "#f4f8ff"
+                                colorBorder: tpinvControl.panelBorder
+                                colorText: tpinvControl.textStrong
                                 radiusBg.all: 17
                                 font.family: "Consolas"
                                 font.pixelSize: 13
+                                onActivated: appTplnvData.controlSerialBaudRate = currentValue
                             }
                         }
 
@@ -324,18 +353,22 @@ MosRectangle {
                             MosButton {
 
                                 Layout.preferredHeight: 40
-                                text: "▣  连接"
+                                text: "连接"
                                 type: MosButton.Type_Primary
+                                enabled: !appTplnvData.controlSerialOpen
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                onClicked: appTplnvData.openControlSerialPort()
                             }
 
                             MosButton {
                                 Layout.preferredHeight: 40
-                                text: "⌘  断开"
+                                text: "断开"
                                 type: MosButton.Type_Outlined
+                                enabled: appTplnvData.controlSerialOpen
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                onClicked: appTplnvData.closeControlSerialPort()
                             }
 
                             MosButton {
@@ -359,7 +392,7 @@ MosRectangle {
                 Layout.preferredHeight: implicitHeight
                 color: "transparent"
                 border.width: 1
-                border.color: "#244b87"
+                border.color: tpinvControl.panelBorder
                 radius: MosTheme.Primary.radiusPrimaryLG
                 clip: true
 
@@ -378,7 +411,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "⏻"
-                            color: "#2f8dff"
+                            color: tpinvControl.accent
                             font.pixelSize: 26
                             font.bold: true
                         }
@@ -387,7 +420,7 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillWidth: true
                             text: "运行控制 · 故障诊断"
-                            color: "#f4f8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 20
                             font.bold: true
                             elide: Text.ElideRight
@@ -397,7 +430,7 @@ MosRectangle {
                     MosDivider {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
-                        colorSplit: "#263852"
+                        colorSplit: MosTheme.Primary.colorSplit
                     }
 
                     ColumnLayout {
@@ -425,7 +458,7 @@ MosRectangle {
                                     Layout.alignment: Qt.AlignVCenter
                                     Layout.fillWidth: true
                                     text: "逆变器主状态"
-                                    color: "#f4f8ff"
+                                    color: tpinvControl.textStrong
                                     font.pixelSize: 16
                                     font.bold: true
                                     elide: Text.ElideRight
@@ -446,14 +479,14 @@ MosRectangle {
                                         MosText {
                                             Layout.alignment: Qt.AlignVCenter
                                             text: "●"
-                                            color: "#ff4d57"
+                                            color: MosTheme.Primary.colorErrorText
                                             font.pixelSize: 19
                                         }
 
                                         MosText {
                                             Layout.alignment: Qt.AlignVCenter
                                             text: "未启动"
-                                            color: "#4A90E2"
+                                            color: MosTheme.Primary.colorPrimaryText
                                             font.pixelSize: 18
                                             font.bold: true
                                         }
@@ -503,7 +536,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "⚠ 未运行"
-                                    color: "#4A90E2"
+                                    color: MosTheme.Primary.colorPrimaryText
                                     font.pixelSize: 16
                                     font.bold: true
                                     elide: Text.ElideRight
@@ -512,7 +545,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "系统正常，三相平衡"
-                                    color: "#4A90E2"
+                                    color: MosTheme.Primary.colorPrimaryText
                                     font.pixelSize: 11
                                     elide: Text.ElideRight
                                 }
@@ -554,7 +587,7 @@ MosRectangle {
 
                 color: 'transparent'
                 border.width: 1
-                border.color: "#244b87"
+                border.color: tpinvControl.panelBorder
                 radius: MosTheme.Primary.radiusPrimaryLG
                 clip: true
 
@@ -587,7 +620,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "↯"
-                            color: "#2f8dff"
+                            color: tpinvControl.accent
                             font.pixelSize: lnverterStatus.compact ? 30 : 38
                             font.bold: true
                         }
@@ -596,7 +629,7 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillWidth: true
                             text: "逆变器状态监测"
-                            color: "#f4f8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: lnverterStatus.compact ? 21 : 26
                             font.bold: true
                             elide: Text.ElideRight
@@ -606,9 +639,9 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.preferredHeight: implicitHeight
                             text: "↻ 工作模式: 三相逆变"
-                            colorBg: "#123165"
-                            colorBorder: "#2f7dff"
-                            colorText: "#07101f"
+                            colorBg: MosTheme.Primary.colorPrimaryBg
+                            colorBorder: MosTheme.Primary.colorPrimaryBorder
+                            colorText: MosTheme.Primary.colorPrimaryText
                             radiusBg.all: implicitHeight / 2
                             font.pixelSize: 12
                         }
@@ -617,7 +650,7 @@ MosRectangle {
                     MosDivider {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
-                        colorSplit: "#263852"
+                        colorSplit: MosTheme.Primary.colorSplit
                     }
 
                     GridLayout {
@@ -645,14 +678,14 @@ MosRectangle {
                                 width: lnverterStatus.coreSize
                                 height: width
                                 radius: width / 2
-                                color: "#214d73"
+                                color: MosTheme.Primary.colorPrimaryBg
                                 border.width: Math.max(2, width * 0.02)
-                                border.color: "#3279dc"
+                                border.color: MosTheme.Primary.colorPrimaryBorder
 
                                 MosText {
                                     anchors.centerIn: parent
                                     text: "▣"
-                                    color: "#4b91ff"
+                                    color: tpinvControl.accent
                                     font.pixelSize: inverterCore.width * 0.38
                                     font.bold: true
                                 }
@@ -665,13 +698,13 @@ MosRectangle {
                                 width: Math.max(58, inverterCore.width * 0.34)
                                 height: lnverterStatus.statusTagHeight
                                 radius: height / 2
-                                color: "#07101f"
+                                color: tpinvControl.fieldBg
                                 border.width: 0
 
                                 MosText {
                                     anchors.centerIn: parent
                                     text: "运行中"
-                                    color: "#1071e7"
+                                    color: tpinvControl.accent
                                     font.pixelSize: 12
                                     font.bold: true
                                 }
@@ -684,7 +717,7 @@ MosRectangle {
                                 width: Math.min(parent.width, inverterCore.width * 1.18)
                                 height: lnverterStatus.summaryTagHeight
                                 radius: height / 2
-                                color: "#07101f"
+                                color: tpinvControl.fieldBg
                                 border.width: 0
 
                                 MosText {
@@ -694,7 +727,7 @@ MosRectangle {
                                     anchors.leftMargin: 10
                                     anchors.rightMargin: 10
                                     text: "⚡ 直流输入 0.0V · 输出 0.0V"
-                                    color: '#1071e7'
+                                    color: tpinvControl.accent
                                     font.pixelSize: 12
                                     font.bold: true
                                     horizontalAlignment: Text.AlignHCenter
@@ -710,7 +743,7 @@ MosRectangle {
                             radius: MosTheme.Primary.radiusPrimaryLG
                             color: "transparent"
                             border.width: 1
-                            border.color: "#244b87"
+                            border.color: tpinvControl.panelBorder
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -723,7 +756,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "▭  直流电压"
-                                    color: "#9ca8ba"
+                                    color: tpinvControl.textMuted
                                     font.pixelSize: 12
                                 }
 
@@ -733,7 +766,7 @@ MosRectangle {
 
                                     MosText {
                                         text: "0.0"
-                                        color: "#05070b"
+                                        color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
                                     }
@@ -741,7 +774,7 @@ MosRectangle {
                                     MosText {
                                         Layout.alignment: Qt.AlignBottom
                                         text: "V"
-                                        color: "#2f8dff"
+                                        color: tpinvControl.accent
                                         font.family: "Consolas"
                                         font.pixelSize: 12
                                     }
@@ -756,7 +789,7 @@ MosRectangle {
                             radius: MosTheme.Primary.radiusPrimaryLG
                             color: "transparent"
                             border.width: 1
-                            border.color: "#244b87"
+                            border.color: tpinvControl.panelBorder
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -769,7 +802,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "交流电压"
-                                    color: "#9ca8ba"
+                                    color: tpinvControl.textMuted
                                     font.pixelSize: 12
                                 }
 
@@ -779,7 +812,7 @@ MosRectangle {
 
                                     MosText {
                                         text: "0.0"
-                                        color: "#05070b"
+                                        color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
                                     }
@@ -787,7 +820,7 @@ MosRectangle {
                                     MosText {
                                         Layout.alignment: Qt.AlignBottom
                                         text: "V"
-                                        color: "#2f8dff"
+                                        color: tpinvControl.accent
                                         font.family: "Consolas"
                                         font.pixelSize: 12
                                     }
@@ -802,7 +835,7 @@ MosRectangle {
                             radius: MosTheme.Primary.radiusPrimaryLG
                             color: "transparent"
                             border.width: 1
-                            border.color: "#244b87"
+                            border.color: tpinvControl.panelBorder
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -815,7 +848,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "交流频率"
-                                    color: "#9ca8ba"
+                                    color: tpinvControl.textMuted
                                     font.pixelSize: 12
                                 }
 
@@ -825,7 +858,7 @@ MosRectangle {
 
                                     MosText {
                                         text: "0.00"
-                                        color: "#05070b"
+                                        color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
                                     }
@@ -833,7 +866,7 @@ MosRectangle {
                                     MosText {
                                         Layout.alignment: Qt.AlignBottom
                                         text: "Hz"
-                                        color: "#2f8dff"
+                                        color: tpinvControl.accent
                                         font.family: "Consolas"
                                         font.pixelSize: 12
                                     }
@@ -846,9 +879,9 @@ MosRectangle {
                             Layout.columnSpan: lnverterStatus.gridColumns
                             Layout.preferredHeight: lnverterStatus.compact ? 68 : 78
                             radius: MosTheme.Primary.radiusPrimaryLG
-                            color: "#352321"
+                            color: MosTheme.Primary.colorWarningBg
                             border.width: 2
-                            border.color: "#ff801f"
+                            border.color: MosTheme.Primary.colorWarningBorder
 
                             ColumnLayout {
                                 anchors.fill: parent
@@ -861,7 +894,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "⚠ 故障码"
-                                    color: "#9ca8ba"
+                                    color: tpinvControl.textMuted
                                     font.pixelSize: 13
                                     font.bold: true
                                 }
@@ -869,7 +902,7 @@ MosRectangle {
                                 MosText {
                                     Layout.fillWidth: true
                                     text: "0x0000   (正常)"
-                                    color: "#05070b"
+                                    color: MosTheme.Primary.colorWarningText
                                     font.family: "Consolas"
                                     font.pixelSize: 18
                                     font.bold: true
@@ -891,7 +924,7 @@ MosRectangle {
 
                 color: "transparent"
                 border.width: 1
-                border.color: "#244b87"
+                border.color: tpinvControl.panelBorder
                 radius: MosTheme.Primary.radiusPrimaryLG
                 clip: true
 
@@ -913,7 +946,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "▦"
-                            color: "#2f8dff"
+                            color: tpinvControl.accent
                             font.pixelSize: 25
                             font.bold: true
                         }
@@ -922,7 +955,7 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.fillWidth: true
                             text: "数据监测"
-                            color: "#f4f8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 20
                             font.bold: true
                             elide: Text.ElideRight
@@ -931,9 +964,9 @@ MosRectangle {
                         MosTag {
                             Layout.alignment: Qt.AlignVCenter
                             text: "实时采样"
-                            colorBg: "#10284d"
-                            colorBorder: "#244b87"
-                            colorText: "#9fc6ff"
+                            colorBg: MosTheme.Primary.colorPrimaryBg
+                            colorBorder: MosTheme.Primary.colorPrimaryBorder
+                            colorText: MosTheme.Primary.colorPrimaryText
                             radiusBg.all: implicitHeight / 2
                         }
                     }
@@ -941,7 +974,7 @@ MosRectangle {
                     MosDivider {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 1
-                        colorSplit: "#263852"
+                        colorSplit: MosTheme.Primary.colorSplit
                     }
 
                     GridLayout {
@@ -1035,9 +1068,9 @@ MosRectangle {
                                 implicitHeight: monitorGroupLayout.implicitHeight + 24
                                 Layout.preferredHeight: implicitHeight
                                 radius: MosTheme.Primary.radiusPrimaryLG
-                                color: "#091222"
+                                color: tpinvControl.panelBg
                                 border.width: 1
-                                border.color: "#1d3f72"
+                                border.color: tpinvControl.panelBorder
                                 clip: true
 
                                 ColumnLayout {
@@ -1061,7 +1094,7 @@ MosRectangle {
                                         MosText {
                                             Layout.fillWidth: true
                                             text: monitorGroup.modelData.title
-                                            color: "#f4f8ff"
+                                            color: tpinvControl.textStrong
                                             font.pixelSize: 15
                                             font.bold: true
                                             elide: Text.ElideRight
@@ -1084,9 +1117,9 @@ MosRectangle {
                                                 Layout.fillWidth: true
                                                 Layout.preferredHeight: 38
                                                 radius: MosTheme.Primary.radiusPrimaryLG
-                                                color: "#07101f"
+                                                color: tpinvControl.fieldBg
                                                 border.width: 1
-                                                border.color: "#203a63"
+                                                border.color: tpinvControl.panelBorder
 
                                                 RowLayout {
                                                     anchors.fill: parent
@@ -1099,7 +1132,7 @@ MosRectangle {
                                                         Layout.fillWidth: true
                                                         Layout.minimumWidth: 0
                                                         text: monitorCell.modelData.name
-                                                        color: "#9ca8ba"
+                                                        color: tpinvControl.textMuted
                                                         font.pixelSize: 12
                                                         elide: Text.ElideRight
                                                     }
@@ -1107,7 +1140,7 @@ MosRectangle {
                                                     MosText {
                                                         Layout.alignment: Qt.AlignVCenter
                                                         text: monitorCell.modelData.value
-                                                        color: "#f4f8ff"
+                                                        color: tpinvControl.textStrong
                                                         font.family: "Consolas"
                                                         font.pixelSize: 15
                                                         font.bold: true
@@ -1116,7 +1149,7 @@ MosRectangle {
                                                     MosText {
                                                         Layout.alignment: Qt.AlignVCenter
                                                         text: monitorCell.modelData.unit
-                                                        color: "#2f8dff"
+                                                        color: tpinvControl.accent
                                                         font.pixelSize: 11
                                                         visible: text !== ""
                                                     }
@@ -1138,7 +1171,10 @@ MosRectangle {
         currentTime = Qt.formatTime(date, "hh:mm:ss");
     }
 
-    Component.onCompleted: updateTime()
+    Component.onCompleted: {
+        updateTime()
+        refreshControlSerialPorts()
+    }
 
     Timer {
         running: true
@@ -1178,12 +1214,12 @@ MosRectangle {
                             Layout.alignment: Qt.AlignVCenter
                             iconSource: MosIcon.SettingsOutlined
                             iconSize: 31
-                            color: "#dbe8ff"
+                            color: tpinvControl.textStrong
                         }
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "三相逆变智能管理站"
-                            color: "#dbe8ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 30
                             font.bold: true
                             elide: Text.ElideRight
@@ -1192,7 +1228,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "·"
-                            color: "#38aafc"
+                            color: tpinvControl.accent
                             font.pixelSize: 30
                             font.bold: true
                         }
@@ -1201,7 +1237,7 @@ MosRectangle {
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignVCenter
                             text: "动态能量中枢"
-                            color: "#36b2ff"
+                            color: tpinvControl.accent
                             font.pixelSize: 30
                             font.bold: true
                             elide: Text.ElideRight
@@ -1216,9 +1252,9 @@ MosRectangle {
                         Layout.maximumWidth: 400
                         Layout.preferredHeight: 34
                         radius: MosTheme.Primary.radiusPrimaryLG
-                        color: "#10284d"
+                        color: MosTheme.Primary.colorPrimaryBg
                         border.width: 1
-                        border.color: "#2d5f9e"
+                        border.color: MosTheme.Primary.colorPrimaryBorder
 
                         RowLayout {
                             id: modeRow
@@ -1230,7 +1266,7 @@ MosRectangle {
                             MosText {
                                 Layout.alignment: Qt.AlignVCenter
                                 text: "↻"
-                                color: "#eef6ff"
+                                color: MosTheme.Primary.colorPrimaryText
                                 font.pixelSize: 17
                                 font.bold: true
                             }
@@ -1239,7 +1275,7 @@ MosRectangle {
                                 Layout.alignment: Qt.AlignVCenter
                                 Layout.fillWidth: true
                                 text: "工作模式： 三相逆变 | 空间矢量调制 + 实时能效分析"
-                                color: "#f2f7ff"
+                                color: MosTheme.Primary.colorPrimaryText
                                 font.pixelSize: 13
                                 font.bold: true
                                 elide: Text.ElideRight
@@ -1257,9 +1293,9 @@ MosRectangle {
 
                     
                     radius: MosTheme.Primary.radiusPrimaryLG
-                    color: "#10182a"
+                    color: tpinvControl.panelBg
                     border.width: 1
-                    border.color: "#3b4e70"
+                    border.color: tpinvControl.panelBorder
 
                     RowLayout {
                         anchors.centerIn: parent
@@ -1268,7 +1304,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: "◷"
-                            color: "#eef6ff"
+                            color: tpinvControl.textStrong
                             font.pixelSize: 17
                             font.bold: true
                         }
@@ -1276,7 +1312,7 @@ MosRectangle {
                         MosText {
                             Layout.alignment: Qt.AlignVCenter
                             text: tpinvControl.currentTime
-                            color: "#eef6ff"
+                            color: tpinvControl.textStrong
                             font.family: "Consolas"
                             font.pixelSize: 13
                         }

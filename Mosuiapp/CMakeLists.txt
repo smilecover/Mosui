@@ -8,7 +8,7 @@ set(QT_QML_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY} CACHE PATH "QML m
 qt_add_executable(${PROJECT_NAME})
 
 file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/*/*.qml" "Tools/*.qml" "Tools/*/*.qml" "Tools/*/*/*.qml")
-
+file(GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Tools/*/*/*.cpp" "Tools/*/*/*.h")
 
 
 qt_add_qml_module(
@@ -19,10 +19,17 @@ qt_add_qml_module(
         ${QML_FILES}
         Main.qml
         MenuModel.qml
-    SOURCES main.cpp
+    SOURCES
+        main.cpp
+        ${SRC_FILES}
     RESOURCES
         resources/res.qrc
 )
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/Tools/TPInv/TPinvbackend
+)
+
 qt_add_shaders(${PROJECT_NAME} "shaders"
     PREFIX "/"
     FILES
