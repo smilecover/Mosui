@@ -42,7 +42,7 @@ QtObject{
             key: 'TPLInvSamp',
             label: qsTr('线性校正'),
             iconSource: MosIcon.SettingsOutlined,
-            source: './TPinvPage/TPLInvSamp.qml',
+            source: './TPinvPage/TPInvSamp.qml',
         }
        ]
     Component.onCompleted:{

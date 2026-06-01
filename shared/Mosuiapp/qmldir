@@ -18,12 +18,12 @@ PLC_APP 1.0 Tools/PLC_APP/PLC_APP.qml
 PLC_APPWord 1.0 Tools/PLC_APP/PLC_APPWord.qml
 TPInv 1.0 Tools/TPInv/TPInv.qml
 TPInvWord 1.0 Tools/TPInv/TPInvWord.qml
+TPInvSamp 1.0 Tools/TPInv/TPinvPage/TPInvSamp.qml
 TPInvSerialport 1.0 Tools/TPInv/TPinvPage/TPInvSerialport.qml
 TPInvcontrol 1.0 Tools/TPInv/TPinvPage/TPInvcontrol.qml
 TPInvfault 1.0 Tools/TPInv/TPinvPage/TPInvfault.qml
 TPInvhome 1.0 Tools/TPInv/TPinvPage/TPInvhome.qml
 TPInvwave 1.0 Tools/TPInv/TPinvPage/TPInvwave.qml
-TPLInvSamp 1.0 Tools/TPInv/TPinvPage/TPLInvSamp.qml
 TplnvData 1.0 Tools/TPInv/TplnvData.qml
 TplnvMenuModel 1.0 Tools/TPInv/TplnvMenuModel.qml
 Tplnvsetting 1.0 Tools/TPInv/Tplnvsetting.qml

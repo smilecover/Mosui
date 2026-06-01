@@ -22,7 +22,7 @@ Flickable {
 
 基于 \`Canvas\` 的多类型图表控件，适合仪表盘、统计页、数据概览和带悬浮提示的轻量交互图表。
 
-* **模块 { MosuiBasic }**
+* **模块 { MosuiBasic }** 
 * **继承自 { Control }**
 * **渲染方式 { Qt Quick Canvas }**
 

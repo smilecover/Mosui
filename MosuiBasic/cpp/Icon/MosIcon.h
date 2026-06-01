@@ -26,7 +26,11 @@ public:
         CodeOutlined = 0xe74f,
         CopyOutlined = 0xe65f,
         PlayCircleOutlined = 0xe65d,
-        CloseOutlined = 0xeb1b
+        CloseOutlined = 0xeb1b,
+        SerialportOutlined = 0xe60a,
+        FaultOutlined = 0xe602,
+        ControlOutlined = 0xe647,
+        WaveOutlined = 0xe601
         
         
     };

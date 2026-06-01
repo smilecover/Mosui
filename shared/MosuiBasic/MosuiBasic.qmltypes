@@ -531,7 +531,11 @@ Module {
                 "CodeOutlined",
                 "CopyOutlined",
                 "PlayCircleOutlined",
-                "CloseOutlined"
+                "CloseOutlined",
+                "SerialportOutlined",
+                "FaultOutlined",
+                "ControlOutlined",
+                "WaveOutlined"
             ]
         }
         Method { name: "allIconNames"; type: "QVariantMap" }
