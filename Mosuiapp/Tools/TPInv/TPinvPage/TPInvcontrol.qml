@@ -107,18 +107,13 @@ MosRectangle {
                         spacing: 13
 
                         Repeater {
-                            model: [
-                                { icon: "▭", label: "直流电压有效值", value: 15, stepper: false },
-                                { icon: "", label: "额定频率(Hz)", value: 50, stepper: false },
-                                { icon: "", label: "交流电压设定(V)", value: 220, stepper: true },
-                                { icon: "▰", label: "交流电压步长(V)", value: 1, stepper: false },
-                                { icon: "◒", label: "交流频率给定(Hz)", value: 50, stepper: false }
-                            ]
+                            id: parameterRepeater
+                            model:TpInvcontroldata.parameterItems
 
-                            delegate: RowLayout {
+                            delegate: RowLayout {   
                                 id: parameterRow
                                 required property var modelData
-
+                                property real currentValue: parameterInput.value
                                 Layout.fillWidth: true
                                 Layout.minimumHeight: 34
                                 Layout.preferredHeight: 34
@@ -155,6 +150,7 @@ MosRectangle {
                                     }
                                 }
                                 MosInputNumber {
+                                    id: parameterInput
                                     Layout.minimumWidth: 130
                                     Layout.preferredWidth: 130
                                     Layout.maximumWidth: 130
@@ -163,8 +159,9 @@ MosRectangle {
                                     Layout.maximumHeight: 34
                                     Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                                     value: parameterRow.modelData.value
-                                    min: 0
-                                    step: 0.1
+                                    min: parameterRow.modelData.minimum
+                                    max: parameterRow.modelData.maximum
+                                    step: parameterRow.modelData.step
                                     precision: 1
                                     clip: true
                                     useKeyboard: true
@@ -191,6 +188,17 @@ MosRectangle {
                                 sizeHint: "normal"
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                onClicked: {
+                                    let parameterdata = [];
+                                    for (let i = 0; i < parameterRepeater.count; ++i) {
+                                        let item = parameterRepeater.itemAt(i)
+                                        if (item)
+                                            parameterdata.push(item.currentValue)
+                                    }
+                                    TpInvcontroldata.setallParameters(parameterdata)
+                                }
+
+
                             }
 
                             MosButton {

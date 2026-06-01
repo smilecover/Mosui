@@ -230,7 +230,9 @@ private:
 TpInvDataProcessing::TpInvDataProcessing(QObject *parent)
     : QObject(parent),
       rxBuffer_(RxBufferCapacity),
+      
       sampleBuffer_(DefaultSampleCapacity * sizeof(Sample))
+
 {
     workerThread_ = new QThread(this);
     workerThread_->setObjectName(QStringLiteral("TpInvDataProcessingThread"));
