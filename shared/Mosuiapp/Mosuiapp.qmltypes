@@ -557,6 +557,7 @@ Module {
             Parameter { name: "frame"; type: "QByteArray" }
         }
         Method { name: "clear" }
+        Method { name: "Initprocess"; type: "int" }
         Method { name: "buildRequestParametersFrame"; type: "QByteArray" }
         Method {
             name: "buildApplyParametersFrame"

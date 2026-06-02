@@ -20,6 +20,8 @@ MosRectangle {
     readonly property color panelBg: MosTheme.Primary.colorFillQuaternary
     readonly property color fieldBg: MosTheme.Primary.colorFillQuaternary
 
+    readonly property int _tpInvProcessInit: TpinvControlProcess.Initprocess()
+
     readonly property var baudRateOptions: [
         { label: "9600", value: 9600 },
         { label: "19200", value: 19200 },

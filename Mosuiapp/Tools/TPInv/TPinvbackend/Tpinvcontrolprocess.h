@@ -8,6 +8,7 @@
 #include <QVariantList>
 #include <QtQml/qqml.h>
 #include <qstringview.h>
+#include <qtmetamacros.h>
 
 class Tpinvcontrolprocess : public QObject
 {
@@ -20,6 +21,7 @@ class Tpinvcontrolprocess : public QObject
     Q_PROPERTY(int droppedFrameCount READ droppedFrameCount NOTIFY statsChanged FINAL)
     Q_PROPERTY(QString lastFrameHex READ lastFrameHex NOTIFY lastFrameChanged FINAL)
     Q_PROPERTY(QString lastErrorString READ lastErrorString NOTIFY errorChanged FINAL)
+
 
 public:
     enum FrameType {
@@ -46,6 +48,7 @@ public:
     Q_INVOKABLE void appendHexData(const QString &hexText);
     Q_INVOKABLE void processFrame(const QByteArray &frame);
     Q_INVOKABLE void clear();
+    Q_INVOKABLE int Initprocess() const;
 
     Q_INVOKABLE QByteArray buildRequestParametersFrame();
     Q_INVOKABLE QByteArray buildApplyParametersFrame(const QVariantList &parameters);

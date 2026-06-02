@@ -1,7 +1,7 @@
 #include "Tpinvcontrolprocess.h"
 
 #include "TpInvcontroldata.h"
-
+#include <QDebug>
 #include <QQmlEngine>
 #include <QtGlobal>
 
@@ -18,7 +18,11 @@ Tpinvcontrolprocess::Tpinvcontrolprocess(QObject *parent)
 {
     bandTpInvcontroldata();
 }
-
+int Tpinvcontrolprocess::Initprocess() const
+{
+    qDebug() << "初始化逆变器控制进程";
+    return 0;
+}
 Tpinvcontrolprocess::~Tpinvcontrolprocess() = default;
 
 Tpinvcontrolprocess *Tpinvcontrolprocess::instance()
@@ -381,13 +385,20 @@ void Tpinvcontrolprocess::bandTpInvcontroldata()
         [this](){
             this->buildTpInvParamet();
         }
-    );   
+    );
 }
+
 void Tpinvcontrolprocess::buildTpInvParamet()
 {
     QVariantList TpInvParamet_ = TpInvcontroldata::instance()->parameterItems();
     
-
-    
+    for(int i = 0; i < TpInvParamet_.size(); ++i){
+        QVariantMap param = TpInvParamet_.at(i).toMap();
+        QString label = param["label"].toString();
+        QVariant value = param["value"];
+        qDebug() << "参数" << label << ":" << value;
+      
+    }
+ 
 }
 

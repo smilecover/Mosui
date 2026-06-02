@@ -57,7 +57,6 @@ void TpInvcontroldata::setRunning(bool running)
     if (running_ == running) {
         return;
     }
-
     running_ = running;
     emit runningChanged();
 }
@@ -195,27 +194,27 @@ void TpInvcontroldata::setParameterValue(const QString &key, const QVariant &val
     item.insert(QStringLiteral("value"), value);
     parameterItems_[index] = item;
     emit parameterItemsChanged();
+    qDebug()<<"设置成功";
 }
 void TpInvcontroldata::setallParameters(const QList<double> &value)
 {
-    // 取最小长度，防止越界崩溃
-    const int count = qMin(parameterItems_.size(), value.size());
     bool changed = false;
+    const int count = parameterItems_.size();
 
     for (int i = 0; i < count; ++i) {
+        
         QVariantMap param = parameterItems_.at(i).toMap();
-        if (param.value(QStringLiteral("value")).toInt() == value.at(i)) {
+        if (qFuzzyCompare(param.value(QStringLiteral("value")).toDouble(), value.at(i))) {
             continue;
         }
 
         param.insert(QStringLiteral("value"), value.at(i));
         parameterItems_[i] = param;
         changed = true;
-        QString name = param["name"].toString();
-        setParameterValue(name, value[i]);
     }
-    qDebug()<<"设置成功";
+
     if (changed) {
+        qDebug() << "设置成功";
         emit parameterItemsChanged();
     }
 }
