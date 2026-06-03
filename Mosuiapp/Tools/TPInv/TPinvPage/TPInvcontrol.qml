@@ -21,6 +21,7 @@ MosRectangle {
     readonly property color fieldBg: MosTheme.Primary.colorFillQuaternary
 
     readonly property int _tpInvProcessInit: TpinvControlProcess.Initprocess()
+    readonly property int _tpInvSerialInit: TpinvSerial.InitTpinvSerial()
 
     readonly property var baudRateOptions: [
         { label: "9600", value: 9600 },
@@ -107,6 +108,41 @@ MosRectangle {
                         Layout.leftMargin: 24
                         Layout.rightMargin: 24
                         spacing: 13
+                        RowLayout { 
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 34
+                            Layout.preferredHeight: 34
+                            Layout.maximumHeight: 34
+                            spacing: 12
+                            MosText {
+                                    Layout.fillWidth: true
+                                    Layout.minimumWidth: 0
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: '工作模式'
+                                    color: tpinvControl.textMuted
+                                    font.pixelSize: 14
+                                    font.bold: true
+                                    elide: Text.ElideRight
+                            }
+                            MosSelect {
+                                Layout.minimumWidth: 130
+                                Layout.preferredWidth: 130
+                                Layout.maximumWidth: 130
+                                Layout.minimumHeight: 34
+                                Layout.preferredHeight: 34
+                                Layout.maximumHeight: 34
+                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                                showToolTip: true
+                                currentIndex: TpInvcontroldata.parameterSelectIndex
+                                model:TpInvcontroldata.parametermodelItems
+                                colorText: tpinvControl.textMuted
+                                colorBg: 'transparent'
+                                colorBorder: tpinvControl.panelBorder
+                                onActivated: {
+                                    TpInvcontroldata.parameterSelectIndex = currentIndex
+                                }
+                            }
+                        }
 
                         Repeater {
                             id: parameterRepeater
@@ -192,15 +228,14 @@ MosRectangle {
                                 font.bold: true
                                 onClicked: {
                                     let parameterdata = [];
-                                    for (let i = 0; i < parameterRepeater.count; ++i) {
+                                    for (let i = 0; i < parameterRepeater.count; i++) {
                                         let item = parameterRepeater.itemAt(i)
-                                        if (item)
+                                        if (item) {
                                             parameterdata.push(item.currentValue)
+                                        }
                                     }
                                     TpInvcontroldata.setallParameters(parameterdata)
                                 }
-
-
                             }
 
                             MosButton {
@@ -211,11 +246,17 @@ MosRectangle {
                                 sizeHint: "normal"
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                onClicked: {
+                                    TpInvcontroldata.sendCommand(appTplnvData.controlSerialPortName, TpinvControlProcess.txBuffer[0]);
+                                }
+                                    
                             }
+
                         }
                     }
                 }
             }
+            
             MosRectangle {
                 Layout.leftMargin: 20
                 Layout.rightMargin: 20
@@ -335,6 +376,7 @@ MosRectangle {
                                 font.pixelSize: 13
                                 onActivated: {
                                     appTplnvData.controlSerialPortName = currentValue
+                                    TpinvSerial.controlPortName = currentValue
                                     appTplnvData.updateSerialConnectionStates()
                                 }
                             }
@@ -358,10 +400,10 @@ MosRectangle {
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 5
+                            spacing: 20
 
                             MosButton {
-
+                                Layout.fillWidth: true
                                 Layout.preferredHeight: 40
                                 text: "连接"
                                 type: MosButton.Type_Primary
@@ -372,6 +414,7 @@ MosRectangle {
                             }
 
                             MosButton {
+                                Layout.fillWidth: true
                                 Layout.preferredHeight: 40
                                 text: "断开"
                                 type: MosButton.Type_Outlined
@@ -379,15 +422,6 @@ MosRectangle {
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
                                 onClicked: appTplnvData.closeControlSerialPort()
-                            }
-
-                            MosButton {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                text: "◢  请求参数"
-                                type: MosButton.Type_Outlined
-                                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
-                                font.bold: true
                             }
                         }
                     }
@@ -479,7 +513,7 @@ MosRectangle {
                                     Layout.preferredHeight: 44
                                     Layout.alignment: Qt.AlignVCenter
                                     radius: height / 2
-                                    color: "lightblue"
+                                    color: TpInvcontroldata.running ? "lightgreen" : "lightblue"
                                     border.width: 0
 
                                     RowLayout {
@@ -495,7 +529,7 @@ MosRectangle {
 
                                         MosText {
                                             Layout.alignment: Qt.AlignVCenter
-                                            text: "未启动"
+                                            text: TpInvcontroldata.running ? "运行中" : "未启动"
                                             color: MosTheme.Primary.colorPrimaryText
                                             font.pixelSize: 18
                                             font.bold: true
@@ -510,74 +544,37 @@ MosRectangle {
                             spacing: 12
 
                             MosButton {
+                                enabled: !TpInvcontroldata.running
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
                                 text: "▶  启动"
                                 type: MosButton.Type_Primary
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                onClicked: TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
                             }
 
                             MosButton {
+                                enabled: TpInvcontroldata.running
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
                                 text: "■  停机"
                                 type: MosButton.Type_Outlined
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                            }
-                        }
-
-                        MosRectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 62
-                            radius: MosTheme.Primary.radiusPrimaryLG
-                            color: 'lightblue'
-                            border.width: 0
-
-                            ColumnLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 14
-                                anchors.rightMargin: 14
-                                anchors.topMargin: 10
-                                anchors.bottomMargin: 8
-                                spacing: 2
-
-                                MosText {
-                                    Layout.fillWidth: true
-                                    text: "⚠ 未运行"
-                                    color: MosTheme.Primary.colorPrimaryText
-                                    font.pixelSize: 16
-                                    font.bold: true
-                                    elide: Text.ElideRight
-                                }
-
-                                MosText {
-                                    Layout.fillWidth: true
-                                    text: "系统正常，三相平衡"
-                                    color: MosTheme.Primary.colorPrimaryText
-                                    font.pixelSize: 11
-                                    elide: Text.ElideRight
-                                }
+                                onClicked: TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
                             }
                         }
                     }
                 }
             }
-
-
-
-
-
-
         }
-
-
-
-
-
-
     }
+
+
+
+
+
     property Component rightloaderComponent: Item {
         implicitWidth: rightContentLayout.implicitWidth + rightContentLayout.anchors.margins * 2
         implicitHeight: rightContentLayout.implicitHeight + rightContentLayout.anchors.margins * 2
@@ -998,77 +995,7 @@ MosRectangle {
                         rowSpacing: 12
 
                         Repeater {
-                            model: [
-                                {
-                                    title: "电压监测",
-                                    accent: "#2f8dff",
-                                    items: [
-                                        { name: "直流电压", value: "0.0", unit: "V" },
-                                        { name: "半母线电压", value: "0.0", unit: "V" },
-                                        { name: "A相电压", value: "0.0", unit: "V" },
-                                        { name: "B相电压", value: "0.0", unit: "V" },
-                                        { name: "C相电压", value: "0.0", unit: "V" }
-                                    ]
-                                },
-                                {
-                                    title: "电流监测",
-                                    accent: "#37d6a3",
-                                    items: [
-                                        { name: "直流电流", value: "0.0", unit: "A" },
-                                        { name: "A相电流", value: "0.0", unit: "A" },
-                                        { name: "B相电流", value: "0.0", unit: "A" },
-                                        { name: "C相电流", value: "0.0", unit: "A" }
-                                    ]
-                                },
-                                {
-                                    title: "频率与功率",
-                                    accent: "#f7b955",
-                                    items: [
-                                        { name: "A相频率", value: "0.00", unit: "Hz" },
-                                        { name: "B相频率", value: "0.00", unit: "Hz" },
-                                        { name: "C相频率", value: "0.00", unit: "Hz" },
-                                        { name: "直流侧功率", value: "0.0", unit: "W" },
-                                        { name: "交流有功功率", value: "0.0", unit: "W" },
-                                        { name: "交流无功功率", value: "0.0", unit: "var" },
-                                        { name: "交流视在功率", value: "0.0", unit: "VA" },
-                                        { name: "功率因数", value: "0.00", unit: "" },
-                                        { name: "效率", value: "0.0", unit: "%" }
-                                    ]
-                                },
-                                {
-                                    title: "三相功率",
-                                    accent: "#b88cff",
-                                    items: [
-                                        { name: "A相有功功率", value: "0.0", unit: "W" },
-                                        { name: "B相有功功率", value: "0.0", unit: "W" },
-                                        { name: "C相有功功率", value: "0.0", unit: "W" },
-                                        { name: "A相无功功率", value: "0.0", unit: "var" },
-                                        { name: "B相无功功率", value: "0.0", unit: "var" },
-                                        { name: "C相无功功率", value: "0.0", unit: "var" },
-                                        { name: "A相视在功率", value: "0.0", unit: "VA" },
-                                        { name: "B相视在功率", value: "0.0", unit: "VA" },
-                                        { name: "C相视在功率", value: "0.0", unit: "VA" }
-                                    ]
-                                },
-                                {
-                                    title: "温度与版本",
-                                    accent: "#ff8a4c",
-                                    items: [
-                                        { name: "环境温度", value: "0.0", unit: "℃" },
-                                        { name: "辅源温度", value: "0.0", unit: "℃" },
-                                        { name: "IGBT温度", value: "0.0", unit: "℃" },
-                                        { name: "硬件版本号", value: "--", unit: "" },
-                                        { name: "软件版本号", value: "--", unit: "" }
-                                    ]
-                                },
-                                {
-                                    title: "诊断状态",
-                                    accent: "#ff5f68",
-                                    items: [
-                                        { name: "故障码", value: "0x0000", unit: "" }
-                                    ]
-                                }
-                            ]
+                            model: TpInvcontroldata.monitorGroups
 
                             delegate: MosRectangle {
                                 id: monitorGroup

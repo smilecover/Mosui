@@ -141,11 +141,20 @@ Module {
         isSingleton: true
         exportMetaObjectRevisions: [256]
         Property {
+            name: "parametermodelItems"
+            type: "QVariantList"
+            read: "parametermodelItems"
+            notify: "parametermodelItemsChanged"
+            index: 0
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
             name: "parameterItems"
             type: "QVariantList"
             read: "parameterItems"
             notify: "parameterItemsChanged"
-            index: 0
+            index: 1
             isReadonly: true
             isFinal: true
         }
@@ -154,7 +163,7 @@ Module {
             type: "QVariantList"
             read: "monitorGroups"
             notify: "monitorGroupsChanged"
-            index: 1
+            index: 2
             isReadonly: true
             isFinal: true
         }
@@ -164,109 +173,45 @@ Module {
             read: "running"
             write: "setRunning"
             notify: "runningChanged"
-            index: 2
-            isFinal: true
-        }
-        Property {
-            name: "runStateText"
-            type: "QString"
-            read: "runStateText"
-            notify: "runningChanged"
             index: 3
-            isReadonly: true
             isFinal: true
         }
         Property {
-            name: "runSummaryText"
-            type: "QString"
-            read: "runSummaryText"
-            write: "setRunSummaryText"
-            notify: "runSummaryTextChanged"
+            name: "parameterSelectIndex"
+            type: "QVariant"
+            read: "parameterSelectIndex"
+            write: "setParameterSelectIndex"
+            notify: "parameterSelectIndexChanged"
             index: 4
             isFinal: true
         }
-        Property {
-            name: "faultCode"
-            type: "QString"
-            read: "faultCode"
-            write: "setFaultCode"
-            notify: "faultChanged"
-            index: 5
-            isFinal: true
-        }
-        Property {
-            name: "faultDescription"
-            type: "QString"
-            read: "faultDescription"
-            write: "setFaultDescription"
-            notify: "faultChanged"
-            index: 6
-            isFinal: true
-        }
-        Property {
-            name: "dcVoltage"
-            type: "double"
-            read: "dcVoltage"
-            write: "setDcVoltage"
-            notify: "measurementsChanged"
-            index: 7
-            isFinal: true
-        }
-        Property {
-            name: "acVoltage"
-            type: "double"
-            read: "acVoltage"
-            write: "setAcVoltage"
-            notify: "measurementsChanged"
-            index: 8
-            isFinal: true
-        }
-        Property {
-            name: "acFrequency"
-            type: "double"
-            read: "acFrequency"
-            write: "setAcFrequency"
-            notify: "measurementsChanged"
-            index: 9
-            isFinal: true
-        }
+        Signal { name: "parameterSelectIndexChanged" }
+        Signal { name: "parametermodelItemsChanged" }
         Signal { name: "parameterItemsChanged" }
         Signal { name: "monitorGroupsChanged" }
         Signal { name: "runningChanged" }
-        Signal { name: "runSummaryTextChanged" }
-        Signal { name: "faultChanged" }
-        Signal { name: "measurementsChanged" }
         Signal {
-            name: "commandRequested"
-            Parameter { name: "command"; type: "QString" }
-            Parameter { name: "payload"; type: "QVariantMap" }
-        }
-        Method {
-            name: "parameterValue"
-            type: "QVariant"
-            Parameter { name: "key"; type: "QString" }
-        }
-        Method {
-            name: "setParameterValue"
-            Parameter { name: "key"; type: "QString" }
-            Parameter { name: "value"; type: "QVariant" }
+            name: "cmdTx"
+            Parameter { name: "SerialPort"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
         }
         Method {
             name: "setallParameters"
             Parameter { name: "value"; type: "double"; isList: true }
         }
-        Method { name: "confirmParameters" }
-        Method { name: "applyParameters" }
-        Method { name: "requestParameters" }
-        Method { name: "startInverter" }
-        Method { name: "stopInverter" }
-        Method { name: "resetFault" }
         Method {
-            name: "updateMonitorValue"
-            Parameter { name: "key"; type: "QString" }
-            Parameter { name: "value"; type: "QVariant" }
+            name: "startInverter"
+            Parameter { name: "SerialPort"; type: "QString" }
         }
-        Method { name: "reset" }
+        Method {
+            name: "stopInverter"
+            Parameter { name: "SerialPort"; type: "QString" }
+        }
+        Method {
+            name: "sendCommand"
+            Parameter { name: "SerialPort"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
+        }
     }
     Component {
         file: "TpinvSerial.h"
@@ -278,177 +223,16 @@ Module {
         isSingleton: true
         exportMetaObjectRevisions: [256]
         Property {
-            name: "portOptions"
-            type: "QVariantList"
-            read: "portOptions"
-            notify: "portOptionsChanged"
+            name: "controlPortName"
+            type: "QString"
+            read: "controlPortName"
+            write: "setControlPortName"
+            notify: "controlPortNameChanged"
             index: 0
-            isReadonly: true
             isFinal: true
         }
-        Property {
-            name: "portName"
-            type: "QString"
-            read: "portName"
-            write: "setPortName"
-            notify: "portNameChanged"
-            index: 1
-            isFinal: true
-        }
-        Property {
-            name: "baudRate"
-            type: "int"
-            read: "baudRate"
-            write: "setBaudRate"
-            notify: "baudRateChanged"
-            index: 2
-            isFinal: true
-        }
-        Property {
-            name: "dataBits"
-            type: "int"
-            read: "dataBits"
-            write: "setDataBits"
-            notify: "dataBitsChanged"
-            index: 3
-            isFinal: true
-        }
-        Property {
-            name: "parity"
-            type: "QString"
-            read: "parity"
-            write: "setParity"
-            notify: "parityChanged"
-            index: 4
-            isFinal: true
-        }
-        Property {
-            name: "stopBits"
-            type: "QString"
-            read: "stopBits"
-            write: "setStopBits"
-            notify: "stopBitsChanged"
-            index: 5
-            isFinal: true
-        }
-        Property {
-            name: "flowControl"
-            type: "QString"
-            read: "flowControl"
-            write: "setFlowControl"
-            notify: "flowControlChanged"
-            index: 6
-            isFinal: true
-        }
-        Property {
-            name: "open"
-            type: "bool"
-            read: "isOpen"
-            notify: "openChanged"
-            index: 7
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "errorString"
-            type: "QString"
-            read: "errorString"
-            notify: "errorStringChanged"
-            index: 8
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "receivedText"
-            type: "QString"
-            read: "receivedText"
-            notify: "receivedChanged"
-            index: 9
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "receivedHex"
-            type: "QString"
-            read: "receivedHex"
-            notify: "receivedChanged"
-            index: 10
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "receivedBytes"
-            type: "qlonglong"
-            read: "receivedBytes"
-            notify: "receivedChanged"
-            index: 11
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "writtenBytes"
-            type: "qlonglong"
-            read: "writtenBytes"
-            notify: "writtenBytesChanged"
-            index: 12
-            isReadonly: true
-            isFinal: true
-        }
-        Signal { name: "portOptionsChanged" }
-        Signal { name: "portNameChanged" }
-        Signal { name: "baudRateChanged" }
-        Signal { name: "dataBitsChanged" }
-        Signal { name: "parityChanged" }
-        Signal { name: "stopBitsChanged" }
-        Signal { name: "flowControlChanged" }
-        Signal { name: "openChanged" }
-        Signal { name: "errorStringChanged" }
-        Signal { name: "receivedChanged" }
-        Signal { name: "writtenBytesChanged" }
-        Signal {
-            name: "dataReceived"
-            Parameter { name: "data"; type: "QByteArray" }
-            Parameter { name: "text"; type: "QString" }
-            Parameter { name: "hex"; type: "QString" }
-        }
-        Signal {
-            name: "frameReceived"
-            Parameter { name: "data"; type: "QByteArray" }
-        }
-        Signal {
-            name: "frameWritten"
-            Parameter { name: "data"; type: "QByteArray" }
-        }
-        Signal {
-            name: "serialErrorOccurred"
-            Parameter { name: "message"; type: "QString" }
-        }
-        Method { name: "refreshPorts"; type: "QVariantList" }
-        Method { name: "openPort"; type: "bool" }
-        Method { name: "closePort" }
-        Method { name: "togglePort"; type: "bool" }
-        Method {
-            name: "writeText"
-            type: "bool"
-            Parameter { name: "text"; type: "QString" }
-        }
-        Method {
-            name: "writeHex"
-            type: "bool"
-            Parameter { name: "hexText"; type: "QString" }
-        }
-        Method {
-            name: "writeBytes"
-            type: "bool"
-            Parameter { name: "data"; type: "QByteArray" }
-        }
-        Method {
-            name: "writeFrame"
-            type: "bool"
-            Parameter { name: "frame"; type: "QByteArray" }
-        }
-        Method { name: "clearReceived" }
-        Method { name: "clearError" }
+        Signal { name: "controlPortNameChanged" }
+        Method { name: "InitTpinvSerial"; type: "int" }
     }
     Component {
         file: "Tpinvcontrolprocess.h"
@@ -459,118 +243,17 @@ Module {
         isCreatable: false
         isSingleton: true
         exportMetaObjectRevisions: [256]
-        Enum {
-            name: "FrameType"
-            values: [
-                "UnknownFrame",
-                "ParameterFrame",
-                "MonitorFrame",
-                "FaultFrame",
-                "AckFrame"
-            ]
-        }
         Property {
-            name: "rxBufferSize"
-            type: "int"
-            read: "rxBufferSize"
-            notify: "rxBufferChanged"
+            name: "txBuffer"
+            type: "QByteArray"
+            isList: true
+            read: "txBuffer"
+            notify: "txBufferChanged"
             index: 0
             isReadonly: true
             isFinal: true
         }
-        Property {
-            name: "parsedFrameCount"
-            type: "int"
-            read: "parsedFrameCount"
-            notify: "statsChanged"
-            index: 1
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "droppedFrameCount"
-            type: "int"
-            read: "droppedFrameCount"
-            notify: "statsChanged"
-            index: 2
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "lastFrameHex"
-            type: "QString"
-            read: "lastFrameHex"
-            notify: "lastFrameChanged"
-            index: 3
-            isReadonly: true
-            isFinal: true
-        }
-        Property {
-            name: "lastErrorString"
-            type: "QString"
-            read: "lastErrorString"
-            notify: "errorChanged"
-            index: 4
-            isReadonly: true
-            isFinal: true
-        }
-        Signal { name: "rxBufferChanged" }
-        Signal { name: "statsChanged" }
-        Signal { name: "lastFrameChanged" }
-        Signal { name: "errorChanged" }
-        Signal {
-            name: "frameParsed"
-            Parameter { name: "frame"; type: "QByteArray" }
-            Parameter { name: "frameType"; type: "int" }
-        }
-        Signal {
-            name: "parameterValuesParsed"
-            Parameter { name: "values"; type: "QVariantList" }
-        }
-        Signal {
-            name: "monitorValueParsed"
-            Parameter { name: "key"; type: "QString" }
-            Parameter { name: "value"; type: "QVariant" }
-        }
-        Signal {
-            name: "faultCodeParsed"
-            Parameter { name: "faultCode"; type: "QString" }
-        }
-        Signal {
-            name: "commandFrameBuilt"
-            Parameter { name: "frame"; type: "QByteArray" }
-        }
-        Signal {
-            name: "processErrorOccurred"
-            Parameter { name: "message"; type: "QString" }
-        }
-        Method {
-            name: "appendSerialData"
-            Parameter { name: "data"; type: "QByteArray" }
-        }
-        Method {
-            name: "appendHexData"
-            Parameter { name: "hexText"; type: "QString" }
-        }
-        Method {
-            name: "processFrame"
-            Parameter { name: "frame"; type: "QByteArray" }
-        }
-        Method { name: "clear" }
+        Signal { name: "txBufferChanged" }
         Method { name: "Initprocess"; type: "int" }
-        Method { name: "buildRequestParametersFrame"; type: "QByteArray" }
-        Method {
-            name: "buildApplyParametersFrame"
-            type: "QByteArray"
-            Parameter { name: "parameters"; type: "QVariantList" }
-        }
-        Method { name: "buildStartFrame"; type: "QByteArray" }
-        Method { name: "buildStopFrame"; type: "QByteArray" }
-        Method { name: "buildResetFaultFrame"; type: "QByteArray" }
-        Method {
-            name: "bytesToHex"
-            type: "QString"
-            Parameter { name: "data"; type: "QByteArray" }
-        }
     }
 }

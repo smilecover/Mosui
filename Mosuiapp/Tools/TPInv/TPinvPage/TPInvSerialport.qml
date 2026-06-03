@@ -517,7 +517,7 @@ MosRectangle{
         Connections {
             target: MosSerialPortManager
 
-            function onDataReceivedFromPort(portName, data, text, hex) {
+            function onReceiveDataFromPort(portName, data, text, hex) {
                 if (portName !== serialportPage.selectedPortName)
                     return
                 rightItem.appendReceivedData(text, hex)
@@ -577,9 +577,9 @@ MosRectangle{
                 return true
             }
             if (serialportPage.sendMode === "HEX") {
-                return MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, data)
+                return MosSerialPortManager.SendHexToPort(serialportPage.selectedPortName, data)
             }
-            return MosSerialPortManager.writeTextToPort(serialportPage.selectedPortName, data)
+            return MosSerialPortManager.SendTextToPort(serialportPage.selectedPortName, data)
         }
 
         function sendAutoData() {
@@ -593,7 +593,7 @@ MosRectangle{
                 autoCommandIndex = 0
             }
 
-            const ok = MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, payloads[autoCommandIndex])
+            const ok = MosSerialPortManager.SendHexToPort(serialportPage.selectedPortName, payloads[autoCommandIndex])
             autoCommandIndex = (autoCommandIndex + 1) % payloads.length
             return ok
         }
@@ -654,7 +654,7 @@ MosRectangle{
                 return
             }
 
-            MosSerialPortManager.writeHexToPort(serialportPage.selectedPortName, pendingCommandPayloads[pendingCommandIndex])
+            MosSerialPortManager.SendHexToPort(serialportPage.selectedPortName, pendingCommandPayloads[pendingCommandIndex])
             pendingCommandIndex++
 
             if (pendingCommandIndex >= pendingCommandPayloads.length) {

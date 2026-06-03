@@ -93,7 +93,7 @@ MosRectangle {
         if (!wavePage.isConnected())
             return false
 
-        return MosSerialPortManager.writeHexToPort(selectedPortName, "FF CC 01 00 01 CC")
+        return MosSerialPortManager.SendHexToPort(selectedPortName, "FF CC 01 00 01 CC")
     }
 
     function updateWavePortOpen() {
@@ -168,7 +168,7 @@ MosRectangle {
     Connections {
         target: MosSerialPortManager
 
-        function onDataReceivedFromPort(portName, data, text, hex) {
+        function onReceiveDataFromPort(portName, data, text, hex) {
             if (portName !== wavePage.selectedPortName)
                 return
             TpInvDataProcessing.appendSerialData(data)

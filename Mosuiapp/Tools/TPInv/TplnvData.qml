@@ -58,6 +58,7 @@ QtObject {
         } else if (groupName === "control") {
             if (controlSerialPortName.length === 0 || !hasPort(controlSerialPortName))
                 controlSerialPortName = firstAvailablePort(waveSerialPortName)
+            TpinvSerial.controlPortName = controlSerialPortName
         } else {
             if (controlSerialPortName.length === 0 || !hasPort(controlSerialPortName))
                 controlSerialPortName = firstAvailablePort(waveSerialPortName)

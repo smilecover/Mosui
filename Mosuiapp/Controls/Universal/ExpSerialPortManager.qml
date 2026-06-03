@@ -33,7 +33,7 @@ Flickable {
 
 \`MosSerialPortManager\` 内部按 \`portName\` 管理多个 \`QSerialPort\` 实例。QML 页面、C++ 协议解析器、波形采集器拿到的是同一个全局管理器，因此可以在不同页面同时监听同一份串口数据。
 
-\`currentPortName\` 是默认读写目标。\`writeText/writeHex/writeBytes\` 写当前串口；多设备场景应优先使用 \`writeTextToPort/writeHexToPort/writeBytesToPort\`，避免当前串口切换导致写错设备。
+\`currentPortName\` 是默认读写目标。\`SendText/SendHex/SendBytes\` 写当前串口；多设备场景应优先使用 \`SendTextToPort/SendHexToPort/SendBytesToPort\`，避免当前串口切换导致写错设备。
 
 \`isOpen\` 只表示 \`currentPortName\` 当前是否打开；如果需要表达整体连接状态，使用 \`hasOpenPorts/openPortCount/openPortNames/openPortList\`。
                        `)
@@ -98,12 +98,12 @@ openPort(portName, baudRate, dataBits, parity, stopBits, flowControl) | bool | �
 closePort() | void | 关闭当前默认串口
 closePort(portName) | void | 关闭指定串口
 closeAllPorts() | void | 关闭全部串口
-writeText(text) | bool | 向当前串口写 UTF-8 文本
-writeTextToPort(portName, text) | bool | 向指定串口写 UTF-8 文本
-writeHex(hexText) | bool | 向当前串口写 HEX 数据
-writeHexToPort(portName, hexText) | bool | 向指定串口写 HEX 数据
-writeBytes(data) | bool | 向当前串口写 \`QByteArray\`
-writeBytesToPort(portName, data) | bool | 向指定串口写 \`QByteArray\`
+SendText(text) | bool | 向当前串口写 UTF-8 文本
+SendTextToPort(portName, text) | bool | 向指定串口写 UTF-8 文本
+SendHex(hexText) | bool | 向当前串口写 HEX 数据
+SendHexToPort(portName, hexText) | bool | 向指定串口写 HEX 数据
+SendBytes(data) | bool | 向当前串口写 \`QByteArray\`
+SendBytesToPort(portName, data) | bool | 向指定串口写 \`QByteArray\`
 bytesToHex(data) | string | 将 \`QByteArray\` 转为大写、空格分隔 HEX 文本
 clearError() | void | 清空 \`errorString\`
 
@@ -119,7 +119,7 @@ parity | \`"none"\`, \`"even"\`, \`"odd"\`, \`"mark"\`, \`"space"\` | 不匹配�
 stopBits | \`"1"\`, \`"1.5"\`, \`"2"\` | 不匹配时按 1 位
 flowControl | \`"none"\`, \`"hardware"\`, \`"software"\` | 不匹配时按 \`none\`
 
-\`writeHex/writeHexToPort\` 支持空格、逗号、分号、换行和 \`0x\` 前缀；清理后必须是偶数长度的合法十六进制字符，否则返回 \`false\` 并写入 \`errorString\`。
+\`SendHex/SendHexToPort\` 支持空格、逗号、分号、换行和 \`0x\` 前缀；清理后必须是偶数长度的合法十六进制字符，否则返回 \`false\` 并写入 \`errorString\`。
                        `)
         }
 
@@ -133,10 +133,10 @@ isOpenChanged() | 当前串口打开状态变化
 currentPortNameChanged() | 当前默认串口变化
 errorStringChanged() | 错误文本变化
 openPortsChanged() | 已打开串口集合变化
-dataReceived(data, text, hex) | 任意串口收到数据，适合单串口工具
-dataReceivedFromPort(portName, data, text, hex) | 指定来源串口收到数据，适合多串口工具
-bytesWritten(bytes) | 任意串口写入完成
-bytesWrittenFromPort(portName, bytes) | 指定串口写入完成
+ReceiveData(data, text, hex) | 任意串口收到数据，适合单串口工具
+ReceiveDataFromPort(portName, data, text, hex) | 指定来源串口收到数据，适合多串口工具
+BytesSent(bytes) | 任意串口写入完成
+BytesSentFromPort(portName, bytes) | 指定串口写入完成
 errorOccurred(message) | 任意串口发生错误
 errorOccurredFromPort(portName, message) | 指定串口发生错误
 
@@ -151,7 +151,7 @@ errorOccurredFromPort(portName, message) | 指定串口发生错误
         CodeBox {
             width: parent.width
             desc: qsTr(`
-扫描串口并打开选中的端口。单串口页面可以直接使用 \`isOpen/currentPortName/writeHex/dataReceived\` 这一组简化接口。
+扫描串口并打开选中的端口。单串口页面可以直接使用 \`isOpen/currentPortName/SendHex/ReceiveData\` 这一组简化接口。
                        `)
             code: `
 import QtQuick
@@ -438,17 +438,17 @@ ColumnLayout {
         CodeBox {
             width: parent.width
             desc: qsTr(`
-接收串口数据。单串口工具可以监听 \`dataReceived\`；多串口工具应监听 \`dataReceivedFromPort\`，并按 \`portName\` 分发。
+接收串口数据。单串口工具可以监听 \`ReceiveData\`；多串口工具应监听 \`ReceiveDataFromPort\`，并按 \`portName\` 分发。
                        `)
             code: `
 Connections {
     target: MosSerialPortManager
 
-    function onDataReceived(data, text, hex) {
+    function onReceiveData(data, text, hex) {
         console.log("RX current/any:", hex)
     }
 
-    function onDataReceivedFromPort(portName, data, text, hex) {
+    function onReceiveDataFromPort(portName, data, text, hex) {
         console.log("RX from", portName, hex)
     }
 
@@ -480,7 +480,7 @@ Connections {
                 Connections {
                     target: MosSerialPortManager
 
-                    function onDataReceivedFromPort(portName, data, text, hex) {
+                    function onReceiveDataFromPort(portName, data, text, hex) {
                         receivePreview.text += "[" + portName + "] HEX " + hex + "\\n"
                         receivePreview.scrollToEnd()
                     }
@@ -496,16 +496,16 @@ Connections {
         CodeBox {
             width: parent.width
             desc: qsTr(`
-写入数据时，\`writeText/writeHex/writeBytes\` 使用当前串口；\`writeTextToPort/writeHexToPort/writeBytesToPort\` 可以明确指定串口。\`writeHex\` 返回 \`false\` 时可读取 \`errorString\`。
+写入数据时，\`SendText/SendHex/SendBytes\` 使用当前串口；\`SendTextToPort/SendHexToPort/SendBytesToPort\` 可以明确指定串口。\`SendHex\` 返回 \`false\` 时可读取 \`errorString\`。
                        `)
             code: `
 // 写当前串口
-MosSerialPortManager.writeText("AT\\r\\n")
-MosSerialPortManager.writeHex("01 03 00 00 00 02 C4 0B")
+MosSerialPortManager.SendText("AT\\r\\n")
+MosSerialPortManager.SendHex("01 03 00 00 00 02 C4 0B")
 
 // 写指定串口
-MosSerialPortManager.writeTextToPort("COM3", "AT\\r\\n")
-MosSerialPortManager.writeHexToPort("COM4", "AA 55 01 02")
+MosSerialPortManager.SendTextToPort("COM3", "AT\\r\\n")
+MosSerialPortManager.SendHexToPort("COM4", "AA 55 01 02")
 
 // QByteArray 转 HEX 文本
 const hex = MosSerialPortManager.bytesToHex(data)
@@ -531,7 +531,7 @@ const hex = MosSerialPortManager.bytesToHex(data)
                         type: MosButton.Type_Primary
                         enabled: MosSerialPortManager.isOpen && sendInput.text.length > 0
                         onClicked: {
-                            if (!MosSerialPortManager.writeHex(sendInput.text))
+                            if (!MosSerialPortManager.SendHex(sendInput.text))
                                 sendErrorText.text = MosSerialPortManager.errorString
                         }
                     }
@@ -558,16 +558,16 @@ C++ 后端可以直接连接同一个单例，不需要从 QML 页面转发数�
 auto manager = MosSerialPortManager::instance();
 
 connect(manager,
-        &MosSerialPortManager::dataReceivedFromPort,
+        &MosSerialPortManager::ReceiveDataFromPort,
         this,
-        &YourParser::onSerialDataReceivedFromPort);
+        &YourParser::onSerialReceiveDataFromPort);
 
 connect(manager,
         &MosSerialPortManager::errorOccurredFromPort,
         this,
         &YourParser::onSerialErrorFromPort);
 
-void YourParser::onSerialDataReceivedFromPort(const QString &portName,
+void YourParser::onSerialReceiveDataFromPort(const QString &portName,
                                               const QByteArray &data,
                                               const QString &text,
                                               const QString &hex)
@@ -584,10 +584,10 @@ void YourParser::onSerialDataReceivedFromPort(const QString &portName,
         MosDescription {
             title: qsTr('使用建议')
             desc: qsTr(`
-- 单串口工具可以使用 \`isOpen/currentPortName/writeHex/dataReceived\`，代码最简洁。
+- 单串口工具可以使用 \`isOpen/currentPortName/SendHex/ReceiveData\`，代码最简洁。
 - 多串口工具优先使用 \`isPortOpen(portName)\` 判断单个串口，使用 \`hasOpenPorts/openPortCount/openPortNames/openPortList\` 表达整体状态。
-- 多串口接收时优先监听 \`dataReceivedFromPort\`，并按 \`portName\` 分发到不同协议解析器。
-- 多串口发送时优先使用 \`writeHexToPort/writeTextToPort/writeBytesToPort\`，避免当前串口切换导致写错设备。
+- 多串口接收时优先监听 \`ReceiveDataFromPort\`，并按 \`portName\` 分发到不同协议解析器。
+- 多串口发送时优先使用 \`SendHexToPort/SendTextToPort/SendBytesToPort\`，避免当前串口切换导致写错设备。
 - \`selectPort(portName)\` 只切换默认目标，不会打开串口；\`openPort(...)\` 成功后会自动把该串口设为当前串口。
 - 串口资源错误会自动关闭对应串口并更新 \`openPortList\`，界面应监听 \`openPortsChanged\` 或直接绑定相关属性。
 - C++ 后端应直接连接 \`MosSerialPortManager::instance()\` 的信号，不需要从 QML 页面取数据。

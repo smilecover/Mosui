@@ -312,7 +312,7 @@ public:
         return result;
     }
 
-    OperationResult writeBytesToPort(const QString &portName, const QByteArray &data)
+    OperationResult SendBytesToPort(const QString &portName, const QByteArray &data)
     {
         OperationResult result;
         QSerialPort *serialPort = serialPorts_.value(portName, nullptr);
@@ -462,14 +462,14 @@ MosSerialPortManager::MosSerialPortManager(QObject *parent)
                                        data = std::move(data),
                                        text = std::move(text),
                                        hex = std::move(hex)]() {
-                emit dataReceivedFromPort(portName, data, text, hex);
-                emit dataReceived(data, text, hex);
+                emit ReceiveDataFromPort(portName, data, text, hex);
+                emit ReceiveData(data, text, hex);
             }, Qt::QueuedConnection);
         },
         [this](const QString &portName, qint64 bytes) {
             QMetaObject::invokeMethod(this, [this, portName, bytes]() {
-                emit bytesWrittenFromPort(portName, bytes);
-                emit bytesWritten(bytes);
+                emit BytesSentFromPort(portName, bytes);
+                emit BytesSent(bytes);
             }, Qt::QueuedConnection);
         },
         [this](QString portName, QString message, bool resourceError, QVariantList openPorts) {
@@ -737,17 +737,17 @@ void MosSerialPortManager::closeAllPorts()
     setCurrentPortName(this, d, QString());
 }
 
-bool MosSerialPortManager::writeText(const QString &text)
+bool MosSerialPortManager::SendText(const QString &text)
 {
-    return writeBytes(text.toUtf8());
+    return SendBytes(text.toUtf8());
 }
 
-bool MosSerialPortManager::writeTextToPort(const QString &portName, const QString &text)
+bool MosSerialPortManager::SendTextToPort(const QString &portName, const QString &text)
 {
-    return writeBytesToPort(portName, text.toUtf8());
+    return SendBytesToPort(portName, text.toUtf8());
 }
 
-bool MosSerialPortManager::writeHex(const QString &hexText)
+bool MosSerialPortManager::SendHex(const QString &hexText)
 {
     Q_D(MosSerialPortManager);
     if (d->currentPortName.isEmpty()) {
@@ -755,10 +755,10 @@ bool MosSerialPortManager::writeHex(const QString &hexText)
         return false;
     }
 
-    return writeHexToPort(d->currentPortName, hexText);
+    return SendHexToPort(d->currentPortName, hexText);
 }
 
-bool MosSerialPortManager::writeHexToPort(const QString &portName, const QString &hexText)
+bool MosSerialPortManager::SendHexToPort(const QString &portName, const QString &hexText)
 {
     bool ok = false;
     const QByteArray data = parseHexText(hexText, &ok);
@@ -767,10 +767,10 @@ bool MosSerialPortManager::writeHexToPort(const QString &portName, const QString
         setError(this, d, portName.trimmed(), tr("Invalid HEX data."));
         return false;
     }
-    return writeBytesToPort(portName, data);
+    return SendBytesToPort(portName, data);
 }
 
-bool MosSerialPortManager::writeBytes(const QByteArray &data)
+bool MosSerialPortManager::SendBytes(const QByteArray &data)
 {
     Q_D(MosSerialPortManager);
     if (d->currentPortName.isEmpty()) {
@@ -778,10 +778,10 @@ bool MosSerialPortManager::writeBytes(const QByteArray &data)
         return false;
     }
 
-    return writeBytesToPort(d->currentPortName, data);
+    return SendBytesToPort(d->currentPortName, data);
 }
 
-bool MosSerialPortManager::writeBytesToPort(const QString &portName, const QByteArray &data)
+bool MosSerialPortManager::SendBytesToPort(const QString &portName, const QByteArray &data)
 {
     Q_D(MosSerialPortManager);
 
@@ -789,7 +789,7 @@ bool MosSerialPortManager::writeBytesToPort(const QString &portName, const QByte
     const auto result = invokeOperation(d->worker,
                                         SerialOperationTimeoutMs,
                                         [worker = d->worker, cleanPortName, data]() {
-        return worker->writeBytesToPort(cleanPortName, data);
+        return worker->SendBytesToPort(cleanPortName, data);
     });
     if (!result) {
         setError(this, d, cleanPortName, tr("Serial port operation timed out."));

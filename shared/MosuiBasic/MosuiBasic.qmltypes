@@ -535,7 +535,8 @@ Module {
                 "SerialportOutlined",
                 "FaultOutlined",
                 "ControlOutlined",
-                "WaveOutlined"
+                "WaveOutlined",
+                "CloseCircleFilled"
             ]
         }
         Method { name: "allIconNames"; type: "QVariantMap" }
@@ -977,24 +978,24 @@ Module {
         Signal { name: "errorStringChanged" }
         Signal { name: "openPortsChanged" }
         Signal {
-            name: "dataReceived"
+            name: "ReceiveData"
             Parameter { name: "data"; type: "QByteArray" }
             Parameter { name: "text"; type: "QString" }
             Parameter { name: "hex"; type: "QString" }
         }
         Signal {
-            name: "dataReceivedFromPort"
+            name: "ReceiveDataFromPort"
             Parameter { name: "portName"; type: "QString" }
             Parameter { name: "data"; type: "QByteArray" }
             Parameter { name: "text"; type: "QString" }
             Parameter { name: "hex"; type: "QString" }
         }
         Signal {
-            name: "bytesWritten"
+            name: "BytesSent"
             Parameter { name: "bytes"; type: "qlonglong" }
         }
         Signal {
-            name: "bytesWrittenFromPort"
+            name: "BytesSentFromPort"
             Parameter { name: "portName"; type: "QString" }
             Parameter { name: "bytes"; type: "qlonglong" }
         }
@@ -1035,34 +1036,34 @@ Module {
         }
         Method { name: "closeAllPorts" }
         Method {
-            name: "writeText"
+            name: "SendText"
             type: "bool"
             Parameter { name: "text"; type: "QString" }
         }
         Method {
-            name: "writeTextToPort"
+            name: "SendTextToPort"
             type: "bool"
             Parameter { name: "portName"; type: "QString" }
             Parameter { name: "text"; type: "QString" }
         }
         Method {
-            name: "writeHex"
+            name: "SendHex"
             type: "bool"
             Parameter { name: "hexText"; type: "QString" }
         }
         Method {
-            name: "writeHexToPort"
+            name: "SendHexToPort"
             type: "bool"
             Parameter { name: "portName"; type: "QString" }
             Parameter { name: "hexText"; type: "QString" }
         }
         Method {
-            name: "writeBytes"
+            name: "SendBytes"
             type: "bool"
             Parameter { name: "data"; type: "QByteArray" }
         }
         Method {
-            name: "writeBytesToPort"
+            name: "SendBytesToPort"
             type: "bool"
             Parameter { name: "portName"; type: "QString" }
             Parameter { name: "data"; type: "QByteArray" }

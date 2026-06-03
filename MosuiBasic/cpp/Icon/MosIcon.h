@@ -30,7 +30,8 @@ public:
         SerialportOutlined = 0xe60a,
         FaultOutlined = 0xe602,
         ControlOutlined = 0xe647,
-        WaveOutlined = 0xe601
+        WaveOutlined = 0xe601,
+        CloseCircleFilled = 0xeb1b
         
         
     };

@@ -55,12 +55,12 @@ public:
     Q_INVOKABLE void closePort();
     Q_INVOKABLE void closePort(const QString &portName);
     Q_INVOKABLE void closeAllPorts();
-    Q_INVOKABLE bool writeText(const QString &text);
-    Q_INVOKABLE bool writeTextToPort(const QString &portName, const QString &text);
-    Q_INVOKABLE bool writeHex(const QString &hexText);
-    Q_INVOKABLE bool writeHexToPort(const QString &portName, const QString &hexText);
-    Q_INVOKABLE bool writeBytes(const QByteArray &data);
-    Q_INVOKABLE bool writeBytesToPort(const QString &portName, const QByteArray &data);
+    Q_INVOKABLE bool SendText(const QString &text);
+    Q_INVOKABLE bool SendTextToPort(const QString &portName, const QString &text);
+    Q_INVOKABLE bool SendHex(const QString &hexText);
+    Q_INVOKABLE bool SendHexToPort(const QString &portName, const QString &hexText);
+    Q_INVOKABLE bool SendBytes(const QByteArray &data);
+    Q_INVOKABLE bool SendBytesToPort(const QString &portName, const QByteArray &data);
     Q_INVOKABLE void clearError();
     Q_INVOKABLE QString bytesToHex(const QByteArray &data) const;
 
@@ -70,10 +70,10 @@ Q_SIGNALS:
     void currentPortNameChanged();
     void errorStringChanged();
     void openPortsChanged();
-    void dataReceived(const QByteArray &data, const QString &text, const QString &hex);
-    void dataReceivedFromPort(const QString &portName, const QByteArray &data, const QString &text, const QString &hex);
-    void bytesWritten(qint64 bytes);
-    void bytesWrittenFromPort(const QString &portName, qint64 bytes);
+    void ReceiveData(const QByteArray &data, const QString &text, const QString &hex);
+    void ReceiveDataFromPort(const QString &portName, const QByteArray &data, const QString &text, const QString &hex);
+    void BytesSent(qint64 bytes);
+    void BytesSentFromPort(const QString &portName, qint64 bytes);
     void errorOccurred(const QString &message);
     void errorOccurredFromPort(const QString &portName, const QString &message);
 
