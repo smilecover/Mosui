@@ -328,19 +328,19 @@ MosRectangle {
 
                     ChannelRow {
                         label: "A相电压"
-                        accent: "#ff4f63"
+                        accent: "#FFCC00"
                         propertyName: "voltageAEnabled"
                     }
 
                     ChannelRow {
                         label: "B相电压"
-                        accent: "#48ff79"
+                        accent: '#01ff45'
                         propertyName: "voltageBEnabled"
                     }
 
                     ChannelRow {
                         label: "C相电压"
-                        accent: "#4da8ff"
+                        accent: '#ff4f63'
                         propertyName: "voltageCEnabled"
                     }
 
@@ -354,7 +354,7 @@ MosRectangle {
                             Layout.preferredHeight: 10
                             Layout.alignment: Qt.AlignVCenter
                             radius: 5
-                            color: "#f5bd36"
+                            color: "#43ffd7"
                         }
 
                         MosText {
@@ -367,19 +367,19 @@ MosRectangle {
 
                     ChannelRow {
                         label: "A相电流"
-                        accent: "#ff8b3d"
+                        accent:'#FFCC00'
                         propertyName: "currentAEnabled"
                     }
 
                     ChannelRow {
                         label: "B相电流"
-                        accent: "#3fffe0"
+                        accent: '#01ff45'
                         propertyName: "currentBEnabled"
                     }
 
                     ChannelRow {
                         label: "C相电流"
-                        accent: "#c57bff"
+                        accent: '#ff4f63'
                         propertyName: "currentCEnabled"
                     }
                 }
@@ -601,7 +601,7 @@ MosRectangle {
                         Layout.preferredHeight: Math.max(280, Math.round((waveFlick.height - 132) / 2))
                         chartType: MosCanvasChart.Type_Line
                         series: wavePage.voltageSeries
-                        colors: ["#ff4f63", "#48ff79", "#4da8ff"]
+                        colors: ["#FFCC00", '#01ff45', '#ff4f63']
                         showTitle: false
                         showLegend: false
                         showValues: false
@@ -612,8 +612,10 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        autoXRange: true
-                        autoYRange: true
+                        // autoXRange: true
+                        // autoYRange: true
+                        autoXRange: false
+                        autoYRange: false
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
                         yMin: -50
@@ -682,7 +684,7 @@ MosRectangle {
                         Layout.preferredHeight: Math.max(280, Math.round((waveFlick.height - 132) / 2))
                         chartType: MosCanvasChart.Type_Line
                         series: wavePage.currentSeries
-                        colors: ["#ff8b3d", "#3fffe0", "#c57bff"]
+                        colors: ["#FFCC00", '#01ff45', '#ff4f63']
                         showTitle: false
                         showLegend: false
                         showValues: false
@@ -693,8 +695,11 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        autoXRange: true
-                        autoYRange: true
+                        // autoXRange: true
+                        // autoYRange: true
+                        autoXRange: false
+                        autoYRange: false
+
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
                         yMin: -1

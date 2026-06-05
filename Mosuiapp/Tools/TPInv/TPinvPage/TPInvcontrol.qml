@@ -10,8 +10,20 @@ MosRectangle {
     color: "transparent"
     anchors.fill: parent
 
+    MosMessage {
+        id: pageMessage
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: 8
+        z: 999
+        width: Math.min(480, parent.width - 40)
+    }
+
     property string currentTime: ""
     property int contentCompactBreakpoint: 820
+    property bool parametersWriting: false
+    property bool applyingNow: false
+    property real voltageStep: 1.0
     readonly property color textStrong: MosTheme.Primary.colorTextPrimary
     readonly property color textMuted: MosTheme.Primary.colorTextSecondary
     readonly property color textSubtle: MosTheme.Primary.colorTextTertiary
@@ -22,6 +34,21 @@ MosRectangle {
 
     readonly property int _tpInvProcessInit: TpinvControlProcess.Initprocess()
     readonly property int _tpInvSerialInit: TpinvSerial.InitTpinvSerial()
+
+    // 逆变器状态信息映射
+    // 0=INV_STOP 1=INV_INIT 2=INV_SELF_CHECK 3=INV_SOFT_START 4=INV_RUNNING 5=INV_FAULT
+    function inverterStateInfo() {
+        const s = TpInvcontroldata.inverterState
+        switch (s) {
+        case 0: return { text: "已停机",   icon: "◉",  coreBg: "#E8F0F8", coreBorder: "#7FA8C8", accent: "#5B8DAD", textColor: "#4A7088" }
+        case 1: return { text: "初始化中", icon: "⟳",  coreBg: "#D6EAF8", coreBorder: "#3498DB", accent: "#2980B9", textColor: "#2471A3" }
+        case 2: return { text: "自检中",   icon: "⚡", coreBg: "#FDEBD0", coreBorder: "#E67E22", accent: "#D35400", textColor: "#A04000" }
+        case 3: return { text: "软启动",   icon: "↻",  coreBg: "#FCF3CF", coreBorder: "#F1C40F", accent: "#D4AC0D", textColor: "#7D6608" }
+        case 4: return { text: "运行中",   icon: "▣",  coreBg: "#D5F5E3", coreBorder: "#27AE60", accent: "#1E8449", textColor: "#145A32" }
+        case 5: return { text: "故障",     icon: "⚠", coreBg: "#FADBD8", coreBorder: "#E74C3C", accent: "#CB4335", textColor: "#922B21" }
+        default:return { text: "未知",     icon: "?",  coreBg: "#E8E8E8", coreBorder: "#999999", accent: "#888888", textColor: MosTheme.Primary.colorTextSecondary }
+        }
+    }
 
     // 格式化数值显示精度
     function fmt(value, decimals) {
@@ -183,10 +210,19 @@ MosRectangle {
                             id: parameterRepeater
                             model:TpInvcontroldata.parameterItems
 
-                            delegate: RowLayout {   
+                            delegate: RowLayout {
                                 id: parameterRow
                                 required property var modelData
+                                required property int index
                                 property real currentValue: parameterInput.value
+                                property real dynamicStep: {
+                                    if (parameterRow.index === 0) {
+                                        const items = TpInvcontroldata.parameterItems
+                                        const stepVal = (items && items.length > 2) ? Number(items[2].value) : 1.0
+                                        return stepVal > 0 ? stepVal : 1.0
+                                    }
+                                    return parameterRow.modelData.step
+                                }
                                 Layout.fillWidth: true
                                 Layout.minimumHeight: 34
                                 Layout.preferredHeight: 34
@@ -234,7 +270,7 @@ MosRectangle {
                                     value: parameterRow.modelData.value
                                     min: parameterRow.modelData.minimum
                                     max: parameterRow.modelData.maximum
-                                    step: parameterRow.modelData.step
+                                    step: parameterRow.dynamicStep
                                     precision: 1
                                     clip: true
                                     useKeyboard: true
@@ -254,14 +290,16 @@ MosRectangle {
                             spacing: 12
 
                             MosButton {
+                                id: confirmButton
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
-                                text: "✓  确认"
-                                type: MosButton.Type_Primary
+                                text: parametersWriting ? "✓  已写入" : "✓  确认"
+                                type: parametersWriting ? MosButton.Type_Filled : MosButton.Type_Primary
                                 sizeHint: "normal"
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
                                 onClicked: {
+                                    if (parametersWriting) return
                                     let parameterdata = [];
                                     for (let i = 0; i < parameterRepeater.count; i++) {
                                         let item = parameterRepeater.itemAt(i)
@@ -270,21 +308,33 @@ MosRectangle {
                                         }
                                     }
                                     TpInvcontroldata.setallParameters(parameterdata)
+                                    if (parameterdata.length > 2) {
+                                        const newStep = Math.max(0.1, Number(parameterdata[2]))
+                                        const voltItem = parameterRepeater.itemAt(0)
+                                        if (voltItem) voltItem.dynamicStep = newStep
+                                    }
+                                    parametersWriting = true
+                                    paramWriteTimer.restart()
+                                    pageMessage.success("参数已写入，请点击 [立即设置] 下发到设备")
                                 }
                             }
 
                             MosButton {
+                                id: applyButton
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
-                                text: "↻  立即设置"
+                                text: appTplnvData.controlSerialOpen ? "↻  立即设置" : "↻  立即设置（未连接）"
                                 type: MosButton.Type_Outlined
                                 sizeHint: "normal"
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
+                                enabled: appTplnvData.controlSerialOpen && !applyingNow
                                 onClicked: {
+                                    applyingNow = true
+                                    applyCooldownTimer.restart()
                                     TpInvcontroldata.sendCommand(appTplnvData.controlSerialPortName, TpinvControlProcess.txBuffer[0]);
+                                    pageMessage.success("指令已下发至串口 " + appTplnvData.controlSerialPortName)
                                 }
-                                    
                             }
 
                         }
@@ -445,7 +495,10 @@ MosRectangle {
                                 enabled: !appTplnvData.controlSerialOpen
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                                onClicked: appTplnvData.openControlSerialPort()
+                                onClicked: {
+                                    appTplnvData.openControlSerialPort()
+                                    pageMessage.info("正在连接 " + appTplnvData.controlSerialPortName + "…")
+                                }
                             }
 
                             MosButton {
@@ -456,7 +509,10 @@ MosRectangle {
                                 enabled: appTplnvData.controlSerialOpen
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                                onClicked: appTplnvData.closeControlSerialPort()
+                                onClicked: {
+                                    appTplnvData.closeControlSerialPort()
+                                    pageMessage.info("已断开串口连接")
+                                }
                             }
                         }
                     }
@@ -544,12 +600,13 @@ MosRectangle {
                                 }
 
                                 MosRectangle {
-                                    Layout.preferredWidth: 108
+                                    Layout.preferredWidth: 150
                                     Layout.preferredHeight: 44
                                     Layout.alignment: Qt.AlignVCenter
                                     radius: height / 2
-                                    color: TpInvcontroldata.running ? "lightgreen" : "lightblue"
-                                    border.width: 0
+                                    color: tpinvControl.inverterStateInfo().coreBg
+                                    border.width: 1
+                                    border.color: tpinvControl.inverterStateInfo().coreBorder
 
                                     RowLayout {
                                         anchors.centerIn: parent
@@ -557,15 +614,15 @@ MosRectangle {
 
                                         MosText {
                                             Layout.alignment: Qt.AlignVCenter
-                                            text: "●"
-                                            color: MosTheme.Primary.colorErrorText
+                                            text: tpinvControl.inverterStateInfo().icon
+                                            color: tpinvControl.inverterStateInfo().accent
                                             font.pixelSize: 19
                                         }
 
                                         MosText {
                                             Layout.alignment: Qt.AlignVCenter
-                                            text: TpInvcontroldata.running ? "运行中" : "未启动"
-                                            color: MosTheme.Primary.colorPrimaryText
+                                            text: tpinvControl.inverterStateInfo().text
+                                            color: tpinvControl.inverterStateInfo().textColor
                                             font.pixelSize: 18
                                             font.bold: true
                                         }
@@ -579,7 +636,7 @@ MosRectangle {
                             spacing: 12
 
                             MosButton {
-                                enabled: !TpInvcontroldata.running
+                                enabled: TpInvcontroldata.inverterState === 0 || TpInvcontroldata.inverterState === 5
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
                                 text: "▶  启动"
@@ -590,11 +647,12 @@ MosRectangle {
                                 {
                                      tpinvControl.startDataTimer();
                                      TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
+                                     pageMessage.info("启动指令已发送，等待逆变器响应…")
                                 }
                             }
 
                             MosButton {
-                                enabled: TpInvcontroldata.running
+                                enabled: TpInvcontroldata.inverterState === 4
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
                                 text: "■  停机"
@@ -605,6 +663,7 @@ MosRectangle {
                                 {
                                      tpinvControl.stopDataTimer();
                                      TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
+                                     pageMessage.warning("停机指令已发送")
                                 }
                             }
                         }
@@ -737,14 +796,14 @@ MosRectangle {
                                 width: lnverterStatus.coreSize
                                 height: width
                                 radius: width / 2
-                                color: MosTheme.Primary.colorPrimaryBg
+                                color: tpinvControl.inverterStateInfo().coreBg
                                 border.width: Math.max(2, width * 0.02)
-                                border.color: MosTheme.Primary.colorPrimaryBorder
+                                border.color: tpinvControl.inverterStateInfo().coreBorder
 
                                 MosText {
                                     anchors.centerIn: parent
-                                    text: "▣"
-                                    color: tpinvControl.accent
+                                    text: tpinvControl.inverterStateInfo().icon
+                                    color: tpinvControl.inverterStateInfo().accent
                                     font.pixelSize: inverterCore.width * 0.38
                                     font.bold: true
                                 }
@@ -757,13 +816,14 @@ MosRectangle {
                                 width: Math.max(58, inverterCore.width * 0.34)
                                 height: lnverterStatus.statusTagHeight
                                 radius: height / 2
-                                color: tpinvControl.fieldBg
-                                border.width: 0
+                                color: tpinvControl.inverterStateInfo().coreBg
+                                border.width: 1
+                                border.color: tpinvControl.inverterStateInfo().coreBorder
 
                                 MosText {
                                     anchors.centerIn: parent
-                                    text: TpInvcontroldata.running ? "运行中" : "未启动"
-                                    color: TpInvcontroldata.running ? tpinvControl.accent : tpinvControl.textMuted
+                                    text: tpinvControl.inverterStateInfo().text
+                                    color: tpinvControl.inverterStateInfo().textColor
                                     font.pixelSize: 12
                                     font.bold: true
                                 }
@@ -1184,6 +1244,24 @@ MosRectangle {
         triggeredOnStart: false
         onTriggered: {
             TpinvControlProcess.controntroldataProcess()
+        }
+    }
+
+    Timer {
+        id: paramWriteTimer
+        interval: 800
+        repeat: false
+        onTriggered: {
+            tpinvControl.parametersWriting = false
+        }
+    }
+
+    Timer {
+        id: applyCooldownTimer
+        interval: 300
+        repeat: false
+        onTriggered: {
+            tpinvControl.applyingNow = false
         }
     }
 

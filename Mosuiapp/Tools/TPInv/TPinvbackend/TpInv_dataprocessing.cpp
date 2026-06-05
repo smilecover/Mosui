@@ -942,11 +942,11 @@ void TpInvDataProcessing::rebuildVoltageSeries()
 {
     QVariantList nextSeries;
     if (voltageAEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电压"), QStringLiteral("#ff4f63"), voltageAValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电压"), QStringLiteral("#FFCC00"), voltageAValues_));
     if (voltageBEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电压"), QStringLiteral("#48ff79"), voltageBValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电压"), QStringLiteral("#01ff45"), voltageBValues_));
     if (voltageCEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电压"), QStringLiteral("#4da8ff"), voltageCValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电压"), QStringLiteral("#ff4f63"), voltageCValues_));
 
     if (voltageSeries_ == nextSeries)
         return;
@@ -959,11 +959,11 @@ void TpInvDataProcessing::rebuildCurrentSeries()
 {
     QVariantList nextSeries;
     if (currentAEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电流"), QStringLiteral("#ff8b3d"), currentAValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电流"), QStringLiteral("#FFCC00"), currentAValues_));
     if (currentBEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电流"), QStringLiteral("#3fffe0"), currentBValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电流"), QStringLiteral("#01ff45"), currentBValues_));
     if (currentCEnabled_)
-        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电流"), QStringLiteral("#c57bff"), currentCValues_));
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电流"), QStringLiteral("#ff4f63"), currentCValues_));
 
     if (currentSeries_ == nextSeries)
         return;

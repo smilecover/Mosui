@@ -75,7 +75,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:HAS_QT_WEBENGINE>
 )
 
-# Linux: 设置 RPATH 使动态链接器能找到同目录下的 .so 文件
 if(UNIX AND NOT APPLE)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         BUILD_RPATH "${LIBRARY_SHARED_OUTPUT_DIRECTORY}"

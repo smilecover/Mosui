@@ -37,6 +37,7 @@ MosRectangle {
     property real storedCoefficientB: 0
     property real queryCoefficientA: 1
     property real queryCoefficientB: 0
+    property bool queryFromDsp: false
 
     readonly property var correctionTypes: [
         { label: "直流电压", value: "dcVoltage", unit: "V", accent: "#2f8dff" },
@@ -104,8 +105,18 @@ MosRectangle {
     }
 
     function queryCorrection() {
-        queryCoefficientA = storedCoefficientA
-        queryCoefficientB = storedCoefficientB
+        const typeKey = currentType().value
+        const data = TpInvcontroldata.calibrationData
+        if (data && data[typeKey] !== undefined) {
+            const coeff = data[typeKey]
+            queryCoefficientA = (coeff.a !== undefined) ? Number(coeff.a) : 1
+            queryCoefficientB = (coeff.b !== undefined) ? Number(coeff.b) : 0
+            queryFromDsp = true
+        } else {
+            queryCoefficientA = storedCoefficientA
+            queryCoefficientB = storedCoefficientB
+            queryFromDsp = false
+        }
     }
 
     Timer {
@@ -512,11 +523,26 @@ MosRectangle {
                     anchors.margins: sampPage.narrowLayout ? 10 : 12
                     spacing: 9
 
-                    MosText {
+                    RowLayout {
                         Layout.fillWidth: true
-                        text: "查询结果"
-                        color: sampPage.textMuted
-                        font.pixelSize: 12
+                        MosText {
+                            Layout.fillWidth: true
+                            text: "查询结果"
+                            color: sampPage.textMuted
+                            font.pixelSize: 12
+                        }
+                        MosTag {
+                            visible: sampPage.queryFromDsp
+                            text: "DSP"
+                            presetColor: "green"
+                            radiusBg.all: 10
+                        }
+                        MosTag {
+                            visible: !sampPage.queryFromDsp
+                            text: "本地"
+                            presetColor: "orange"
+                            radiusBg.all: 10
+                        }
                     }
 
                     Repeater {

@@ -25,6 +25,9 @@ class TpInvcontroldata : public QObject
     Q_PROPERTY(double acVoltage READ acVoltage NOTIFY keyMetricsChanged FINAL)
     Q_PROPERTY(double acFrequency READ acFrequency NOTIFY keyMetricsChanged FINAL)
     Q_PROPERTY(QString faultCode READ faultCode NOTIFY keyMetricsChanged FINAL)
+    Q_PROPERTY(int inverterState READ inverterState NOTIFY inverterStateChanged FINAL)
+    Q_PROPERTY(double acVoltageStep READ acVoltageStep NOTIFY acVoltageStepChanged FINAL)
+    Q_PROPERTY(QVariantMap calibrationData READ calibrationData NOTIFY calibrationDataChanged FINAL)
     MOSUI_PROPERTY_INIT(QVariant,parameterSelectIndex,setParameterSelectIndex,1);
 
 public:
@@ -44,6 +47,9 @@ public:
     double acVoltage() const;
     double acFrequency() const;
     QString faultCode() const;
+    int inverterState() const;
+    double acVoltageStep() const;
+    QVariantMap calibrationData() const;
 
     Q_INVOKABLE void setallParameters(const QList<double> &value);
     Q_INVOKABLE void startInverter(const QString &SerialPort);
@@ -58,6 +64,9 @@ Q_SIGNALS:
     void monitorGroupsChanged();
     void runningChanged();
     void keyMetricsChanged();
+    void inverterStateChanged();
+    void acVoltageStepChanged();
+    void calibrationDataChanged();
 
     void cmdTx(const QString &SerialPort,const QByteArray &data);
 
@@ -97,6 +106,9 @@ private:
     double acVoltage_ = 0.0;
     double acFrequency_ = 0.0;
     QString faultCode_;
+    int inverterState_ = 0;
+    double acVoltageStep_ = 1.0;
+    QVariantMap calibrationData_;
 
 };
 

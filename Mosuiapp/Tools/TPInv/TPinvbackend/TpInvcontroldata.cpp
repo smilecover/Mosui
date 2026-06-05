@@ -75,9 +75,25 @@ QString TpInvcontroldata::faultCode() const
     return faultCode_;
 }
 
+int TpInvcontroldata::inverterState() const
+{
+    return inverterState_;
+}
+
+double TpInvcontroldata::acVoltageStep() const
+{
+    return acVoltageStep_;
+}
+
+QVariantMap TpInvcontroldata::calibrationData() const
+{
+    return calibrationData_;
+}
+
 void TpInvcontroldata::setallParameters(const QList<double> &value)
 {
     bool changed = false;
+    bool stepChanged = false;
     const int count = qMin(parameterItems_.size(), value.size());
 
     for (int i = 0; i < count; ++i) {
@@ -89,11 +105,23 @@ void TpInvcontroldata::setallParameters(const QList<double> &value)
         param.insert(QStringLiteral("value"), value.at(i));
         parameterItems_[i] = param;
         changed = true;
+
+        // 索引 2 是交流电压步长
+        if (i == 2) {
+            const double newStep = value.at(i);
+            if (!qFuzzyCompare(acVoltageStep_, newStep)) {
+                acVoltageStep_ = newStep;
+                stepChanged = true;
+            }
+        }
     }
 
     if (changed) {
         qDebug() << "设置成功";
         emit parameterItemsChanged();
+    }
+    if (stepChanged) {
+        emit acVoltageStepChanged();
     }
 }
 
@@ -277,6 +305,47 @@ void TpInvcontroldata::applyMonitorSnapshot(const QVariantMap &values)
 
     if (anyGroupChanged)
         emit monitorGroupsChanged();
+
+    // 提取逆变器状态 (COM_F3 帧 raw[3])，并同步 running_ 标志
+    if (values.contains(QStringLiteral("inverterState"))) {
+        const int newState = values.value(QStringLiteral("inverterState")).toInt();
+        if (inverterState_ != newState) {
+            inverterState_ = newState;
+            emit inverterStateChanged();
+        }
+        // 根据逆变器状态同步 running_：只有 INV_RUNNING(4) 算运行中
+        const bool shouldRun = (newState == 4);
+        if (running_ != shouldRun) {
+            running_ = shouldRun;
+            emit runningChanged();
+        }
+    }
+
+    // 提取校正系数 (COM_F8/F9 帧)
+    // 映射 DSP 字段 → QML correctionTypes.value
+    static const QVector<QPair<QString, QPair<QString, QString>>> calibMappings = {
+        {QStringLiteral("dcVoltage"),     {QStringLiteral("caliDcVoltA"),    QStringLiteral("caliDcVoltB")}},
+        {QStringLiteral("halfBusVoltage"),{QStringLiteral("caliHalfVoltA"),  QStringLiteral("caliHalfVoltB")}},
+        {QStringLiteral("acVoltageRms"),  {QStringLiteral("caliPhaseVoltA"), QStringLiteral("caliPhaseVoltB")}},
+        {QStringLiteral("dcCurrent"),     {QStringLiteral("caliDcCurrA"),    QStringLiteral("caliDcCurrB")}},
+        {QStringLiteral("acCurrentRms"),  {QStringLiteral("caliPhaseCurrA"), QStringLiteral("caliPhaseCurrB")}},
+    };
+
+    bool calibChanged = false;
+    for (const auto &mapping : calibMappings) {
+        const QString &typeKey = mapping.first;
+        const QString &keyA = mapping.second.first;
+        const QString &keyB = mapping.second.second;
+        if (values.contains(keyA) || values.contains(keyB)) {
+            QVariantMap coeff;
+            coeff[QStringLiteral("a")] = values.value(keyA, calibrationData_.value(typeKey).toMap().value(QStringLiteral("a"), 1.0));
+            coeff[QStringLiteral("b")] = values.value(keyB, calibrationData_.value(typeKey).toMap().value(QStringLiteral("b"), 0.0));
+            calibrationData_[typeKey] = coeff;
+            calibChanged = true;
+        }
+    }
+    if (calibChanged)
+        emit calibrationDataChanged();
 
     extractKeyMetrics();
 }

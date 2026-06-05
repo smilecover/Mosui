@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import MosuiBasic
 
 MosRectangle{
@@ -24,6 +25,7 @@ MosRectangle{
     property bool receiveAutoNewline: false
     property bool receiveShowTime: false
     property bool sendAutoEnabled: false
+    property int maxTextLines: 5000
 
     function normalizePositiveInteger(value) {
         return Math.max(1, Math.floor(Number(value) || 1))
@@ -557,6 +559,7 @@ MosRectangle{
         function appendStatusText(message) {
             const line = "[" + Qt.formatTime(new Date(), "hh:mm:ss.zzz") + "] " + message
             serialportTextArea.text += (serialportTextArea.text.length > 0 ? "\n" : "") + line
+            trimTextLines()
             serialportTextArea.scrollToEnd()
         }
 
@@ -572,7 +575,28 @@ MosRectangle{
                 data += "\n"
             }
             serialportTextArea.text += data
+            trimTextLines()
             serialportTextArea.scrollToEnd()
+        }
+
+        function trimTextLines() {
+            const maxLines = serialportPage.maxTextLines
+            if (maxLines <= 0 || serialportTextArea.lineCount <= maxLines) {
+                return
+            }
+            // 只保留最后 maxLines 行，从头部删除多余行
+            const excessLines = serialportTextArea.lineCount - maxLines
+            let pos = 0
+            for (let i = 0; i < excessLines; ++i) {
+                pos = serialportTextArea.text.indexOf("\n", pos)
+                if (pos < 0) {
+                    // 没有换行符，但行数超限（不太可能），清空全部
+                    serialportTextArea.clear()
+                    return
+                }
+                ++pos // 跳过换行符本身
+            }
+            serialportTextArea.remove(0, pos)
         }
 
         function sendTextData() {
@@ -653,6 +677,67 @@ MosRectangle{
             sendNextCommandPayload()
         }
 
+        function sendFileData() {
+            // 如果指令表格为空且文件路径不为空，尝试从文件加载
+            const table = commandTableLoader.item
+            const existingPayloads = buildCommandPayloads()
+            if (existingPayloads.length === 0) {
+                const filePath = commandFileInput.text
+                if (filePath.length > 0) {
+                    const content = TpinvFileHelper.openCommandFile(filePath)
+                    if (content.length > 0) {
+                        const parseResult = TpinvFileHelper.parseCommandContent(content)
+                        const parsedRows = parseResult.rows || []
+                        if (parsedRows.length > 0) {
+                            // 从解析结果直接构建 payloads
+                            const byteCount = parseResult.byteCount || 0
+                            let filePayloads = []
+                            for (let r = 0; r < parsedRows.length; ++r) {
+                                let bytes = []
+                                for (let c = 0; c < byteCount; ++c) {
+                                    const val = parsedRows[r]["Byte" + c]
+                                    if (val !== undefined && val !== null && val.length > 0) {
+                                        bytes.push(val)
+                                    }
+                                }
+                                if (bytes.length > 0) {
+                                    filePayloads.push(bytes.join(" "))
+                                }
+                            }
+                            if (filePayloads.length > 0) {
+                                pendingCommandPayloads = singleSendCheckBox.checked ? [filePayloads[0]] : filePayloads
+                                pendingCommandIndex = 0
+                                commandLoopEnabled = loopSendCheckBox.checked
+                                appendStatusText("从文件发送 " + filePayloads.length + " 条指令" +
+                                    (singleSendCheckBox.checked ? " (仅首条)" : "") +
+                                    (loopSendCheckBox.checked ? " [循环]" : ""))
+                                sendNextCommandPayload()
+                                return
+                            }
+                        }
+                    }
+                }
+                appendStatusText("没有可发送的指令数据")
+                return
+            }
+            // 使用表格数据发送
+            pendingCommandPayloads = singleSendCheckBox.checked ? [existingPayloads[0]] : existingPayloads
+            pendingCommandIndex = 0
+            commandLoopEnabled = loopSendCheckBox.checked
+            appendStatusText("从表格发送 " + existingPayloads.length + " 条指令" +
+                (singleSendCheckBox.checked ? " (仅首条)" : "") +
+                (loopSendCheckBox.checked ? " [循环]" : ""))
+            sendNextCommandPayload()
+        }
+
+        function stopCommandLoop() {
+            commandLoopEnabled = false
+            pendingCommandPayloads = []
+            pendingCommandIndex = 0
+            commandSendTimer.stop()
+            appendStatusText("已停止循环发送")
+        }
+
         function sendNextCommandPayload() {
             if (pendingCommandPayloads.length === 0) {
                 return
@@ -673,6 +758,104 @@ MosRectangle{
             commandSendTimer.interval = serialportPage.commandInterval
             commandSendTimer.restart()
         }
+
+        function loadCommandFromFile(filePath) {
+            if (!filePath || filePath.length === 0) {
+                appendStatusText("文件路径为空")
+                return
+            }
+            const content = TpinvFileHelper.openCommandFile(filePath)
+            if (content.length === 0) {
+                const err = TpinvFileHelper.lastError()
+                appendStatusText("打开指令文件失败: " + (err.length > 0 ? err : "文件为空"))
+                return
+            }
+            const parseResult = TpinvFileHelper.parseCommandContent(content)
+            const parsedRows = parseResult.rows || []
+            const cmdCount = parseResult.commandCount || 0
+            const byteCount = parseResult.byteCount || 0
+            const parseError = parseResult.error || ""
+            if (parsedRows.length === 0) {
+                appendStatusText("指令文件解析失败: " + (parseError.length > 0 ? parseError : "未找到有效指令数据"))
+                return
+            }
+            // 更新页面属性以匹配文件内容
+            serialportPage.commandCount = Math.max(cmdCount, 1)
+            serialportPage.commandByteCount = Math.max(byteCount, 1)
+            // 更新渲染的行列计数，触发命令表重建
+            renderedCommandCount = serialportPage.commandCount
+            renderedCommandByteCount = serialportPage.commandByteCount
+            // 暂存解析结果，待表格重建后填充
+            pendingFileRows = parsedRows
+            pendingFileByteCount = serialportPage.commandByteCount
+            // 强制重建表格
+            commandTableRefreshPending = true
+            autoCommandIndex = 0
+            commandTableLoader.active = false
+            Qt.callLater(function() {
+                commandTableRefreshPending = false
+                commandTableLoader.active = true
+                // 表格重建后填充数据
+                Qt.callLater(function() {
+                    fillCommandTableFromFile(pendingFileRows, pendingFileByteCount)
+                    pendingFileRows = []
+                    pendingFileByteCount = 0
+                })
+            })
+            commandFileInput.text = filePath
+            appendStatusText("已加载指令文件: " + filePath + " (" + cmdCount + "条指令, " + byteCount + "字节/条)")
+        }
+
+        function fillCommandTableFromFile(rows, byteCount) {
+            const table = commandTableLoader.item
+            if (!table || !rows || rows.length === 0) {
+                return
+            }
+            const model = table.getTableModel()
+            if (!model) {
+                return
+            }
+            const rowLimit = Math.min(rows.length, model.length)
+            const colLimit = Math.min(byteCount, renderedCommandByteCount)
+            for (let r = 0; r < rowLimit; ++r) {
+                const rowData = rows[r]
+                for (let c = 0; c < colLimit; ++c) {
+                    const key = "Byte" + c
+                    const val = rowData[key]
+                    if (val !== undefined && val !== null && val.length > 0) {
+                        model[r][key] = val
+                    }
+                }
+            }
+        }
+
+        function saveCommandToFile(filePath) {
+            if (!filePath || filePath.length === 0) {
+                appendStatusText("保存路径为空")
+                return
+            }
+            const table = commandTableLoader.item
+            if (!table) {
+                appendStatusText("指令表格未加载")
+                return
+            }
+            const rows = table.getTableModel()
+            if (!rows || rows.length === 0) {
+                appendStatusText("指令表格为空，无数据可保存")
+                return
+            }
+            const ok = TpinvFileHelper.saveCommandTableData(filePath, rows, renderedCommandByteCount)
+            if (!ok) {
+                const err = TpinvFileHelper.lastError()
+                appendStatusText("保存指令失败: " + (err.length > 0 ? err : "未知错误"))
+                return
+            }
+            commandFileInput.text = filePath
+            appendStatusText("已保存指令到: " + filePath)
+        }
+
+        property var pendingFileRows: []
+        property int pendingFileByteCount: 0
 
         ColumnLayout{
             anchors.fill: parent
@@ -795,6 +978,7 @@ MosRectangle{
                                     id: openCommandFileButton
                                     text: "打开指令文件..."
                                     Layout.preferredWidth: 120
+                                    onClicked: commandOpenFileDialog.open()
                                 }
                             }
 
@@ -804,27 +988,52 @@ MosRectangle{
                                     id: saveCommandDataButton
                                     text: "保存指令数据"
                                     Layout.fillWidth: true
+                                    onClicked: {
+                                        if (commandFileInput.text.length > 0) {
+                                            commandSaveFileDialog.selectedFile = commandFileInput.text
+                                        }
+                                        commandSaveFileDialog.open()
+                                    }
                                 }
-                                MosCheckBox {
-                                    id: singleSendCheckBox
-                                    text: "单条发送"
-                                    Layout.preferredWidth: 90
+                                MosButton {
+                                    id: sendFileButton
+                                    text: rightItem.commandLoopEnabled ? "停止发送" : "发送文件"
+                                    Layout.fillWidth: true
+                                    type: rightItem.commandLoopEnabled ? MosButton.Type_Default : MosButton.Type_Primary
+                                    enabled: serialportPage.selectedPortOpen
+                                    onClicked: {
+                                        if (rightItem.commandLoopEnabled) {
+                                            rightItem.stopCommandLoop()
+                                        } else {
+                                            rightItem.sendFileData()
+                                        }
+                                    }
                                 }
                             }
 
                             RowLayout {
                                 Layout.fillWidth: true
-                                MosButton {
-                                    id: sendCommandButton
-                                    text: "发送指令"
-                                    Layout.fillWidth: true
-                                    enabled: serialportPage.selectedPortOpen
-                                    onClicked: rightItem.sendCommandData()
+                                MosCheckBox {
+                                    id: singleSendCheckBox
+                                    text: "单条发送"
+                                    Layout.preferredWidth: 90
+                                    onToggled: {
+                                        // 互斥：单条发送时自动关闭循环发送
+                                        if (checked && loopSendCheckBox.checked) {
+                                            rightItem.stopCommandLoop()
+                                        }
+                                    }
                                 }
+                                Item { Layout.fillWidth: true }
                                 MosCheckBox {
                                     id: loopSendCheckBox
                                     text: "循环发送"
                                     Layout.preferredWidth: 90
+                                    onToggled: {
+                                        if (!checked && rightItem.commandLoopEnabled) {
+                                            rightItem.stopCommandLoop()
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -907,5 +1116,41 @@ MosRectangle{
         anchors.left: leftLoader.right
         active: true
         sourceComponent: serialportPage.rightItemcontrols
+    }
+
+    function urlToFilePath(urlString) {
+        // Qt 6 FileDialog 返回 URL 格式，去除 file:/// 前缀
+        if (urlString.startsWith("file:///")) return urlString.substring(8)
+        if (urlString.startsWith("file://")) return urlString.substring(7)
+        return urlString
+    }
+
+    FileDialog {
+        id: commandOpenFileDialog
+        title: "打开指令文件"
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["指令文件 (*.txt *.cmd *.hex)", "所有文件 (*)"]
+        onAccepted: {
+            const filePath = serialportPage.urlToFilePath(selectedFile.toString())
+            const rightPanel = rightLoader.item
+            if (rightPanel && typeof rightPanel.loadCommandFromFile === "function") {
+                rightPanel.loadCommandFromFile(filePath)
+            }
+        }
+    }
+
+    FileDialog {
+        id: commandSaveFileDialog
+        title: "保存指令数据"
+        fileMode: FileDialog.SaveFile
+        nameFilters: ["指令文件 (*.txt *.cmd)", "所有文件 (*)"]
+        defaultSuffix: "txt"
+        onAccepted: {
+            const filePath = serialportPage.urlToFilePath(selectedFile.toString())
+            const rightPanel = rightLoader.item
+            if (rightPanel && typeof rightPanel.saveCommandToFile === "function") {
+                rightPanel.saveCommandToFile(filePath)
+            }
+        }
     }
 }
