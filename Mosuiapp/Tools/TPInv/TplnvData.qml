@@ -17,7 +17,7 @@ QtObject {
     property var serialPortOptions: []
 
     property string controlSerialPortName: ""
-    property int controlSerialBaudRate: 9600
+    property int controlSerialBaudRate: 115200
     property int controlSerialDataBits: 8
     property string controlSerialParity: "none"
     property string controlSerialStopBits: "1"
@@ -55,6 +55,7 @@ QtObject {
         if (groupName === "wave") {
             if (waveSerialPortName.length === 0 || !hasPort(waveSerialPortName))
                 waveSerialPortName = firstAvailablePort(controlSerialPortName)
+            TpinvSerial.wavePortName = waveSerialPortName
         } else if (groupName === "control") {
             if (controlSerialPortName.length === 0 || !hasPort(controlSerialPortName))
                 controlSerialPortName = firstAvailablePort(waveSerialPortName)
@@ -64,6 +65,8 @@ QtObject {
                 controlSerialPortName = firstAvailablePort(waveSerialPortName)
             if (waveSerialPortName.length === 0 || !hasPort(waveSerialPortName))
                 waveSerialPortName = firstAvailablePort(controlSerialPortName)
+            TpinvSerial.controlPortName = controlSerialPortName
+            TpinvSerial.wavePortName = waveSerialPortName
         }
 
         updateSerialConnectionStates()

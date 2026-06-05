@@ -21,6 +21,10 @@ class TpInvcontroldata : public QObject
     Q_PROPERTY(QVariantList parameterItems READ parameterItems NOTIFY parameterItemsChanged FINAL)
     Q_PROPERTY(QVariantList monitorGroups READ monitorGroups NOTIFY monitorGroupsChanged FINAL)
     Q_PROPERTY(bool running READ running WRITE setRunning NOTIFY runningChanged FINAL)
+    Q_PROPERTY(double dcVoltage READ dcVoltage NOTIFY keyMetricsChanged FINAL)
+    Q_PROPERTY(double acVoltage READ acVoltage NOTIFY keyMetricsChanged FINAL)
+    Q_PROPERTY(double acFrequency READ acFrequency NOTIFY keyMetricsChanged FINAL)
+    Q_PROPERTY(QString faultCode READ faultCode NOTIFY keyMetricsChanged FINAL)
     MOSUI_PROPERTY_INIT(QVariant,parameterSelectIndex,setParameterSelectIndex,1);
 
 public:
@@ -36,16 +40,24 @@ public:
     bool running() const;
     void setRunning(bool running);
 
+    double dcVoltage() const;
+    double acVoltage() const;
+    double acFrequency() const;
+    QString faultCode() const;
+
     Q_INVOKABLE void setallParameters(const QList<double> &value);
     Q_INVOKABLE void startInverter(const QString &SerialPort);
     Q_INVOKABLE void stopInverter(const QString &SerialPort);
     Q_INVOKABLE void sendCommand(const QString &SerialPort, const QByteArray &data);
+
+    void applyMonitorSnapshot(const QVariantMap &values);
 
 Q_SIGNALS:
     void parametermodelItemsChanged();
     void parameterItemsChanged();
     void monitorGroupsChanged();
     void runningChanged();
+    void keyMetricsChanged();
 
     void cmdTx(const QString &SerialPort,const QByteArray &data);
 
@@ -73,12 +85,17 @@ private:
                                 const QVariant &value,
                                 const QString &unit) const;
     void initializeDefaults();
+    QVariant findMonitorValue(const QString &key) const;
+    void extractKeyMetrics();
 
 
     QVariantList parametermodelItems_;
     QVariantList parameterItems_;
     QVariantList monitorGroups_;
     bool running_ = false;
+    double dcVoltage_ = 0.0;
+    double acVoltage_ = 0.0;
+    double acFrequency_ = 0.0;
     QString faultCode_;
 
 };

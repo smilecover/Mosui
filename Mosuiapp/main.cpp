@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
     // 添加 QML 模块搜索路径
     QString sharedPath = appDir.absoluteFilePath("shared");
     engine.addImportPath(sharedPath);
-    qDebug() << "QML import path:" << sharedPath;
 
     QIcon icon(":/logo.png");
     app.setWindowIcon(icon);

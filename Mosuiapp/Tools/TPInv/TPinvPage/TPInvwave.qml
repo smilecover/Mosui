@@ -20,30 +20,29 @@ MosRectangle {
     readonly property color gridColor: MosTheme.Primary.colorSplit
     readonly property color axisColor: MosTheme.Primary.colorTextTertiary
 
-    property bool waveformPaused: false
-    property var portOptions: []
-    property string selectedPortName: ""
-    property bool wavePortOpen: false
-    property int selectedBaudRate: 115200
+    property bool waveformPaused: TpInvDataProcessing.waveformPaused
+    property var portOptions: TpInvDataProcessing.portOptions
+    property string selectedPortName: TpInvDataProcessing.selectedPortName
+    property bool wavePortOpen: TpInvDataProcessing.wavePortOpen
+    property int selectedBaudRate: TpInvDataProcessing.selectedBaudRate
     property int sampleCount: 352
-    property bool autoRequestEnabled: true
-    property bool waveformRefreshPending: false
+    property bool autoRequestEnabled: TpInvDataProcessing.autoRequestEnabled
+    property int receivedByteCount: TpInvDataProcessing.receivedByteCount
+    property string lastWaveHex: TpInvDataProcessing.lastWaveHex
+    property string lastWaveText: TpInvDataProcessing.lastWaveText
+    property string lastWaveRxTime: TpInvDataProcessing.lastWaveRxTime
+    property string lastWaveRequestTime: TpInvDataProcessing.lastWaveRequestTime
+    property string waveStatusText: TpInvDataProcessing.waveStatusText
 
-    property bool voltageAEnabled: true
-    property bool voltageBEnabled: true
-    property bool voltageCEnabled: true
-    property bool currentAEnabled: true
-    property bool currentBEnabled: true
-    property bool currentCEnabled: true
+    property bool voltageAEnabled: TpInvDataProcessing.voltageAEnabled
+    property bool voltageBEnabled: TpInvDataProcessing.voltageBEnabled
+    property bool voltageCEnabled: TpInvDataProcessing.voltageCEnabled
+    property bool currentAEnabled: TpInvDataProcessing.currentAEnabled
+    property bool currentBEnabled: TpInvDataProcessing.currentBEnabled
+    property bool currentCEnabled: TpInvDataProcessing.currentCEnabled
 
-    property var voltageSeries: []
-    property var currentSeries: []
-    property var voltageAValues: []
-    property var voltageBValues: []
-    property var voltageCValues: []
-    property var currentAValues: []
-    property var currentBValues: []
-    property var currentCValues: []
+    property var voltageSeries: TpInvDataProcessing.voltageSeries
+    property var currentSeries: TpInvDataProcessing.currentSeries
 
     readonly property var baudRateOptions: [
         { value: 9600, label: "9600" },
@@ -55,177 +54,31 @@ MosRectangle {
     ]
 
     function isConnected() {
-        return wavePortOpen
-    }
-
-    function syncFromSerialGroup() {
-        portOptions = appTplnvData.serialPortOptions
-        selectedPortName = appTplnvData.waveSerialPortName
-        selectedBaudRate = appTplnvData.waveSerialBaudRate
-        wavePortOpen = appTplnvData.waveSerialOpen
-    }
-
-    function syncToSerialGroup() {
-        appTplnvData.waveSerialPortName = selectedPortName
-        appTplnvData.waveSerialBaudRate = selectedBaudRate
-        appTplnvData.updateSerialConnectionStates()
-        syncFromSerialGroup()
+        return TpInvDataProcessing.wavePortOpen
     }
 
     function refreshSerialPorts() {
-        appTplnvData.refreshSerialPorts("wave")
-        syncFromSerialGroup()
+        TpInvDataProcessing.refreshSerialPorts()
     }
 
     function toggleSerialPort() {
-        if (selectedPortName.length === 0)
-            refreshSerialPorts()
-        if (selectedPortName.length === 0)
-            return false
-
-        syncToSerialGroup()
-        const ok = appTplnvData.toggleWaveSerialPort()
-        syncFromSerialGroup()
-        return ok
+        return TpInvDataProcessing.toggleSerialPort()
     }
 
     function requestWaveformData() {
-        if (!wavePage.isConnected())
-            return false
-
-        return MosSerialPortManager.SendHexToPort(selectedPortName, "FF CC 01 00 01 CC")
+        return TpInvDataProcessing.requestWaveformData()
     }
 
-    function updateWavePortOpen() {
-        appTplnvData.updateSerialConnectionStates()
-        syncFromSerialGroup()
+    function compactHex(hex) {
+        return TpInvDataProcessing.compactHex(hex)
     }
 
-    function refreshWaveformValues() {
-        if (wavePage.waveformPaused)
-            return
-
-        voltageAValues = TpInvDataProcessing.voltageAValues
-        voltageBValues = TpInvDataProcessing.voltageBValues
-        voltageCValues = TpInvDataProcessing.voltageCValues
-        currentAValues = TpInvDataProcessing.currentAValues
-        currentBValues = TpInvDataProcessing.currentBValues
-        currentCValues = TpInvDataProcessing.currentCValues
-    }
-
-    function updateVoltageSeries() {
-        const result = []
-        if (voltageAEnabled)
-            result.push({ name: "A相电压", color: "#ff4f63", values: voltageAValues })
-        if (voltageBEnabled)
-            result.push({ name: "B相电压", color: "#48ff79", values: voltageBValues })
-        if (voltageCEnabled)
-            result.push({ name: "C相电压", color: "#4da8ff", values: voltageCValues })
-        voltageSeries = result
-    }
-
-    function updateCurrentSeries() {
-        const result = []
-        if (currentAEnabled)
-            result.push({ name: "A相电流", color: "#ff8b3d", values: currentAValues })
-        if (currentBEnabled)
-            result.push({ name: "B相电流", color: "#3fffe0", values: currentBValues })
-        if (currentCEnabled)
-            result.push({ name: "C相电流", color: "#c57bff", values: currentCValues })
-        currentSeries = result
-    }
-
-    function updateAllSeries() {
-        updateVoltageSeries()
-        updateCurrentSeries()
+    function clearWaveformData() {
+        TpInvDataProcessing.clearWaveformData()
     }
 
     Component.onCompleted: {
-        TpInvDataProcessing.sampleCapacity = wavePage.sampleCount
-        TpInvDataProcessing.clear()
-        refreshSerialPorts()
-        updateWavePortOpen()
-        refreshWaveformValues()
-        updateAllSeries()
-    }
-    onSelectedPortNameChanged: if (appTplnvData.waveSerialPortName !== selectedPortName) syncToSerialGroup()
-    onSelectedBaudRateChanged: if (appTplnvData.waveSerialBaudRate !== selectedBaudRate) syncToSerialGroup()
-    onSampleCountChanged: TpInvDataProcessing.sampleCapacity = wavePage.sampleCount
-    onWaveformPausedChanged: if (!waveformPaused) refreshWaveformValues()
-    onVoltageAEnabledChanged: updateVoltageSeries()
-    onVoltageBEnabledChanged: updateVoltageSeries()
-    onVoltageCEnabledChanged: updateVoltageSeries()
-    onCurrentAEnabledChanged: updateCurrentSeries()
-    onCurrentBEnabledChanged: updateCurrentSeries()
-    onCurrentCEnabledChanged: updateCurrentSeries()
-    onVoltageAValuesChanged: updateVoltageSeries()
-    onVoltageBValuesChanged: updateVoltageSeries()
-    onVoltageCValuesChanged: updateVoltageSeries()
-    onCurrentAValuesChanged: updateCurrentSeries()
-    onCurrentBValuesChanged: updateCurrentSeries()
-    onCurrentCValuesChanged: updateCurrentSeries()
-
-    Connections {
-        target: MosSerialPortManager
-
-        function onReceiveDataFromPort(portName, data, text, hex) {
-            if (portName !== wavePage.selectedPortName)
-                return
-            TpInvDataProcessing.appendSerialData(data)
-        }
-
-        function onOpenPortsChanged() {
-            wavePage.updateWavePortOpen()
-        }
-    }
-
-    Connections {
-        target: appTplnvData
-
-        function onSerialPortOptionsChanged() {
-            wavePage.syncFromSerialGroup()
-        }
-
-        function onWaveSerialPortNameChanged() {
-            wavePage.syncFromSerialGroup()
-        }
-
-        function onWaveSerialBaudRateChanged() {
-            wavePage.syncFromSerialGroup()
-        }
-
-        function onWaveSerialOpenChanged() {
-            wavePage.syncFromSerialGroup()
-        }
-    }
-
-    Connections {
-        target: TpInvDataProcessing
-
-        function onSamplesChanged() {
-            wavePage.waveformRefreshPending = true
-        }
-    }
-
-    Timer {
-        interval: 1000
-        repeat: true
-        running: wavePage.autoRequestEnabled && wavePage.isConnected() && !wavePage.waveformPaused
-        triggeredOnStart: true
-        onTriggered: wavePage.requestWaveformData()
-    }
-
-    Timer {
-        interval: 33
-        repeat: true
-        running: !wavePage.waveformPaused
-        onTriggered: {
-            if (!wavePage.waveformRefreshPending)
-                return
-
-            wavePage.waveformRefreshPending = false
-            wavePage.refreshWaveformValues()
-        }
+        TpInvDataProcessing.initializeWavePage(wavePage.sampleCount)
     }
 
     MosRectangle {
@@ -359,7 +212,7 @@ MosRectangle {
                                 }
                                 return wavePage.portOptions.length > 0 ? 0 : -1
                             }
-                            onActivated: wavePage.selectedPortName = currentValue
+                            onActivated: TpInvDataProcessing.selectedPortName = currentValue
                         }
 
                         MosButton {
@@ -398,7 +251,7 @@ MosRectangle {
                             }
                             return 0
                         }
-                        onActivated: wavePage.selectedBaudRate = currentValue
+                        onActivated: TpInvDataProcessing.selectedBaudRate = currentValue
                     }
 
                     MosButton {
@@ -551,7 +404,7 @@ MosRectangle {
                     colorBorder: MosTheme.Primary.colorBorder
                     colorText: wavePage.textStrong
                     font.bold: true
-                    onClicked: wavePage.waveformPaused = !wavePage.waveformPaused
+                    onClicked: TpInvDataProcessing.waveformPaused = !TpInvDataProcessing.waveformPaused
                 }
             }
 
@@ -588,9 +441,111 @@ MosRectangle {
                         colorBg: wavePage.controlBg
                         colorBorder: MosTheme.Primary.colorBorder
                         colorText: wavePage.textStrong
-                        onClicked: {
-                            TpInvDataProcessing.clear()
-                            wavePage.refreshWaveformValues()
+                        onClicked: wavePage.clearWaveformData()
+                    }
+                }
+            }
+
+            MosRectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: waveInfoColumn.implicitHeight + 36
+                Layout.minimumHeight: waveInfoColumn.implicitHeight + 36
+                radius: 10
+                color: wavePage.panelBg
+                border.width: 1
+                border.color: wavePage.panelBorder
+
+                ColumnLayout {
+                    id: waveInfoColumn
+                    anchors.fill: parent
+                    anchors.margins: 18
+                    spacing: 10
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        MosRectangle {
+                            Layout.preferredWidth: 5
+                            Layout.preferredHeight: 5
+                            Layout.alignment: Qt.AlignVCenter
+                            radius: 3
+                            color: "#56a8ff"
+                        }
+
+                        MosText {
+                            Layout.fillWidth: true
+                            text: "波形信息"
+                            color: wavePage.textMuted
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    InfoRow {
+                        label: "状态"
+                        value: wavePage.waveStatusText
+                        valueColor: TpInvDataProcessing.sampleCount > 0 ? "#62ffc4" : wavePage.textStrong
+                    }
+
+                    InfoRow {
+                        label: "样本"
+                        value: TpInvDataProcessing.sampleCount + " / " + wavePage.sampleCount
+                    }
+
+                    InfoRow {
+                        label: "解析帧"
+                        value: String(TpInvDataProcessing.parsedFrameCount)
+                    }
+
+                    InfoRow {
+                        label: "丢弃"
+                        value: String(TpInvDataProcessing.droppedFrameCount)
+                    }
+
+                    InfoRow {
+                        label: "接收"
+                        value: wavePage.receivedByteCount + " B"
+                    }
+
+                    InfoRow {
+                        label: "请求"
+                        value: wavePage.lastWaveRequestTime.length > 0 ? wavePage.lastWaveRequestTime : "--"
+                    }
+
+                    InfoRow {
+                        label: "最近"
+                        value: wavePage.lastWaveRxTime.length > 0 ? wavePage.lastWaveRxTime : "--"
+                    }
+
+                    MosRectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: Math.max(56, lastHexText.implicitHeight + 24)
+                        radius: 7
+                        color: wavePage.controlBg
+                        border.width: 1
+                        border.color: MosTheme.Primary.colorBorder
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 6
+
+                            MosText {
+                                Layout.fillWidth: true
+                                text: "最后HEX"
+                                color: wavePage.textMuted
+                                font.pixelSize: 11
+                            }
+
+                            MosText {
+                                id: lastHexText
+                                Layout.fillWidth: true
+                                text: wavePage.compactHex(wavePage.lastWaveHex)
+                                color: wavePage.textStrong
+                                font.pixelSize: 11
+                                font.family: "Consolas"
+                                wrapMode: Text.WrapAnywhere
+                            }
                         }
                     }
                 }
@@ -657,8 +612,8 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        autoXRange: false
-                        autoYRange: false
+                        autoXRange: true
+                        autoYRange: true
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
                         yMin: -50
@@ -667,8 +622,8 @@ MosRectangle {
                         yBlockCount: 4
                         unit: "V"
                         lineWidth: 2
-                        pointSize: 0
-                        pointRenderThreshold: 0
+                        pointSize: 2
+                        pointRenderThreshold: 1
                         maxRenderPoints: 900
                         maxInteractivePoints: 900
                         colorBg: wavePage.chartBg
@@ -738,8 +693,8 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        autoXRange: false
-                        autoYRange: false
+                        autoXRange: true
+                        autoYRange: true
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
                         yMin: -1
@@ -748,8 +703,8 @@ MosRectangle {
                         yBlockCount: 4
                         unit: "A"
                         lineWidth: 2
-                        pointSize: 0
-                        pointRenderThreshold: 0
+                        pointSize: 2
+                        pointRenderThreshold: 1
                         maxRenderPoints: 900
                         maxInteractivePoints: 900
                         colorBg: wavePage.chartBg
@@ -796,6 +751,38 @@ MosRectangle {
                 font.pixelSize: 11
                 font.bold: true
             }
+        }
+    }
+
+    component InfoRow: RowLayout {
+        id: infoRowRoot
+
+        property string label: ""
+        property string value: ""
+        property color valueColor: wavePage.textStrong
+
+        Layout.fillWidth: true
+        Layout.preferredHeight: 24
+        spacing: 8
+
+        MosText {
+            Layout.preferredWidth: 58
+            Layout.alignment: Qt.AlignVCenter
+            text: infoRowRoot.label
+            color: wavePage.textMuted
+            font.pixelSize: 12
+            elide: Text.ElideRight
+        }
+
+        MosText {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            text: infoRowRoot.value
+            color: infoRowRoot.valueColor
+            font.pixelSize: 12
+            font.bold: true
+            horizontalAlignment: Text.AlignRight
+            elide: Text.ElideRight
         }
     }
 
@@ -858,7 +845,7 @@ MosRectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         const key = channelRowRoot.propertyName
-                        wavePage[key] = !wavePage[key]
+                        TpInvDataProcessing[key] = !TpInvDataProcessing[key]
                     }
                 }
 

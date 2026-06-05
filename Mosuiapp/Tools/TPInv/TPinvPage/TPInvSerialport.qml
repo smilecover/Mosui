@@ -517,12 +517,6 @@ MosRectangle{
         Connections {
             target: MosSerialPortManager
 
-            function onReceiveDataFromPort(portName, data, text, hex) {
-                if (portName !== serialportPage.selectedPortName)
-                    return
-                rightItem.appendReceivedData(text, hex)
-            }
-
             function onErrorOccurredFromPort(portName, message) {
                 if (portName !== serialportPage.selectedPortName)
                     return
@@ -531,6 +525,16 @@ MosRectangle{
 
             function onOpenPortsChanged() {
                 serialportPage.updateSelectedPortOpen()
+            }
+        }
+
+        Connections {
+            target: TpinvSerial
+
+            function onSerialTextReceived(portName, text, hex) {
+                if (portName !== serialportPage.selectedPortName)
+                    return
+                rightItem.appendReceivedData(text, hex)
             }
         }
 

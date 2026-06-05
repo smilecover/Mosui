@@ -3,6 +3,8 @@
 #include "MosSerialPortManager.h"
 #include "TpInvcontroldata.h"
 
+#include "Tpinvcontrolprocess.h"
+
 #include <QQmlEngine>
 #include <QVariantMap>
 #include <QDebug>
@@ -13,7 +15,7 @@ TpinvSerial::TpinvSerial(QObject *parent)
 {
     bindManagerSignals();
     bindControlDataSignals();
-
+    bindControlProcessSignals();
 }
 
 TpinvSerial::~TpinvSerial() = default;
@@ -68,9 +70,17 @@ void TpinvSerial::bindManagerSignals()
         &MosSerialPortManager::ReceiveDataFromPort,
         this,
         [this](const QString &portName, const QByteArray &data, const QString &text, const QString &hex) {
-            if (!m_controlPortName.isEmpty() && portName != m_controlPortName)
-                return;
-            qDebug() << "从串口" << portName << "接收到数据:" << data;
+            emit serialTextReceived(portName, text, hex);
+
+            const bool isControlPort = !m_controlPortName.isEmpty() && portName == m_controlPortName;
+            if (isControlPort) {
+                auto *controlProc = controlProcess();
+                controlProc->cmdBuffer()->pushOverwrite(
+                    reinterpret_cast<const tpinv::RingBuffer::value_type *>(data.constData()),
+                    static_cast<tpinv::RingBuffer::size_type>(data.size()));
+                // 数据到达后立即触发解析，不等待定时器
+                controlProc->controntroldataProcess();
+            }
         }
     );
 
@@ -90,8 +100,33 @@ void TpinvSerial::bindControlDataSignals()
         &TpInvcontroldata::cmdTx,
         this,
         [this](const QString &SerialPort, const QByteArray &data) {
+            if (SerialPort.isEmpty()) {
+                qWarning() << "控制串口为空，无法发送命令";
+                return;
+            }
             auto *serialManager = manager();
-            qDebug() << "发送命令到串口" << SerialPort << "数据:" << data;
+            if (!serialManager->isPortOpen(SerialPort)) {
+                qWarning() << "控制串口" << SerialPort << "未打开，无法发送命令";
+                return;
+            }
+            qDebug() << "发送命令到串口" << SerialPort << "数据:" << data.toHex(' ').toUpper();
+            const bool ok = serialManager->SendBytesToPort(SerialPort, data);
+            if (!ok) {
+                qWarning() << "发送失败:" << serialManager->errorString();
+            } else {
+                qDebug() << "发送成功, 共" << data.size() << "字节";
+            }
         }
     );
+
+}
+
+Tpinvcontrolprocess *TpinvSerial::controlProcess() const
+{
+    return Tpinvcontrolprocess::instance();
+}
+void TpinvSerial::bindControlProcessSignals()
+{
+    auto *controlProc = controlProcess();
+
 }

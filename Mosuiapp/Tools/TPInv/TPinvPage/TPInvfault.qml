@@ -11,10 +11,15 @@ MosRectangle {
     anchors.fill: parent
 
     property real faultValue: 0
-    property bool updatingFaultInputs: false
+
+    // 从后端 hex 故障码同步到数值
+    function syncFaultFromBackend() {
+        const parsed = parseHex(TpInvcontroldata.faultCode)
+        if (faultValue !== parsed)
+            faultValue = parsed
+    }
     readonly property color textStrong: MosTheme.Primary.colorTextPrimary
     readonly property color textMuted: MosTheme.Primary.colorTextSecondary
-    readonly property color textSubtle: MosTheme.Primary.colorTextTertiary
     readonly property color borderColor: MosTheme.Primary.colorSplit
     readonly property var faultItems: [
         { bit: 0, label: "A相慢速过压" },
@@ -117,7 +122,12 @@ MosRectangle {
         faultValue = clampFaultValue(value);
     }
 
-    Component.onCompleted: setFaultValue(0)
+    Component.onCompleted: syncFaultFromBackend()
+
+    Connections {
+        target: TpInvcontroldata
+        function onKeyMetricsChanged() { syncFaultFromBackend() }
+    }
 
     Flickable {
         anchors.fill: parent
@@ -327,7 +337,6 @@ MosRectangle {
                             border.color: MosTheme.Primary.colorSplit
                             border.width: 1
                             RowLayout {
-                            
                                 Layout.fillWidth: true
                                 spacing: 12
                                 Column {
@@ -354,28 +363,17 @@ MosRectangle {
                                     Layout.preferredHeight: 38
                                     text: "✕ 全部清零"
                                     radiusBg.all: 19
-                                    // colorBg: down ? "#12204c" : hovered ? "#263a72" : "#1b2850"
                                     colorBorder: down ? MosTheme.Primary.colorPrimaryBorderActive : hovered ? MosTheme.Primary.colorPrimaryBorderHover : MosTheme.Primary.colorBorder
                                     colorText: tpinvFault.textStrong
                                     font.bold: true
                                     onClicked: tpinvFault.setFaultValue(0)
                                 }
 
-                                MosButton {
-                                    Layout.preferredWidth: 112
-                                    Layout.preferredHeight: 38
-                                    text: "自动检测"
-                                    radiusBg.all: 19
-                                    // colorBg: down ? "#12204c" : hovered ? "#263a72" : "#1b2850"
-                                    colorBorder: down ? MosTheme.Primary.colorPrimaryBorderActive : hovered ? MosTheme.Primary.colorPrimaryBorderHover : MosTheme.Primary.colorBorder
-                                    colorText: tpinvFault.textStrong
-                                    font.bold: true
-                                    // onClicked: tpinvFault.setFaultValue(0xA0810080)
-                                }
 
                                 MosButton {
                                     Layout.preferredWidth: 132
                                     Layout.preferredHeight: 38
+                                    Layout.rightMargin: 12
                                     text: "📋 复制故障码"
                                     type: MosButton.Type_Primary
                                     radiusBg.all: 19

@@ -10,6 +10,7 @@
 
 class MosSerialPortManager;
 class TpInvcontroldata;
+class Tpinvcontrolprocess;
 
 class TpinvSerial : public QObject
 {
@@ -18,6 +19,7 @@ class TpinvSerial : public QObject
     QML_NAMED_ELEMENT(TpinvSerial)
 
     MOSUI_PROPERTY_INIT(QString,controlPortName,setControlPortName,"");
+    MOSUI_PROPERTY_INIT(QString,wavePortName,setWavePortName,"");
 
 public:
     ~TpinvSerial() override;
@@ -27,10 +29,8 @@ public:
 
     Q_INVOKABLE int InitTpinvSerial();
 
-
-
-
 Q_SIGNALS:
+    void serialTextReceived(const QString &portName, const QString &text, const QString &hex);
 
 
 private:
@@ -41,6 +41,9 @@ private:
 
     TpInvcontroldata *controlData() const;
     void bindControlDataSignals();
+
+    Tpinvcontrolprocess *controlProcess() const;
+    void bindControlProcessSignals();
 
 };
 

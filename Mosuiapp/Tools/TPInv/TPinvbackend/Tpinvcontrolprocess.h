@@ -31,6 +31,12 @@ public:
 
     Q_INVOKABLE int Initprocess() const;
 
+    // cmdBuffer 使用
+    Q_INVOKABLE tpinv::RingBuffer *cmdBuffer() const;
+
+    // 处理接收到的控制数据帧
+    Q_INVOKABLE void controntroldataProcess();
+
 Q_SIGNALS:
 
 
@@ -44,6 +50,7 @@ private:
     void bandTpInvcontroldata();
     // 构建逆变器参数
     void buildTpInvParamet();
+
     
     QByteArray rxBuffer_;
 
@@ -55,7 +62,7 @@ private:
 
     
     */
-    tpinv::RingBuffer cmdBuffer;
+    tpinv::RingBuffer m_cmdBuffer;
     
     int parsedFrameCount_ = 0;
     int droppedFrameCount_ = 0;

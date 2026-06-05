@@ -55,6 +55,26 @@ void TpInvcontroldata::setRunning(bool running)
     emit runningChanged();
 }
 
+double TpInvcontroldata::dcVoltage() const
+{
+    return dcVoltage_;
+}
+
+double TpInvcontroldata::acVoltage() const
+{
+    return acVoltage_;
+}
+
+double TpInvcontroldata::acFrequency() const
+{
+    return acFrequency_;
+}
+
+QString TpInvcontroldata::faultCode() const
+{
+    return faultCode_;
+}
+
 void TpInvcontroldata::setallParameters(const QList<double> &value)
 {
     bool changed = false;
@@ -157,7 +177,7 @@ QVariantMap TpInvcontroldata::makeMonitorItem(const QString &key,
 void TpInvcontroldata::initializeDefaults()
 {
     running_ = false;
-    faultCode_ = QStringLiteral("0x0000");
+    faultCode_ = QStringLiteral("0x00000000");
 
     parametermodelItems_ = {
         makeParameterModel(QStringLiteral("SinglephaseInverter"), QStringLiteral("单相逆变"), QStringLiteral("0"), true),
@@ -196,17 +216,17 @@ void TpInvcontroldata::initializeDefaults()
             makeMonitorItem(QStringLiteral("powerFactor"), QStringLiteral("功率因数"), QStringLiteral("0.00"), QString()),
             makeMonitorItem(QStringLiteral("efficiency"), QStringLiteral("效率"), QStringLiteral("0.0"), QStringLiteral("%")),
         }),
-        makeMonitorGroup(QStringLiteral("三相功率"), QStringLiteral("#b88cff"), {
-            makeMonitorItem(QStringLiteral("activePowerA"), QStringLiteral("A相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
-            makeMonitorItem(QStringLiteral("activePowerB"), QStringLiteral("B相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
-            makeMonitorItem(QStringLiteral("activePowerC"), QStringLiteral("C相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
-            makeMonitorItem(QStringLiteral("reactivePowerA"), QStringLiteral("A相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
-            makeMonitorItem(QStringLiteral("reactivePowerB"), QStringLiteral("B相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
-            makeMonitorItem(QStringLiteral("reactivePowerC"), QStringLiteral("C相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
-            makeMonitorItem(QStringLiteral("apparentPowerA"), QStringLiteral("A相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
-            makeMonitorItem(QStringLiteral("apparentPowerB"), QStringLiteral("B相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
-            makeMonitorItem(QStringLiteral("apparentPowerC"), QStringLiteral("C相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
-        }),
+        // makeMonitorGroup(QStringLiteral("三相功率"), QStringLiteral("#b88cff"), {
+        //     makeMonitorItem(QStringLiteral("activePowerA"), QStringLiteral("A相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
+        //     makeMonitorItem(QStringLiteral("activePowerB"), QStringLiteral("B相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
+        //     makeMonitorItem(QStringLiteral("activePowerC"), QStringLiteral("C相有功功率"), QStringLiteral("0.0"), QStringLiteral("W")),
+        //     makeMonitorItem(QStringLiteral("reactivePowerA"), QStringLiteral("A相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
+        //     makeMonitorItem(QStringLiteral("reactivePowerB"), QStringLiteral("B相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
+        //     makeMonitorItem(QStringLiteral("reactivePowerC"), QStringLiteral("C相无功功率"), QStringLiteral("0.0"), QStringLiteral("var")),
+        //     makeMonitorItem(QStringLiteral("apparentPowerA"), QStringLiteral("A相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
+        //     makeMonitorItem(QStringLiteral("apparentPowerB"), QStringLiteral("B相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
+        //     makeMonitorItem(QStringLiteral("apparentPowerC"), QStringLiteral("C相视在功率"), QStringLiteral("0.0"), QStringLiteral("VA")),
+        // }),
         makeMonitorGroup(QStringLiteral("温度与版本"), QStringLiteral("#ff8a4c"), {
             makeMonitorItem(QStringLiteral("ambientTemperature"), QStringLiteral("环境温度"), QStringLiteral("0.0"), QStringLiteral("C")),
             makeMonitorItem(QStringLiteral("auxTemperature"), QStringLiteral("辅助温度"), QStringLiteral("0.0"), QStringLiteral("C")),
@@ -224,4 +244,87 @@ void TpInvcontroldata::sendCommand(const QString &SerialPort, const QByteArray &
 {
 
     emit cmdTx(SerialPort, data);
+}
+
+void TpInvcontroldata::applyMonitorSnapshot(const QVariantMap &values)
+{
+    if (values.isEmpty())
+        return;
+
+    bool anyGroupChanged = false;
+
+    for (int gi = 0; gi < monitorGroups_.size(); ++gi) {
+        QVariantMap group = monitorGroups_.at(gi).toMap();
+        QVariantList items = group.value(QStringLiteral("items")).toList();
+        bool changed = false;
+
+        for (int ii = 0; ii < items.size(); ++ii) {
+            QVariantMap item = items.at(ii).toMap();
+            const QString key = item.value(QStringLiteral("key")).toString();
+            if (values.contains(key)) {
+                item[QStringLiteral("value")] = values[key];
+                items[ii] = item;
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            group[QStringLiteral("items")] = items;
+            monitorGroups_[gi] = group;
+            anyGroupChanged = true;
+        }
+    }
+
+    if (anyGroupChanged)
+        emit monitorGroupsChanged();
+
+    extractKeyMetrics();
+}
+
+QVariant TpInvcontroldata::findMonitorValue(const QString &key) const
+{
+    for (const QVariant &g : monitorGroups_) {
+        const QVariantMap group = g.toMap();
+        const QVariantList items = group.value(QStringLiteral("items")).toList();
+        for (const QVariant &i : items) {
+            const QVariantMap item = i.toMap();
+            if (item.value(QStringLiteral("key")).toString() == key)
+                return item.value(QStringLiteral("value"));
+        }
+    }
+    return {};
+}
+
+void TpInvcontroldata::extractKeyMetrics()
+{
+    // 电压数据：DSP 精度 UINT_VOLT=10 → 0.1V，四舍五入到 1 位小数
+    const double newDcVoltage = findMonitorValue(QStringLiteral("dcVoltage")).toDouble();
+    const double phaseA = findMonitorValue(QStringLiteral("phaseVoltageA")).toDouble();
+    const double phaseB = findMonitorValue(QStringLiteral("phaseVoltageB")).toDouble();
+    const double phaseC = findMonitorValue(QStringLiteral("phaseVoltageC")).toDouble();
+    const double newAcVoltage = (phaseA + phaseB + phaseC) / 3.0;      
+    const double newAcFrequency = findMonitorValue(QStringLiteral("acFrequencyA")).toDouble();
+    const QString newFaultCode = findMonitorValue(QStringLiteral("faultCode")).toString();
+
+    bool changed = false;
+
+    if (!qFuzzyCompare(dcVoltage_, newDcVoltage)) {
+        dcVoltage_ = newDcVoltage;
+        changed = true;
+    }
+    if (!qFuzzyCompare(acVoltage_, newAcVoltage)) {
+        acVoltage_ = newAcVoltage;
+        changed = true;
+    }
+    if (!qFuzzyCompare(acFrequency_, newAcFrequency)) {
+        acFrequency_ = newAcFrequency;
+        changed = true;
+    }
+    if (faultCode_ != newFaultCode) {
+        faultCode_ = newFaultCode;
+        changed = true;
+    }
+
+    if (changed)
+        emit keyMetricsChanged();
 }

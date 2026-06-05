@@ -48,3 +48,10 @@ compile_commands.json
 
 shared/
 *.ini
+
+.cache/
+.claude/
+.qtcreator/
+shared/
+*.md
+opencode.json

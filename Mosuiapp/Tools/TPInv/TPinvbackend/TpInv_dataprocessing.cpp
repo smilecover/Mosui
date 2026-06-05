@@ -1,12 +1,21 @@
 #include "TpInv_dataprocessing.h"
 
+#include "MosSerialPortManager.h"
+#include "ring_buffer.h"
+
 #include <QMetaObject>
+#include <QQmlEngine>
 #include <QThread>
+#include <QTime>
+#include <QTimer>
+#include <QVariantMap>
 #include <QtGlobal>
 
 #include <algorithm>
+#include <array>
 #include <cstring>
 #include <functional>
+#include <utility>
 #include <vector>
 
 namespace {
@@ -15,6 +24,11 @@ float decodeSigned16(quint8 high, quint8 low)
 {
     const quint16 raw = (static_cast<quint16>(high) << 8) | static_cast<quint16>(low);
     return static_cast<float>(static_cast<qint16>(raw));
+}
+
+float decodeUnsigned16LE(quint8 low, quint8 high)
+{
+    return static_cast<float>((static_cast<quint16>(high) << 8) | static_cast<quint16>(low));
 }
 
 } // namespace
@@ -60,11 +74,12 @@ public:
         rxBuffer_.pushOverwrite(reinterpret_cast<const tpinv::RingBuffer::value_type *>(data.constData()),
                                 static_cast<tpinv::RingBuffer::size_type>(data.size()));
 
-        bool changed = false;
-        while (parseNextFrame())
-            changed = true;
+        const int initialParsedFrameCount = parsedFrameCount_;
+        const int initialDroppedFrameCount = droppedFrameCount_;
+        while (parseNextFrame()) {
+        }
 
-        if (changed)
+        if (parsedFrameCount_ != initialParsedFrameCount || droppedFrameCount_ != initialDroppedFrameCount)
             emitSnapshot();
     }
 
@@ -74,6 +89,8 @@ public:
         sampleBuffer_.clear();
         parsedFrameCount_ = 0;
         droppedFrameCount_ = 0;
+        lastControlSample_ = Sample {};
+        hasLastControlSample_ = false;
         emitSnapshot();
     }
 
@@ -93,9 +110,13 @@ private:
         ChannelCount
     };
 
-    static constexpr int FrameSize = 16;
-    static constexpr int Header0 = 0xFF;
-    static constexpr int Header1 = 0xCC;
+    static constexpr int WaveFrameSize = 16;
+    static constexpr int ControlFrameSize = 20;
+    static constexpr int WaveHeader0 = 0xFF;
+    static constexpr int WaveHeader1 = 0xCC;
+    static constexpr int ControlHeader = 0xAA;
+    static constexpr int ControlFrameVoltages = 0xF0;
+    static constexpr int ControlFrameCurrents = 0xF1;
     static constexpr int DefaultSampleCapacity = 512;
     static constexpr int RxBufferCapacity = 8192;
 
@@ -119,52 +140,85 @@ private:
 
     bool parseNextFrame()
     {
-        while (rxBuffer_.size() >= FrameSize) {
-            if (rxBuffer_[0] != Header0) {
-                quint8 ignored = 0;
-                tryReadByte(&ignored);
-                ++droppedFrameCount_;
-                continue;
+        while (!rxBuffer_.empty()) {
+            if (rxBuffer_[0] == WaveHeader0) {
+                if (rxBuffer_.size() < WaveFrameSize)
+                    return false;
+
+                if (rxBuffer_[1] != WaveHeader1) {
+                    quint8 ignored = 0;
+                    tryReadByte(&ignored);
+                    ++droppedFrameCount_;
+                    continue;
+                }
+
+                std::array<quint8, WaveFrameSize> frame {};
+                for (int i = 0; i < WaveFrameSize; ++i)
+                    frame[i] = rxBuffer_[static_cast<tpinv::RingBuffer::size_type>(i)];
+
+                if (!waveFrameChecksumIsValid(frame)) {
+                    quint8 ignored = 0;
+                    tryReadByte(&ignored);
+                    ++droppedFrameCount_;
+                    continue;
+                }
+
+                rxBuffer_.consume(WaveFrameSize);
+                appendSample(decodeWaveSample(frame));
+                ++parsedFrameCount_;
+                return true;
             }
 
-            if (rxBuffer_[1] != Header1) {
-                quint8 ignored = 0;
-                tryReadByte(&ignored);
-                ++droppedFrameCount_;
-                continue;
+            if (rxBuffer_[0] == ControlHeader) {
+                if (rxBuffer_.size() < ControlFrameSize)
+                    return false;
+
+                std::array<quint8, ControlFrameSize> frame {};
+                for (int i = 0; i < ControlFrameSize; ++i)
+                    frame[i] = rxBuffer_[static_cast<tpinv::RingBuffer::size_type>(i)];
+
+                if (!controlFrameChecksumIsValid(frame)) {
+                    quint8 ignored = 0;
+                    tryReadByte(&ignored);
+                    ++droppedFrameCount_;
+                    continue;
+                }
+
+                rxBuffer_.consume(ControlFrameSize);
+                appendControlSample(frame);
+                ++parsedFrameCount_;
+                return true;
             }
 
-            std::array<quint8, FrameSize> frame {};
-            for (int i = 0; i < FrameSize; ++i)
-                frame[i] = rxBuffer_[static_cast<tpinv::RingBuffer::size_type>(i)];
-
-            if (!frameChecksumIsValid(frame)) {
-                quint8 ignored = 0;
-                tryReadByte(&ignored);
-                ++droppedFrameCount_;
-                continue;
-            }
-
-            rxBuffer_.consume(FrameSize);
-            appendSample(decodeSample(frame));
-            ++parsedFrameCount_;
-            return true;
+            quint8 ignored = 0;
+            tryReadByte(&ignored);
+            ++droppedFrameCount_;
         }
 
         return false;
     }
 
-    bool frameChecksumIsValid(const std::array<quint8, FrameSize> &frame) const
+    bool waveFrameChecksumIsValid(const std::array<quint8, WaveFrameSize> &frame) const
     {
         quint16 sum = 0;
-        for (int i = 0; i < FrameSize - 2; ++i)
+        for (int i = 0; i < WaveFrameSize - 2; ++i)
             sum = static_cast<quint16>(sum + frame[i]);
 
-        return frame[FrameSize - 2] == static_cast<quint8>((sum >> 8) & 0xFF)
-                && frame[FrameSize - 1] == static_cast<quint8>(sum & 0xFF);
+        return frame[WaveFrameSize - 2] == static_cast<quint8>((sum >> 8) & 0xFF)
+                && frame[WaveFrameSize - 1] == static_cast<quint8>(sum & 0xFF);
     }
 
-    Sample decodeSample(const std::array<quint8, FrameSize> &frame) const
+    bool controlFrameChecksumIsValid(const std::array<quint8, ControlFrameSize> &frame) const
+    {
+        quint16 sum = 0;
+        for (int i = 0; i < ControlFrameSize - 2; ++i)
+            sum = static_cast<quint16>(sum + frame[i]);
+
+        return frame[ControlFrameSize - 2] == static_cast<quint8>(sum & 0xFF)
+                && frame[ControlFrameSize - 1] == static_cast<quint8>((sum >> 8) & 0xFF);
+    }
+
+    Sample decodeWaveSample(const std::array<quint8, WaveFrameSize> &frame) const
     {
         Sample sample;
         sample.values[VoltageA] = decodeSigned16(frame[2], frame[3]) / 10.0f;
@@ -174,6 +228,36 @@ private:
         sample.values[CurrentB] = decodeSigned16(frame[10], frame[11]) / 100.0f;
         sample.values[CurrentC] = decodeSigned16(frame[12], frame[13]) / 100.0f;
         return sample;
+    }
+
+    void appendControlSample(const std::array<quint8, ControlFrameSize> &frame)
+    {
+        Sample sample = hasLastControlSample_ ? lastControlSample_ : Sample {};
+        bool hasSample = false;
+
+        switch (frame[1]) {
+        case ControlFrameVoltages:
+            sample.values[VoltageA] = decodeUnsigned16LE(frame[6], frame[7]) / 10.0f;
+            sample.values[VoltageB] = decodeUnsigned16LE(frame[8], frame[9]) / 10.0f;
+            sample.values[VoltageC] = decodeUnsigned16LE(frame[10], frame[11]) / 10.0f;
+            hasSample = true;
+            break;
+        case ControlFrameCurrents:
+            sample.values[CurrentA] = decodeUnsigned16LE(frame[6], frame[7]) / 100.0f;
+            sample.values[CurrentB] = decodeUnsigned16LE(frame[8], frame[9]) / 100.0f;
+            sample.values[CurrentC] = decodeUnsigned16LE(frame[10], frame[11]) / 100.0f;
+            hasSample = true;
+            break;
+        default:
+            break;
+        }
+
+        if (!hasSample)
+            return;
+
+        lastControlSample_ = sample;
+        hasLastControlSample_ = true;
+        appendSample(sample);
     }
 
     void appendSample(const Sample &sample)
@@ -224,16 +308,21 @@ private:
     int sampleCapacity_ = DefaultSampleCapacity;
     int parsedFrameCount_ = 0;
     int droppedFrameCount_ = 0;
+    Sample lastControlSample_;
+    bool hasLastControlSample_ = false;
     SnapshotCallback snapshotCallback_;
 };
 
 TpInvDataProcessing::TpInvDataProcessing(QObject *parent)
-    : QObject(parent),
-      rxBuffer_(RxBufferCapacity),
-      
-      sampleBuffer_(DefaultSampleCapacity * sizeof(Sample))
-
+    : QObject(parent)
 {
+    autoRequestTimer_ = new QTimer(this);
+    autoRequestTimer_->setInterval(1000);
+    autoRequestTimer_->setTimerType(Qt::CoarseTimer);
+    connect(autoRequestTimer_, &QTimer::timeout, this, [this]() {
+        requestWaveformData();
+    });
+
     workerThread_ = new QThread(this);
     workerThread_->setObjectName(QStringLiteral("TpInvDataProcessingThread"));
     worker_ = new TpInvDataProcessingWorker(
@@ -271,6 +360,9 @@ TpInvDataProcessing::TpInvDataProcessing(QObject *parent)
     worker_->moveToThread(workerThread_);
     connect(workerThread_, &QThread::finished, worker_, &QObject::deleteLater);
     workerThread_->start();
+
+    bindSerialManagerSignals();
+    rebuildSeries();
 }
 
 TpInvDataProcessing::~TpInvDataProcessing()
@@ -279,6 +371,21 @@ TpInvDataProcessing::~TpInvDataProcessing()
         workerThread_->quit();
         workerThread_->wait();
     }
+}
+
+TpInvDataProcessing *TpInvDataProcessing::instance()
+{
+    static TpInvDataProcessing *ins = new TpInvDataProcessing;
+    return ins;
+}
+
+TpInvDataProcessing *TpInvDataProcessing::create(QQmlEngine *qmlEngine, QJSEngine *)
+{
+    auto *proc = instance();
+    if (qmlEngine) {
+        QQmlEngine::setObjectOwnership(proc, QQmlEngine::CppOwnership);
+    }
+    return proc;
 }
 
 int TpInvDataProcessing::sampleCapacity() const
@@ -312,6 +419,211 @@ int TpInvDataProcessing::parsedFrameCount() const
 int TpInvDataProcessing::droppedFrameCount() const
 {
     return droppedFrameCount_;
+}
+
+QVariantList TpInvDataProcessing::portOptions() const
+{
+    return portOptions_;
+}
+
+QString TpInvDataProcessing::selectedPortName() const
+{
+    return selectedPortName_;
+}
+
+void TpInvDataProcessing::setSelectedPortName(const QString &portName)
+{
+    const QString cleanPortName = portName.trimmed();
+    if (selectedPortName_ == cleanPortName)
+        return;
+
+    selectedPortName_ = cleanPortName;
+    emit selectedPortNameChanged();
+    updateWavePortOpen();
+    syncConnectedBaudRate();
+    updateAutoRequestTimer();
+}
+
+bool TpInvDataProcessing::wavePortOpen() const
+{
+    return wavePortOpen_;
+}
+
+int TpInvDataProcessing::selectedBaudRate() const
+{
+    return selectedBaudRate_;
+}
+
+void TpInvDataProcessing::setSelectedBaudRate(int baudRate)
+{
+    const int normalized = baudRate > 0 ? baudRate : 115200;
+    if (selectedBaudRate_ == normalized)
+        return;
+
+    selectedBaudRate_ = normalized;
+    emit selectedBaudRateChanged();
+}
+
+bool TpInvDataProcessing::waveformPaused() const
+{
+    return waveformPaused_;
+}
+
+void TpInvDataProcessing::setWaveformPaused(bool paused)
+{
+    if (waveformPaused_ == paused)
+        return;
+
+    waveformPaused_ = paused;
+    emit waveformPausedChanged();
+    if (!waveformPaused_)
+        rebuildSeries();
+    updateAutoRequestTimer();
+}
+
+bool TpInvDataProcessing::autoRequestEnabled() const
+{
+    return autoRequestEnabled_;
+}
+
+void TpInvDataProcessing::setAutoRequestEnabled(bool enabled)
+{
+    if (autoRequestEnabled_ == enabled)
+        return;
+
+    autoRequestEnabled_ = enabled;
+    emit autoRequestEnabledChanged();
+    updateAutoRequestTimer();
+}
+
+int TpInvDataProcessing::receivedByteCount() const
+{
+    return receivedByteCount_;
+}
+
+QString TpInvDataProcessing::lastWaveHex() const
+{
+    return lastWaveHex_;
+}
+
+QString TpInvDataProcessing::lastWaveText() const
+{
+    return lastWaveText_;
+}
+
+QString TpInvDataProcessing::lastWaveRxTime() const
+{
+    return lastWaveRxTime_;
+}
+
+QString TpInvDataProcessing::lastWaveRequestTime() const
+{
+    return lastWaveRequestTime_;
+}
+
+QString TpInvDataProcessing::waveStatusText() const
+{
+    return waveStatusText_;
+}
+
+bool TpInvDataProcessing::voltageAEnabled() const
+{
+    return voltageAEnabled_;
+}
+
+void TpInvDataProcessing::setVoltageAEnabled(bool enabled)
+{
+    if (voltageAEnabled_ == enabled)
+        return;
+
+    voltageAEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildVoltageSeries();
+}
+
+bool TpInvDataProcessing::voltageBEnabled() const
+{
+    return voltageBEnabled_;
+}
+
+void TpInvDataProcessing::setVoltageBEnabled(bool enabled)
+{
+    if (voltageBEnabled_ == enabled)
+        return;
+
+    voltageBEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildVoltageSeries();
+}
+
+bool TpInvDataProcessing::voltageCEnabled() const
+{
+    return voltageCEnabled_;
+}
+
+void TpInvDataProcessing::setVoltageCEnabled(bool enabled)
+{
+    if (voltageCEnabled_ == enabled)
+        return;
+
+    voltageCEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildVoltageSeries();
+}
+
+bool TpInvDataProcessing::currentAEnabled() const
+{
+    return currentAEnabled_;
+}
+
+void TpInvDataProcessing::setCurrentAEnabled(bool enabled)
+{
+    if (currentAEnabled_ == enabled)
+        return;
+
+    currentAEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildCurrentSeries();
+}
+
+bool TpInvDataProcessing::currentBEnabled() const
+{
+    return currentBEnabled_;
+}
+
+void TpInvDataProcessing::setCurrentBEnabled(bool enabled)
+{
+    if (currentBEnabled_ == enabled)
+        return;
+
+    currentBEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildCurrentSeries();
+}
+
+bool TpInvDataProcessing::currentCEnabled() const
+{
+    return currentCEnabled_;
+}
+
+void TpInvDataProcessing::setCurrentCEnabled(bool enabled)
+{
+    if (currentCEnabled_ == enabled)
+        return;
+
+    currentCEnabled_ = enabled;
+    emit channelEnabledChanged();
+    rebuildCurrentSeries();
+}
+
+QVariantList TpInvDataProcessing::voltageSeries() const
+{
+    return voltageSeries_;
+}
+
+QVariantList TpInvDataProcessing::currentSeries() const
+{
+    return currentSeries_;
 }
 
 QVariantList TpInvDataProcessing::voltageAValues() const
@@ -375,6 +687,302 @@ QVariantList TpInvDataProcessing::channelValues(int channel) const
     }
 }
 
+void TpInvDataProcessing::initializeWavePage(int capacity)
+{
+    setSampleCapacity(capacity);
+    clear();
+    refreshSerialPorts();
+    updateWavePortOpen();
+    setWaveStatusText(wavePortOpen_ ? QStringLiteral("等待波形数据") : QStringLiteral("串口未连接"));
+    updateAutoRequestTimer();
+}
+
+QVariantList TpInvDataProcessing::refreshSerialPorts()
+{
+    const QVariantList ports = MosSerialPortManager::instance()->refreshPorts();
+    if (portOptions_ != ports) {
+        portOptions_ = ports;
+        emit portOptionsChanged();
+    }
+
+    if (selectedPortName_.isEmpty() || !hasPort(selectedPortName_)) {
+        const QString nextPort = firstAvailablePort();
+        if (selectedPortName_ != nextPort) {
+            selectedPortName_ = nextPort;
+            emit selectedPortNameChanged();
+        }
+    }
+
+    updateWavePortOpen();
+    syncConnectedBaudRate();
+    updateAutoRequestTimer();
+    return portOptions_;
+}
+
+bool TpInvDataProcessing::toggleSerialPort()
+{
+    auto *serialManager = MosSerialPortManager::instance();
+    if (selectedPortName_.isEmpty())
+        refreshSerialPorts();
+
+    if (selectedPortName_.isEmpty()) {
+        setWaveStatusText(QStringLiteral("未找到可用串口"));
+        return false;
+    }
+
+    if (serialManager->isPortOpen(selectedPortName_)) {
+        serialManager->closePort(selectedPortName_);
+        updateWavePortOpen();
+        updateAutoRequestTimer();
+        setWaveStatusText(QStringLiteral("串口已关闭"));
+        return true;
+    }
+
+    const QString previousPortName = serialManager->currentPortName();
+    const bool opened = serialManager->openPort(selectedPortName_,
+                                                selectedBaudRate_,
+                                                8,
+                                                QStringLiteral("none"),
+                                                QStringLiteral("1"),
+                                                QStringLiteral("none"));
+    if (opened
+            && !previousPortName.isEmpty()
+            && previousPortName != selectedPortName_
+            && serialManager->isPortOpen(previousPortName)) {
+        serialManager->selectPort(previousPortName);
+    }
+
+    updateWavePortOpen();
+    syncConnectedBaudRate();
+    updateAutoRequestTimer();
+    setWaveStatusText(opened ? QStringLiteral("等待波形数据")
+                             : QStringLiteral("打开串口失败: %1").arg(serialManager->errorString()));
+    return opened;
+}
+
+bool TpInvDataProcessing::requestWaveformData()
+{
+    auto *serialManager = MosSerialPortManager::instance();
+    updateWavePortOpen();
+    if (!wavePortOpen_) {
+        setWaveStatusText(QStringLiteral("串口未连接"));
+        return false;
+    }
+
+    lastWaveRequestTime_ = QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz"));
+    emit requestInfoChanged();
+
+    const bool sent = serialManager->SendHexToPort(selectedPortName_, QStringLiteral("FF CC 01 00 01 CC"));
+    if (sent) {
+        setWaveStatusText(QStringLiteral("已发送波形请求"));
+    } else {
+        const QString error = serialManager->errorString();
+        setWaveStatusText(error.isEmpty() ? QStringLiteral("波形请求失败")
+                                          : QStringLiteral("波形请求失败: %1").arg(error));
+    }
+    return sent;
+}
+
+void TpInvDataProcessing::clearWaveformData()
+{
+    clear();
+    resetReceiveInfo();
+    setWaveStatusText(QStringLiteral("已清空波形数据"));
+}
+
+QString TpInvDataProcessing::compactHex(const QString &hex) const
+{
+    const QString compact = hex.simplified();
+    constexpr qsizetype MaxLength = 96;
+    if (compact.size() <= MaxLength)
+        return compact;
+    return compact.left(MaxLength) + QStringLiteral(" ...");
+}
+
+void TpInvDataProcessing::bindSerialManagerSignals()
+{
+    auto *serialManager = MosSerialPortManager::instance();
+    connect(serialManager, &MosSerialPortManager::openPortsChanged, this, [this]() {
+        updateWavePortOpen();
+        syncConnectedBaudRate();
+        updateAutoRequestTimer();
+    });
+
+    connect(serialManager,
+            &MosSerialPortManager::ReceiveDataFromPort,
+            this,
+            &TpInvDataProcessing::handleSerialData);
+
+    connect(serialManager,
+            &MosSerialPortManager::errorOccurredFromPort,
+            this,
+            [this](const QString &portName, const QString &message) {
+        if (portName == selectedPortName_)
+            setWaveStatusText(QStringLiteral("串口错误: %1").arg(message));
+    });
+}
+
+void TpInvDataProcessing::updateWavePortOpen()
+{
+    const bool open = !selectedPortName_.isEmpty()
+            && MosSerialPortManager::instance()->isPortOpen(selectedPortName_);
+    if (wavePortOpen_ == open)
+        return;
+
+    wavePortOpen_ = open;
+    emit wavePortOpenChanged();
+    if (!wavePortOpen_)
+        setWaveStatusText(QStringLiteral("串口未连接"));
+}
+
+void TpInvDataProcessing::syncConnectedBaudRate()
+{
+    if (selectedPortName_.isEmpty())
+        return;
+
+    const QVariantList openPorts = MosSerialPortManager::instance()->openPortList();
+    for (const QVariant &value : openPorts) {
+        const QVariantMap port = value.toMap();
+        if (port.value(QStringLiteral("portName")).toString() != selectedPortName_)
+            continue;
+
+        const int baudRate = port.value(QStringLiteral("baudRate"), selectedBaudRate_).toInt();
+        if (baudRate > 0 && selectedBaudRate_ != baudRate) {
+            selectedBaudRate_ = baudRate;
+            emit selectedBaudRateChanged();
+        }
+        return;
+    }
+}
+
+void TpInvDataProcessing::updateAutoRequestTimer()
+{
+    if (!autoRequestTimer_)
+        return;
+
+    const bool shouldRun = autoRequestEnabled_ && wavePortOpen_ && !waveformPaused_;
+    if (shouldRun) {
+        if (!autoRequestTimer_->isActive()) {
+            autoRequestTimer_->start();
+            requestWaveformData();
+        }
+    } else if (autoRequestTimer_->isActive()) {
+        autoRequestTimer_->stop();
+    }
+}
+
+void TpInvDataProcessing::handleSerialData(const QString &portName,
+                                           const QByteArray &data,
+                                           const QString &text,
+                                           const QString &hex)
+{
+    if (portName != selectedPortName_ || data.isEmpty())
+        return;
+
+    receivedByteCount_ += data.size();
+    lastWaveHex_ = hex;
+    lastWaveText_ = text;
+    lastWaveRxTime_ = QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz"));
+    emit receiveInfoChanged();
+
+    setWaveStatusText(QStringLiteral("收到数据，等待解析"));
+    appendSerialData(data);
+}
+
+void TpInvDataProcessing::setWaveStatusText(const QString &text)
+{
+    if (waveStatusText_ == text)
+        return;
+
+    waveStatusText_ = text;
+    emit waveStatusTextChanged();
+}
+
+void TpInvDataProcessing::resetReceiveInfo()
+{
+    receivedByteCount_ = 0;
+    lastWaveHex_.clear();
+    lastWaveText_.clear();
+    lastWaveRxTime_.clear();
+    lastWaveRequestTime_.clear();
+    emit receiveInfoChanged();
+    emit requestInfoChanged();
+}
+
+bool TpInvDataProcessing::hasPort(const QString &portName) const
+{
+    if (portName.isEmpty())
+        return false;
+
+    for (const QVariant &value : portOptions_) {
+        const QVariantMap port = value.toMap();
+        if (port.value(QStringLiteral("value")).toString() == portName)
+            return true;
+    }
+    return false;
+}
+
+QString TpInvDataProcessing::firstAvailablePort() const
+{
+    for (const QVariant &value : portOptions_) {
+        const QString portName = value.toMap().value(QStringLiteral("value")).toString();
+        if (!portName.isEmpty())
+            return portName;
+    }
+    return {};
+}
+
+void TpInvDataProcessing::rebuildSeries()
+{
+    rebuildVoltageSeries();
+    rebuildCurrentSeries();
+}
+
+void TpInvDataProcessing::rebuildVoltageSeries()
+{
+    QVariantList nextSeries;
+    if (voltageAEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电压"), QStringLiteral("#ff4f63"), voltageAValues_));
+    if (voltageBEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电压"), QStringLiteral("#48ff79"), voltageBValues_));
+    if (voltageCEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电压"), QStringLiteral("#4da8ff"), voltageCValues_));
+
+    if (voltageSeries_ == nextSeries)
+        return;
+
+    voltageSeries_ = nextSeries;
+    emit voltageSeriesChanged();
+}
+
+void TpInvDataProcessing::rebuildCurrentSeries()
+{
+    QVariantList nextSeries;
+    if (currentAEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电流"), QStringLiteral("#ff8b3d"), currentAValues_));
+    if (currentBEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电流"), QStringLiteral("#3fffe0"), currentBValues_));
+    if (currentCEnabled_)
+        nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电流"), QStringLiteral("#c57bff"), currentCValues_));
+
+    if (currentSeries_ == nextSeries)
+        return;
+
+    currentSeries_ = nextSeries;
+    emit currentSeriesChanged();
+}
+
+QVariantMap TpInvDataProcessing::makeSeriesItem(const QString &name,
+                                                const QString &color,
+                                                const QVariantList &values)
+{
+    QVariantMap item;
+    item.insert(QStringLiteral("name"), name);
+    item.insert(QStringLiteral("color"), color);
+    item.insert(QStringLiteral("values"), values);
+    return item;
+}
+
 void TpInvDataProcessing::applySnapshot(int sampleCount,
                                         int parsedFrameCount,
                                         int droppedFrameCount,
@@ -396,6 +1004,14 @@ void TpInvDataProcessing::applySnapshot(int sampleCount,
     currentCValues_ = currentCValues;
     emit samplesChanged();
     emit statsChanged();
+    if (!waveformPaused_)
+        rebuildSeries();
+
+    if (sampleCount_ > 0) {
+        setWaveStatusText(QStringLiteral("已解析波形数据"));
+    } else if (!lastWaveHex_.isEmpty()) {
+        setWaveStatusText(QStringLiteral("收到数据，暂未解析到有效帧"));
+    }
 }
 
 void TpInvDataProcessing::resetCachedValues()
@@ -411,108 +1027,5 @@ void TpInvDataProcessing::resetCachedValues()
     currentCValues_.clear();
     emit samplesChanged();
     emit statsChanged();
-}
-
-bool TpInvDataProcessing::tryReadByte(quint8 *value)
-{
-    if (!value)
-        return false;
-
-    tpinv::RingBuffer::value_type byte = 0;
-    if (!rxBuffer_.pop(byte))
-        return false;
-
-    *value = byte;
-    return true;
-}
-
-bool TpInvDataProcessing::parseNextFrame()
-{
-    while (rxBuffer_.size() >= FrameSize) {
-        if (rxBuffer_[0] != Header0) {
-            quint8 ignored = 0;
-            tryReadByte(&ignored);
-            ++droppedFrameCount_;
-            continue;
-        }
-
-        if (rxBuffer_[1] != Header1) {
-            quint8 ignored = 0;
-            tryReadByte(&ignored);
-            ++droppedFrameCount_;
-            continue;
-        }
-
-        std::array<quint8, FrameSize> frame {};
-        for (int i = 0; i < FrameSize; ++i)
-            frame[i] = rxBuffer_[static_cast<tpinv::RingBuffer::size_type>(i)];
-
-        if (!frameChecksumIsValid(frame)) {
-            quint8 ignored = 0;
-            tryReadByte(&ignored);
-            ++droppedFrameCount_;
-            continue;
-        }
-
-        rxBuffer_.consume(FrameSize);
-        appendSample(decodeSample(frame));
-        ++parsedFrameCount_;
-        return true;
-    }
-
-    return false;
-}
-
-bool TpInvDataProcessing::frameChecksumIsValid(const std::array<quint8, FrameSize> &frame) const
-{
-    quint16 sum = 0;
-    for (int i = 0; i < FrameSize - 2; ++i)
-        sum = static_cast<quint16>(sum + frame[i]);
-
-    return frame[FrameSize - 2] == static_cast<quint8>((sum >> 8) & 0xFF)
-            && frame[FrameSize - 1] == static_cast<quint8>(sum & 0xFF);
-}
-
-TpInvDataProcessing::Sample TpInvDataProcessing::decodeSample(const std::array<quint8, FrameSize> &frame) const
-{
-    Sample sample;
-
-    sample.values[VoltageA] = decodeSigned16(frame[2], frame[3]) / 10.0f;
-    sample.values[VoltageB] = decodeSigned16(frame[4], frame[5]) / 10.0f;
-    sample.values[VoltageC] = decodeSigned16(frame[6], frame[7]) / 10.0f;
-    sample.values[CurrentA] = decodeSigned16(frame[8], frame[9]) / 100.0f;
-    sample.values[CurrentB] = decodeSigned16(frame[10], frame[11]) / 100.0f;
-    sample.values[CurrentC] = decodeSigned16(frame[12], frame[13]) / 100.0f;
-
-    return sample;
-}
-
-void TpInvDataProcessing::appendSample(const Sample &sample)
-{
-    while (sampleCount() >= sampleCapacity_)
-        sampleBuffer_.consume(sizeof(Sample));
-
-    sampleBuffer_.pushOverwrite(reinterpret_cast<const tpinv::RingBuffer::value_type *>(&sample),
-                                sizeof(Sample));
-}
-
-QVariantList TpInvDataProcessing::valuesForChannel(Channel channel) const
-{
-    QVariantList result;
-    const int count = sampleCount();
-    result.reserve(count);
-
-    if (count == 0)
-        return result;
-
-    std::vector<tpinv::RingBuffer::value_type> raw(static_cast<std::size_t>(count) * sizeof(Sample));
-    sampleBuffer_.peek(raw.data(), raw.size());
-
-    for (int i = 0; i < count; ++i) {
-        Sample sample;
-        std::memcpy(&sample, raw.data() + static_cast<std::size_t>(i) * sizeof(Sample), sizeof(Sample));
-        result.push_back(sample.values[channel]);
-    }
-
-    return result;
+    rebuildSeries();
 }

@@ -23,6 +23,33 @@ MosRectangle {
     readonly property int _tpInvProcessInit: TpinvControlProcess.Initprocess()
     readonly property int _tpInvSerialInit: TpinvSerial.InitTpinvSerial()
 
+    // 格式化数值显示精度
+    function fmt(value, decimals) {
+        const num = Number(value)
+        if (isNaN(num)) return String(value)
+        return num.toFixed(decimals)
+    }
+
+    // 根据单位自动选择精度
+    function fmtByUnit(value, unit) {
+        const str = String(value)
+        // hex 字符串（如故障码 "0x00000000"）原样显示
+        if (str.startsWith("0x") || str.startsWith("0X"))
+            return str
+        const u = String(unit || "")
+        // 无单位的项（故障码、版本号等）原样显示
+        if (u === "") return str
+        const num = Number(value)
+        if (isNaN(num)) return str
+        if (u === "Hz")      return num.toFixed(2)
+        if (u === "A")       return num.toFixed(2)
+        if (u === "V")       return num.toFixed(1)
+        if (u === "W" || u === "var" || u === "VA") return num.toFixed(1)
+        if (u === "C")       return num.toFixed(1)
+        if (u === "%")       return num.toFixed(1)
+        return num.toFixed(1)
+    }
+
     readonly property var baudRateOptions: [
         { label: "9600", value: 9600 },
         { label: "19200", value: 19200 },
@@ -40,6 +67,14 @@ MosRectangle {
 
     function refreshControlSerialPorts() {
         appTplnvData.refreshSerialPorts("control")
+    }
+
+    function startDataTimer() {
+        dataTimer.start()
+    }
+
+    function stopDataTimer() {
+        dataTimer.stop()
     }
 
     property Component leftloaderComponent: Item {
@@ -551,7 +586,11 @@ MosRectangle {
                                 type: MosButton.Type_Primary
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                                onClicked: TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
+                                onClicked:
+                                {
+                                     tpinvControl.startDataTimer();
+                                     TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
+                                }
                             }
 
                             MosButton {
@@ -562,7 +601,11 @@ MosRectangle {
                                 type: MosButton.Type_Outlined
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                                onClicked: TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
+                                onClicked:
+                                {
+                                     tpinvControl.stopDataTimer();
+                                     TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
+                                }
                             }
                         }
                     }
@@ -570,6 +613,10 @@ MosRectangle {
             }
         }
     }
+
+
+
+
 
 
 
@@ -645,7 +692,12 @@ MosRectangle {
                         MosTag {
                             Layout.alignment: Qt.AlignVCenter
                             Layout.preferredHeight: implicitHeight
-                            text: "↻ 工作模式: 三相逆变"
+                            text: {
+                                const idx = TpInvcontroldata.parameterSelectIndex
+                                const models = TpInvcontroldata.parametermodelItems
+                                const label = (idx >= 0 && idx < models.length) ? models[idx].label : "三相逆变"
+                                return "↻ 工作模式: " + label
+                            }
                             colorBg: MosTheme.Primary.colorPrimaryBg
                             colorBorder: MosTheme.Primary.colorPrimaryBorder
                             colorText: MosTheme.Primary.colorPrimaryText
@@ -710,8 +762,8 @@ MosRectangle {
 
                                 MosText {
                                     anchors.centerIn: parent
-                                    text: "运行中"
-                                    color: tpinvControl.accent
+                                    text: TpInvcontroldata.running ? "运行中" : "未启动"
+                                    color: TpInvcontroldata.running ? tpinvControl.accent : tpinvControl.textMuted
                                     font.pixelSize: 12
                                     font.bold: true
                                 }
@@ -733,7 +785,7 @@ MosRectangle {
                                     anchors.right: parent.right
                                     anchors.leftMargin: 10
                                     anchors.rightMargin: 10
-                                    text: "⚡ 直流输入 0.0V · 输出 0.0V"
+                                    text: "⚡ 直流输入 " + tpinvControl.fmt(TpInvcontroldata.dcVoltage, 1) + "V · 输出 " + tpinvControl.fmt(TpInvcontroldata.acVoltage, 1) + "V"
                                     color: tpinvControl.accent
                                     font.pixelSize: 12
                                     font.bold: true
@@ -772,7 +824,7 @@ MosRectangle {
                                     spacing: 8
 
                                     MosText {
-                                        text: "0.0"
+                                        text: tpinvControl.fmt(TpInvcontroldata.dcVoltage, 1)
                                         color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
@@ -818,7 +870,7 @@ MosRectangle {
                                     spacing: 8
 
                                     MosText {
-                                        text: "0.0"
+                                        text: tpinvControl.fmt(TpInvcontroldata.acVoltage, 1)
                                         color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
@@ -864,7 +916,7 @@ MosRectangle {
                                     spacing: 8
 
                                     MosText {
-                                        text: "0.00"
+                                        text: tpinvControl.fmt(TpInvcontroldata.acFrequency, 2)
                                         color: tpinvControl.textStrong
                                         font.family: "Consolas"
                                         font.pixelSize: lnverterStatus.valueFontSize
@@ -908,7 +960,11 @@ MosRectangle {
 
                                 MosText {
                                     Layout.fillWidth: true
-                                    text: "0x0000   (正常)"
+                                    text: {
+                                        const code = TpInvcontroldata.faultCode
+                                        const normal = code === "0x00000000" || code === "0x0000"
+                                        return code + "   (" + (normal ? "正常" : "故障") + ")"
+                                    }
                                     color: MosTheme.Primary.colorWarningText
                                     font.family: "Consolas"
                                     font.pixelSize: 18
@@ -1076,7 +1132,7 @@ MosRectangle {
 
                                                     MosText {
                                                         Layout.alignment: Qt.AlignVCenter
-                                                        text: monitorCell.modelData.value
+                                                        text: tpinvControl.fmtByUnit(monitorCell.modelData.value, monitorCell.modelData.unit)
                                                         color: tpinvControl.textStrong
                                                         font.family: "Consolas"
                                                         font.pixelSize: 15
@@ -1101,6 +1157,7 @@ MosRectangle {
                 }
             }
         }
+
     }
 
     function updateTime() {
@@ -1118,6 +1175,16 @@ MosRectangle {
         repeat: true
         interval: 1000
         onTriggered: tpinvControl.updateTime()
+    }
+
+    Timer {
+        id: dataTimer
+        interval: 1000
+        repeat: true
+        triggeredOnStart: false
+        onTriggered: {
+            TpinvControlProcess.controntroldataProcess()
+        }
     }
 
     Flickable {
