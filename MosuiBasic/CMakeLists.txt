@@ -34,6 +34,30 @@ file(GLOB CPP_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
 # 动态库
 qt_add_library(${PROJECT_NAME} SHARED)
 
+# 资源文件（GLOB 自动匹配，无需手动维护文件列表）
+set(RES_BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+
+file(GLOB RES_FILES "resources/theme/*.json")
+qt_add_resources(${PROJECT_NAME} "theme"
+    PREFIX "/theme"
+    BASE "${RES_BASE}"
+    FILES ${RES_FILES}
+)
+
+file(GLOB RES_FILES "resources/font/*")
+qt_add_resources(${PROJECT_NAME} "font"
+    PREFIX "/font"
+    BASE "${RES_BASE}"
+    FILES ${RES_FILES}
+)
+
+file(GLOB RES_FILES "resources/image/*")
+qt_add_resources(${PROJECT_NAME} "image"
+    PREFIX "/image"
+    BASE "${RES_BASE}"
+    FILES ${RES_FILES}
+)
+
 qt_add_qml_module(
     ${PROJECT_NAME}
     URI MosuiBasic
@@ -41,8 +65,6 @@ qt_add_qml_module(
     QML_FILES ${QML_FILES}
     SOURCES
         ${CPP_FILES}
-    RESOURCES
-        resources/res.qrc
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
     QMLDIR_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/qmldir"
@@ -97,6 +119,14 @@ target_compile_definitions(${PROJECT_NAME}
     $<BUILD_INTERFACE:MOSUIBASIC_LIBRARY>
     $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>
 )
+
+# Linux: 设置 RPATH 使动态链接器能找到同目录下的 .so 文件
+if(UNIX AND NOT APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        BUILD_RPATH "${LIBRARY_SHARED_OUTPUT_DIRECTORY}"
+        INSTALL_RPATH "$ORIGIN"
+    )
+endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/cpp

@@ -23,9 +23,7 @@ set(LIBRARY_SHARED_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/shared CACHE PATH "动�
 # 设置静态库文件输出目录
 set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静态库文件输出目录" FORCE)
 find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
-if(MSVC)
-    find_package(Qt6 REQUIRED COMPONENTS WebEngineQuick)
-endif()
+find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 
     
 

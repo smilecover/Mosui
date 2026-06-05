@@ -1,6 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>logo.png</file>
-        <file>html/rain-on-glass.html</file>
-    </qresource>
-</RCC>

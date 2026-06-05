@@ -11,19 +11,34 @@ file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Contr
 file(GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Tools/*/*/*.cpp" "Tools/*/*/*.h")
 
 
+# 资源文件（GLOB 自动匹配，无需手动维护文件列表）
+set(RES_BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources")
+
+file(GLOB RES_FILES "resources/logo.png")
+qt_add_resources(${PROJECT_NAME} "res"
+    PREFIX "/"
+    BASE "${RES_BASE}"
+    FILES ${RES_FILES}
+)
+
+file(GLOB RES_FILES "resources/html/*")
+qt_add_resources(${PROJECT_NAME} "html"
+    PREFIX "/"
+    BASE "${RES_BASE}"
+    FILES ${RES_FILES}
+)
+
 qt_add_qml_module(
     ${PROJECT_NAME}
     URI Mosuiapp
     VERSION ${MOSUI_VERSION}
-    QML_FILES 
+    QML_FILES
         ${QML_FILES}
         Main.qml
         MenuModel.qml
     SOURCES
         main.cpp
         ${SRC_FILES}
-    RESOURCES
-        resources/res.qrc
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -50,12 +65,21 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::WebView
     Qt6::Graphs
     Qt6::Charts
-    Qt6::WebEngineQuick
+    $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:Qt6::WebEngineQuick>
     Qt6::Core5Compat
 )
  
 # QML 模块搜索路径
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     QML_IMPORT_PATH="${LIBRARY_SHARED_OUTPUT_DIRECTORY}"
+    $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:HAS_QT_WEBENGINE>
 )
+
+# Linux: 设置 RPATH 使动态链接器能找到同目录下的 .so 文件
+if(UNIX AND NOT APPLE)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        BUILD_RPATH "${LIBRARY_SHARED_OUTPUT_DIRECTORY}"
+        INSTALL_RPATH "$ORIGIN"
+    )
+endif()
 
