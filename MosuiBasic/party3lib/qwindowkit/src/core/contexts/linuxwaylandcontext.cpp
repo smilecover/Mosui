@@ -26,7 +26,10 @@ namespace QWK {
     LinuxWaylandContext::LinuxWaylandContext() : QtWindowContext() {
     }
 
-    LinuxWaylandContext::~LinuxWaylandContext() = default;
+    LinuxWaylandContext::~LinuxWaylandContext() {
+        Private::waylandBlurDestroy(m_blurHandle);
+        m_blurHandle = nullptr;
+    }
 
     QString LinuxWaylandContext::key() const {
         return QStringLiteral("wayland");
@@ -63,5 +66,62 @@ namespace QWK {
             QtWindowContext::virtual_hook(id, data);
         }
     }
+
+    // ── Wayland window attributes ───────────────────────
+    //
+    // All blur/dark-mode attributes are always accepted so the
+    // visual layer (LinuxEffectItem in the Quick module) can
+    // read them and render the tint+noise overlay.
+    // Native compositor blur (org_kde_kwin_blur_manager) is
+    // a best-effort bonus that's only attempted when the
+    // native window resources are available.
+
+    bool LinuxWaylandContext::windowAttributeChanged(const QString &key,
+                                                      const QVariant &attribute,
+                                                      const QVariant &oldAttribute) {
+        Q_UNUSED(oldAttribute)
+
+        if (attribute.typeId() != QMetaType::Type::Bool)
+            return false;
+
+        bool enable = attribute.toBool();
+
+        // ── Blur behind ────────────────────────────────────
+        if (key == QStringLiteral("dwm-blur") ||
+            key == QStringLiteral("acrylic-material") ||
+            key == QStringLiteral("mica") ||
+            key == QStringLiteral("mica-alt")) {
+
+            if (!enable) {
+                Private::waylandBlurDestroy(m_blurHandle);
+                m_blurHandle = nullptr;
+                return true;
+            }
+            if (m_blurHandle)
+                return true;
+
+            // Best-effort native blur — only if we have a native surface
+            if (m_windowHandle) {
+                auto *waylandApp = qApp->nativeInterface<QNativeInterface::QWaylandApplication>();
+                if (waylandApp) {
+                    wl_display *display = waylandApp->display();
+                    auto *surface = static_cast<wl_surface *>(
+                        QGuiApplication::platformNativeInterface()->nativeResourceForWindow(
+                            "wl_surface", m_windowHandle));
+                    if (display && surface)
+                        m_blurHandle = Private::waylandBlurCreate(display, surface);
+                }
+            }
+            return true; // always accept — visual layer handles the rest
+        }
+
+        // ── Dark mode ────────────────────────────────────
+        if (key == QStringLiteral("dark-mode")) {
+            return true;
+        }
+
+        return false;
+    }
+
 }
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

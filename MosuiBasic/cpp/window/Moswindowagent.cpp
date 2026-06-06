@@ -1,5 +1,4 @@
 #include "Moswindowagent.h"
-#include <QWKCore/private/windowagentbase_p.h>
 #include "theme/Mostheme.h"
 
 MosWindowAgent::MosWindowAgent(QObject *parent)

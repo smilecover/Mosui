@@ -28,6 +28,12 @@ namespace QWK {
 
         QString key() const override;
         void virtual_hook(int id, void *data) override;
+
+    protected:
+        // Support dwm-blur / acrylic-material / mica / mica-alt / dark-mode
+        // via X11 atoms (_KDE_NET_WM_BLUR_BEHIND_REGION, _KDE_NET_WM_COLOR_SCHEME).
+        bool windowAttributeChanged(const QString &key, const QVariant &attribute,
+                                    const QVariant &oldAttribute) override;
     };
 
 }

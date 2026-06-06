@@ -107,15 +107,17 @@ Flickable {
                         }
                     }
                     Component.onCompleted: {
-                        if (Qt.platform.os === 'windows'){
-                            model = [
-                                        { 'label': qsTr('无'), 'value': MosWindow.Effect_None },
-                                        { 'label': qsTr('模糊'), 'value': MosWindow.Effect_dwm_blur },
-                                        { 'label': qsTr('亚克力'), 'value': MosWindow.Effect_acrylic_material },
-                                        { 'label': qsTr('云母'), 'value': MosWindow.Effect_mica },
-                                        { 'label': qsTr('云母变体'), 'value': MosWindow.Effect_mica_alt }
-                                    ];
+                        var base = [
+                            { 'label': qsTr('无'), 'value': MosWindow.Effect_None },
+                            { 'label': qsTr('模糊'), 'value': MosWindow.Effect_dwm_blur },
+                            { 'label': qsTr('亚克力'), 'value': MosWindow.Effect_acrylic_material },
+                            { 'label': qsTr('云母'), 'value': MosWindow.Effect_mica },
+                            { 'label': qsTr('云母变体'), 'value': MosWindow.Effect_mica_alt }
+                        ];
+                        if (Qt.platform.os === 'osx') {
+                            base.unshift({ 'label': qsTr('原生模糊'), 'value': MosWindow.Effect_mac_blur });
                         }
+                        model = base;
                     }
                 }
             }

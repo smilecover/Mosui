@@ -22,6 +22,8 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 namespace QWK {
 
+    namespace Private { struct WaylandBlurHandle; }
+
     class LinuxWaylandContext : public QtWindowContext {
         Q_OBJECT
     public:
@@ -30,6 +32,13 @@ namespace QWK {
 
         QString key() const override;
         void virtual_hook(int id, void *data) override;
+
+    protected:
+        bool windowAttributeChanged(const QString &key, const QVariant &attribute,
+                                    const QVariant &oldAttribute) override;
+
+    private:
+        Private::WaylandBlurHandle *m_blurHandle = nullptr;
     };
 
 }

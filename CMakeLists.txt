@@ -22,7 +22,8 @@ set(QT_SILENCE_MISSING_DEPENDENCY_TARGET_WARNING ON) # 禁止 Qt 相关的警告
 set(LIBRARY_SHARED_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/shared CACHE PATH "动态库文件输出目录" FORCE)
 # 设置静态库文件输出目录
 set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静态库文件输出目录" FORCE)
-find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
+set(QT_NO_PRIVATE_MODULE_WARNING ON CACHE BOOL "" FORCE)
+find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickPrivate  QuickTemplates2 QuickTemplates2Private LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
 find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 
     
@@ -30,7 +31,7 @@ find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
 set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/bin)
 # 设置 Mosui 版本
 set(MOSUI_VERSION_MAJOR 1)
 set(MOSUI_VERSION_MINOR 0)

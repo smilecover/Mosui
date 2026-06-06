@@ -189,5 +189,54 @@ namespace QWK {
             QtWindowContext::virtual_hook(id, data);
         }
     }
+
+    // ── X11 window attributes ─────────────────────────────
+
+    bool LinuxX11Context::windowAttributeChanged(const QString &key,
+                                                  const QVariant &attribute,
+                                                  const QVariant &oldAttribute) {
+        Q_UNUSED(oldAttribute)
+
+        if (attribute.typeId() != QMetaType::Type::Bool)
+            return false;
+
+        bool enable = attribute.toBool();
+
+        // ── Blur behind ────────────────────────────────────
+        if (key == QStringLiteral("dwm-blur") ||
+            key == QStringLiteral("acrylic-material") ||
+            key == QStringLiteral("mica") ||
+            key == QStringLiteral("mica-alt")) {
+
+            // Best-effort KDE blur atom — only if X11 resources are ready
+            if (m_windowId) {
+                auto *x11app = qApp->nativeInterface<QNativeInterface::QX11Application>();
+                if (x11app) {
+                    auto *display = x11app->display();
+                    if (display)
+                        Private::x11SetBlurBehind(display,
+                            static_cast<Window>(m_windowId), enable);
+                }
+            }
+            return true; // always accept — visual layer handles the rest
+        }
+
+        // ── Dark mode ────────────────────────────────────
+        if (key == QStringLiteral("dark-mode")) {
+            if (m_windowId) {
+                auto *x11app = qApp->nativeInterface<QNativeInterface::QX11Application>();
+                if (x11app) {
+                    auto *display = x11app->display();
+                    if (display)
+                        Private::x11SetDarkMode(display,
+                            static_cast<Window>(m_windowId), enable);
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
 }
 #endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

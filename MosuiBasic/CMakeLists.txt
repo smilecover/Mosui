@@ -85,6 +85,19 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
 )
 
+# 将 QWindowKit 动态库复制到 shared/ 目录，确保运行时能找到
+if(NOT QWINDOWKIT_BUILD_STATIC)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:QWKCore>
+            ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:QWKQuick>
+            ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/
+        COMMENT "Copying QWindowKit libraries to shared/"
+    )
+endif()
+
 set_target_properties(${PROJECT_NAME} PROPERTIES
     QT_QML_MODULE_URI MosuiBasic
     VERSION ${MOSUI_VERSION}

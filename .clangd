@@ -1,0 +1,40 @@
+# clangd 项目级配置 — Qt6 项目
+# 文档: https://clangd.llvm.org/config
+
+CompileFlags:
+  # compile_commands.json 所在目录
+  CompilationDatabase: build/
+
+Diagnostics:
+  # Qt 头文件经常被误判为未使用（MOC 在背后依赖它们）
+  UnusedIncludes: Strict
+
+  # 抑制 Qt 项目的常见误诊
+  Suppress:
+    # moc_*.cpp / ui_*.h 等生成文件在首次构建前不存在
+    - "pp_file_not_found"
+    # Qt implicit bool conversion (if/while 中判断 QPointer 等)
+    - "readability-implicit-bool-conversion"
+    # Qt 容器类型推导
+    - "modernize-use-auto"
+
+  ClangTidy:
+    # 关闭与 Qt 惯用法冲突的检查
+    Remove:
+      - "modernize-use-auto"
+      - "readability-implicit-bool-conversion"
+      - "modernize-use-nullptr"
+      - "modernize-loop-convert"
+
+Index:
+  # 后台索引（与 VSCode 设置中的 --background-index 配合）
+  Background: Build
+
+Hover:
+  # 显示 Qt 类型的实际展开（如 QList<int> 的真实类型）
+  ShowAKA: true
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes

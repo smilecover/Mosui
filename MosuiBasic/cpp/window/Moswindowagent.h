@@ -3,7 +3,7 @@
 
 #include <QtCore/QObject>
 #include <QtQml/qqml.h>
-#include <QQmlParserStatus> 
+#include <QQmlParserStatus>
 
 #include <QWKQuick/quickwindowagent.h>
 
@@ -21,9 +21,7 @@ public:
 
     void classBegin() override;
     void componentComplete() override;
-    
 };
-
 
 
 #endif // MOSWINDOWAGENT_H

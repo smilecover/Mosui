@@ -21,7 +21,7 @@ MosWindow{
         id: rootBackground
         anchors.fill: parent
         color:MosTheme.Primary.colorBgBase
-        opacity: 0.2
+        opacity: 0.5
     }
 
     MosMenu{

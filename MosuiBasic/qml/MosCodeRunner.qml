@@ -8,7 +8,7 @@ MosWindow {
     width: 900
     height: 600
     title: qsTr('代码运行器')
-    effect: MosWindow.Effect_dwm_blur
+    // 使用平台默认效果（MosWindow 内部按平台选择）
     visible: true
 
     captionbar.closeCallback:
