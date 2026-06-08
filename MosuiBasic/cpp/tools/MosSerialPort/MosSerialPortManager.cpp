@@ -802,7 +802,6 @@ bool MosSerialPortManager::SendBytesToPort(const QString &portName, const QByteA
         if (portsChanged)
             emitOpenPortsChanged(this);
     }
-
     if (!result->ok) {
         setError(this, d, cleanPortName, result->error);
         return false;

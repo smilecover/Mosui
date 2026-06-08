@@ -154,7 +154,7 @@ Window {
         visible: false
         z: -9999
         color: MosTheme.Primary.colorBgBase
-        opacity: 0.9
+        opacity: 0.2
         Behavior on opacity { NumberAnimation { duration: MosTheme.Primary.durationFast } }
     }
 
@@ -165,31 +165,10 @@ Window {
         z: -9998
         blending: true
 
-        fragmentShader: "
-            varying vec2 qt_TexCoord0;
-            uniform float u_strength;
+        property real u_strength: 0.0
 
-            float hash(vec2 p) {
-                return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-            }
-
-            float noise(vec2 uv) {
-                vec2 i = floor(uv);
-                vec2 f = fract(uv);
-                f = f * f * (3.0 - 2.0 * f);
-                return mix(
-                    mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
-                    mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
-                    f.y
-                );
-            }
-
-            void main() {
-                float n = noise(qt_TexCoord0 * 280.0);
-                float grain = (n - 0.5) * 2.0 * u_strength;
-                gl_FragColor = vec4(1.0, 1.0, 1.0, grain);
-            }
-        "
+        vertexShader: "qrc:/shaders/noise.vert.qsb"
+        fragmentShader: "qrc:/shaders/noise.frag.qsb"
     }
 
     Connections {

@@ -5,8 +5,6 @@ project(MosuiBasic VERSION ${MOSUI_VERSION} LANGUAGES CXX)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-
 add_subdirectory(party3lib/qwindowkit)
  
 # 动态库目录
@@ -56,6 +54,13 @@ qt_add_resources(${PROJECT_NAME} "image"
     PREFIX "/image"
     BASE "${RES_BASE}"
     FILES ${RES_FILES}
+)
+
+qt_add_shaders(${PROJECT_NAME} "shaders"
+    PREFIX "/"
+    FILES
+        shaders/noise.vert
+        shaders/noise.frag
 )
 
 qt_add_qml_module(

@@ -23,7 +23,16 @@ set(LIBRARY_SHARED_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/shared CACHE PATH "动�
 # 设置静态库文件输出目录
 set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静态库文件输出目录" FORCE)
 set(QT_NO_PRIVATE_MODULE_WARNING ON CACHE BOOL "" FORCE)
-find_package(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickPrivate  QuickTemplates2 QuickTemplates2Private LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
+
+# 基础 Qt 组件（所有平台通用）
+set(QT_REQUIRED_COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
+
+# Linux/macOS 下私有模块有独立的 CMake 包，需要显式声明
+if(UNIX)
+    list(APPEND QT_REQUIRED_COMPONENTS QuickPrivate QuickTemplates2Private)
+endif()
+
+find_package(Qt6 REQUIRED COMPONENTS ${QT_REQUIRED_COMPONENTS})
 find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 
     
@@ -31,7 +40,7 @@ find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
 set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
 # 设置 Mosui 版本
 set(MOSUI_VERSION_MAJOR 1)
 set(MOSUI_VERSION_MINOR 0)
