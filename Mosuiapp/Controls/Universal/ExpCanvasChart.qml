@@ -79,6 +79,9 @@ autoXRange | bool | true | 是否自动计算 x 轴范围
 autoYRange | bool | true | 是否自动计算 y 轴范围
 xMin / xMax | real | 0 / 1 | 手动 x 轴范围
 yMin / yMax | real | 0 / 1 | 手动 y 轴范围
+zoomEnabled | bool | false | 是否启用鼠标滚轮缩放（仅笛卡尔坐标系）
+panEnabled | bool | false | 是否启用鼠标拖拽平移（仅笛卡尔坐标系）
+zoomSensitivity | real | 0.15 | 缩放灵敏度，值越大单次缩放幅度越大
 formatter | var | 内置格式化 | y 值或分片值格式化函数
 xFormatter | var | 内置格式化 | x 轴数值格式化函数
 labelFormatter | var | 内置格式化 | 类目标签格式化函数
@@ -99,7 +102,9 @@ sizeHint | string | 'normal' | 尺寸提示
 ------ | --- | ---
 chartHovered(index, seriesIndex, data) | signal | 悬浮到数据项时触发
 chartClicked(index, seriesIndex, data) | signal | 点击数据项时触发
+chartZoomed() | signal | 缩放或平移时触发，可用于同步多图 x 轴
 refresh() | function | 主动请求重绘
+resetZoom() | function | 重置缩放与平移，恢复 autoXRange / autoYRange
 colorAt(index) | function | 获取指定序号对应的主题色
                        `)
         }
@@ -490,6 +495,183 @@ MosCanvasChart {
             }
         }
 
+        CodeBox {
+            width: parent.width
+            desc: qsTr(`
+开启 \`zoomEnabled\` 与 \`panEnabled\` 后，图表支持交互式缩放和平移，适合波形分析等需要细致查看数据的场景。
+
+* **滚轮** 缩放 X 轴（以鼠标位置为中心）
+* **Ctrl + 滚轮** 缩放 Y 轴
+* **拖拽** 平移视图
+* **双击** 或调用 \`resetZoom()\` 恢复全览
+
+多图表可通过 \`onChartZoomed\` 同步 x 轴，例如上方的电压图和下方的电流图同时缩放。
+                       `)
+            code: `
+import QtQuick
+import QtQuick.Layouts
+import MosuiBasic
+
+ColumnLayout {
+    width: 680
+    spacing: 12
+
+    MosCanvasChart {
+        id: chartA
+        Layout.fillWidth: true
+        Layout.preferredHeight: 260
+        title: qsTr("电压波形")
+        chartType: MosCanvasChart.Type_Line
+        zoomEnabled: true
+        panEnabled: true
+        autoXRange: false
+        xMin: 0
+        xMax: 351
+        xBlockCount: 8
+        yBlockCount: 4
+        unit: " V"
+        smooth: true
+        highPerformance: true
+        colors: ["#FFCC00", "#01ff45", "#ff4f63"]
+        series: [
+            { name: "A", values: buildWave(352, 0) },
+            { name: "B", values: buildWave(352, 120) },
+            { name: "C", values: buildWave(352, 240) }
+        ]
+
+        onChartZoomed: {
+            chartB.autoXRange = false
+            chartB.xMin = xMin
+            chartB.xMax = xMax
+        }
+
+        function buildWave(count, phase) {
+            const data = new Array(count)
+            for (let i = 0; i < count; ++i)
+                data[i] = 220 * Math.sin((i + phase) * Math.PI * 2 / 100)
+            return data
+        }
+    }
+
+    MosCanvasChart {
+        id: chartB
+        Layout.fillWidth: true
+        Layout.preferredHeight: 260
+        title: qsTr("电流波形")
+        chartType: MosCanvasChart.Type_Line
+        zoomEnabled: true
+        panEnabled: true
+        autoXRange: false
+        xMin: 0
+        xMax: 351
+        xBlockCount: 8
+        yBlockCount: 4
+        unit: " A"
+        smooth: true
+        highPerformance: true
+        colors: ["#FFCC00", "#01ff45", "#ff4f63"]
+        series: [
+            { name: "A", values: buildWave(352, 0) },
+            { name: "B", values: buildWave(352, 120) },
+            { name: "C", values: buildWave(352, 240) }
+        ]
+
+        onChartZoomed: {
+            chartA.autoXRange = false
+            chartA.xMin = xMin
+            chartA.xMax = xMax
+        }
+
+        function buildWave(count, phase) {
+            const data = new Array(count)
+            for (let i = 0; i < count; ++i)
+                data[i] = 10 * Math.sin((i + phase) * Math.PI * 2 / 100)
+            return data
+        }
+    }
+}
+            `
+            exampleDelegate: ColumnLayout {
+                width: parent ? parent.width : 760
+                height: 560
+                spacing: 12
+
+                MosCanvasChart {
+                    id: demoZoom1
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    title: qsTr("电压波形（滚轮缩放 · 拖拽平移 · 双击重置）")
+                    chartType: MosCanvasChart.Type_Line
+                    zoomEnabled: true
+                    panEnabled: true
+                    autoXRange: false
+                    xMin: 0
+                    xMax: 351
+                    xBlockCount: 8
+                    yBlockCount: 4
+                    unit: " V"
+                    smooth: true
+                    highPerformance: true
+                    colors: ["#FFCC00", "#01ff45", "#ff4f63"]
+                    series: [
+                        { name: "A", values: buildWave(352, 0) },
+                        { name: "B", values: buildWave(352, 120) },
+                        { name: "C", values: buildWave(352, 240) }
+                    ]
+
+                    onChartZoomed: {
+                        demoZoom2.autoXRange = false
+                        demoZoom2.xMin = xMin
+                        demoZoom2.xMax = xMax
+                    }
+
+                    function buildWave(count, phase) {
+                        const data = new Array(count)
+                        for (let i = 0; i < count; ++i)
+                            data[i] = 220 * Math.sin((i + phase) * Math.PI * 2 / 100)
+                        return data
+                    }
+                }
+
+                MosCanvasChart {
+                    id: demoZoom2
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    title: qsTr("电流波形（x 轴与上图同步）")
+                    chartType: MosCanvasChart.Type_Line
+                    zoomEnabled: true
+                    panEnabled: true
+                    autoXRange: false
+                    xMin: 0
+                    xMax: 351
+                    xBlockCount: 8
+                    yBlockCount: 4
+                    unit: " A"
+                    smooth: true
+                    highPerformance: true
+                    colors: ["#FFCC00", "#01ff45", "#ff4f63"]
+                    series: [
+                        { name: "A", values: buildWave(352, 0) },
+                        { name: "B", values: buildWave(352, 120) },
+                        { name: "C", values: buildWave(352, 240) }
+                    ]
+
+                    onChartZoomed: {
+                        demoZoom1.autoXRange = false
+                        demoZoom1.xMin = xMin
+                        demoZoom1.xMax = xMax
+                    }
+
+                    function buildWave(count, phase) {
+                        const data = new Array(count)
+                        for (let i = 0; i < count; ++i)
+                            data[i] = 10 * Math.sin((i + phase) * Math.PI * 2 / 100)
+                        return data
+                    }
+                }
+            }
+        }
+
         MosDescription {
             title: qsTr('数据格式')
             desc: qsTr(`
@@ -498,6 +680,8 @@ MosCanvasChart {
 \`series\` 用于多系列：\`[{ name: "A", values: [...] }, { name: "B", values: [...] }]\`。折线图、面积图、柱状图、散点图和雷达图都可以使用多系列；饼图和环形图通常使用单组 \`values\` 与 \`labels\`。
 
 需要固定坐标范围时，关闭 \`autoXRange\` 或 \`autoYRange\`，再设置 \`xMin/xMax\` 或 \`yMin/yMax\`。
+
+如需交互式缩放与平移，开启 \`zoomEnabled\` 与 \`panEnabled\`。滚轮缩放 X 轴，Ctrl+滚轮缩放 Y 轴，拖拽平移，双击重置。
                        `)
         }
     }

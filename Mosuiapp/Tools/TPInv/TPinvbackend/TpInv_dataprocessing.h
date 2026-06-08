@@ -112,6 +112,7 @@ public:
     Q_INVOKABLE QVariantList refreshSerialPorts();
     Q_INVOKABLE bool toggleSerialPort();
     Q_INVOKABLE void clearWaveformData();
+    // Q_INVOKABLE void generateMockData(int count);
     Q_INVOKABLE QString compactHex(const QString &hex) const;
 
 Q_SIGNALS:

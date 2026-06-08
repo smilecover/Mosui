@@ -17,6 +17,7 @@ T.Control {
 
     signal chartHovered(index: int, seriesIndex: int, var data)
     signal chartClicked(index: int, seriesIndex: int, var data)
+    signal chartZoomed()
 
     property bool animationEnabled: MosTheme.animationEnabled
     property bool hoverable: true
@@ -35,6 +36,9 @@ T.Control {
     property bool optimizeLargeData: highPerformance
     property bool autoXRange: true
     property bool autoYRange: true
+    property bool zoomEnabled: false
+    property bool panEnabled: false
+    property real zoomSensitivity: 0.15
 
     property int chartType: MosCanvasChart.Type_Line
     property int animationDuration: MosTheme.Primary.durationSlow
@@ -141,6 +145,35 @@ T.Control {
         __canvas.requestPaint();
     }
 
+    function resetZoom() {
+        autoXRange = true;
+        autoYRange = true;
+    }
+
+    function __performPan(dx, dy) {
+        const rect = __private.plotRect();
+        const data = __private.normalizedSeries();
+        const count = Math.max(1, __private.maxSeriesLength(data));
+
+        if (Math.abs(dx) > 0 && rect.w > 0) {
+            const xRange = __private.axisXRange(data, count);
+            const shiftX = -dx / rect.w * (xRange.max - xRange.min);
+            autoXRange = false;
+            xMin = xRange.min + shiftX;
+            xMax = xRange.max + shiftX;
+        }
+
+        if (Math.abs(dy) > 0 && rect.h > 0) {
+            const yRange = __private.valueRange(data);
+            const shiftY = dy / rect.h * (yRange.max - yRange.min);
+            autoYRange = false;
+            yMin = yRange.min + shiftY;
+            yMax = yRange.max + shiftY;
+        }
+
+        chartZoomed();
+    }
+
     function colorAt(index) {
         if (!colors || colors.length === 0)
             return MosTheme.Primary.colorPrimary;
@@ -232,6 +265,11 @@ T.Control {
         property real hoverY: 0
         property var hoverHit: null
         property var hitItems: []
+        property bool __panActive: false
+        property real __panStartX: 0
+        property real __panStartY: 0
+        property real __panLastX: 0
+        property real __panLastY: 0
 
         onPaint: {
             const ctx = getContext('2d');
@@ -262,13 +300,51 @@ T.Control {
         }
 
         MouseArea {
+            id: __chartMouse
             anchors.fill: parent
             hoverEnabled: root.hoverable
-            cursorShape: root.hoverable ? Qt.PointingHandCursor : Qt.ArrowCursor
-            onPositionChanged: function(event) {
-                __private.updateHover(event.x, event.y);
+            cursorShape: __canvas.__panActive ? Qt.ClosedHandCursor
+                         : (root.hoverable ? Qt.PointingHandCursor : Qt.ArrowCursor)
+
+            onPressed: function(mouse) {
+                if (root.panEnabled) {
+                    __canvas.__panStartX = mouse.x;
+                    __canvas.__panStartY = mouse.y;
+                    __canvas.__panLastX = mouse.x;
+                    __canvas.__panLastY = mouse.y;
+                }
             }
+
+            onPositionChanged: function(event) {
+                if (root.panEnabled && pressed) {
+                    const dx = event.x - __canvas.__panLastX;
+                    const dy = event.y - __canvas.__panLastY;
+
+                    if (!__canvas.__panActive &&
+                        (Math.abs(event.x - __canvas.__panStartX) > 5 ||
+                         Math.abs(event.y - __canvas.__panStartY) > 5)) {
+                        __canvas.__panActive = true;
+                    }
+
+                    if (__canvas.__panActive) {
+                        root.__performPan(dx, dy);
+                        __canvas.__panLastX = event.x;
+                        __canvas.__panLastY = event.y;
+                        return;
+                    }
+                }
+
+                if (root.hoverable) {
+                    __private.updateHover(event.x, event.y);
+                }
+            }
+
+            onReleased: {
+                __canvas.__panActive = false;
+            }
+
             onExited: {
+                __canvas.__panActive = false;
                 if (__canvas.hoverIndex !== -1 || __canvas.hoverSeriesIndex !== -1) {
                     __canvas.hoverIndex = -1;
                     __canvas.hoverSeriesIndex = -1;
@@ -276,10 +352,74 @@ T.Control {
                     __canvas.requestPaint();
                 }
             }
+
             onClicked: function(event) {
+                if (__canvas.__panActive)
+                    return;
                 __private.updateHover(event.x, event.y);
                 if (__canvas.hoverIndex >= 0)
                     root.chartClicked(__canvas.hoverIndex, __canvas.hoverSeriesIndex, __private.hoverData());
+            }
+
+            onDoubleClicked: function(event) {
+                if (root.zoomEnabled || root.panEnabled) {
+                    root.resetZoom();
+                }
+            }
+        }
+
+        WheelHandler {
+            id: __chartWheel
+            enabled: root.zoomEnabled
+            onWheel: function(wheel) {
+                const rect = __private.plotRect();
+                const MIN_X_RANGE = 2;
+                const MIN_Y_RANGE = 0.001;
+                const zoomFactor = wheel.angleDelta.y > 0
+                    ? (1.0 / (1.0 + root.zoomSensitivity))
+                    : (1.0 + root.zoomSensitivity);
+
+                const ctrlHeld = wheel.modifiers & Qt.ControlModifier;
+                const data = __private.normalizedSeries();
+                const count = Math.max(1, __private.maxSeriesLength(data));
+
+                if (ctrlHeld) {
+                    // Ctrl + Wheel: zoom Y axis
+                    if (rect.h <= 0)
+                        return;
+                    const yRange = __private.valueRange(data);
+                    const mouseYRatio = 1.0 - Math.max(0, Math.min(1,
+                        (wheel.y - rect.y) / rect.h));
+                    const currentRange = yRange.max - yRange.min;
+                    const center = yRange.min + currentRange * mouseYRatio;
+                    const newRange = currentRange * zoomFactor;
+
+                    if (newRange < MIN_Y_RANGE)
+                        return;
+
+                    root.autoYRange = false;
+                    root.yMin = center - newRange * mouseYRatio;
+                    root.yMax = center + newRange * (1 - mouseYRatio);
+                } else {
+                    // Wheel (no modifier): zoom X axis
+                    if (rect.w <= 0)
+                        return;
+                    const xRange = __private.axisXRange(data, count);
+                    const mouseXRatio = Math.max(0, Math.min(1,
+                        (wheel.x - rect.x) / rect.w));
+                    const currentRange = xRange.max - xRange.min;
+                    const center = xRange.min + currentRange * mouseXRatio;
+                    const newRange = currentRange * zoomFactor;
+
+                    if (newRange < MIN_X_RANGE)
+                        return;
+
+                    root.autoXRange = false;
+                    root.xMin = center - newRange * mouseXRatio;
+                    root.xMax = center + newRange * (1 - mouseXRatio);
+                }
+
+                root.chartZoomed();
             }
         }
     }

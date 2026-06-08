@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstring>
 #include <functional>
 #include <utility>
@@ -740,6 +741,56 @@ void TpInvDataProcessing::clearWaveformData()
     resetReceiveInfo();
     setWaveStatusText(QStringLiteral("已清空波形数据"));
 }
+
+// void TpInvDataProcessing::generateMockData(int count)
+// {
+//     const int n = std::max(1, count);
+//     constexpr int samplesPerCycle = 100;
+//     constexpr double voltageAmplitude = 311.0;
+//     constexpr double currentAmplitude = 10.0;
+//     constexpr double pi = 3.14159265358979323846;
+//     constexpr double phaseB = 2.0 * pi / 3.0;
+//     constexpr double phaseC = 4.0 * pi / 3.0;
+
+//     QVariantList va, vb, vc, ca, cb, cc;
+//     va.reserve(n);
+//     vb.reserve(n);
+//     vc.reserve(n);
+//     ca.reserve(n);
+//     cb.reserve(n);
+//     cc.reserve(n);
+
+//     for (int i = 0; i < n; ++i) {
+//         const double angle = (i % samplesPerCycle) * 2.0 * pi / static_cast<double>(samplesPerCycle);
+
+//         const double vA = voltageAmplitude * (std::sin(angle)
+//                            + 0.08 * std::sin(3.0 * angle)
+//                            + 0.03 * std::sin(5.0 * angle));
+//         const double vB = voltageAmplitude * (std::sin(angle + phaseB)
+//                            + 0.08 * std::sin(3.0 * angle)
+//                            + 0.03 * std::sin(5.0 * angle));
+//         const double vC = voltageAmplitude * (std::sin(angle + phaseC)
+//                            + 0.08 * std::sin(3.0 * angle)
+//                            + 0.03 * std::sin(5.0 * angle));
+
+//         const double cA = currentAmplitude * (std::sin(angle)
+//                            + 0.04 * std::sin(3.0 * angle));
+//         const double cB = currentAmplitude * (std::sin(angle + phaseB)
+//                            + 0.04 * std::sin(3.0 * angle));
+//         const double cC = currentAmplitude * (std::sin(angle + phaseC)
+//                            + 0.04 * std::sin(3.0 * angle));
+
+//         va.append(vA);
+//         vb.append(vB);
+//         vc.append(vC);
+//         ca.append(cA);
+//         cb.append(cB);
+//         cc.append(cC);
+//     }
+
+//     applySnapshot(n, 1, 0, va, vb, vc, ca, cb, cc);
+//     setWaveStatusText(QStringLiteral("模拟波形数据 (%1 点)").arg(n));
+// }
 
 QString TpInvDataProcessing::compactHex(const QString &hex) const
 {

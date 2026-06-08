@@ -484,6 +484,18 @@ MosRectangle {
                         colorText: wavePage.textStrong
                         onClicked: wavePage.clearWaveformData()
                     }
+
+                    // MosButton {
+                    //     Layout.fillWidth: true
+                    //     Layout.preferredHeight: 36
+                    //     text: "模拟波形"
+                    //     radiusBg.all: 8
+                    //     colorBg: "#1a2e2d"
+                    //     colorBorder: "#2ce0a0"
+                    //     colorText: "#62ffc4"
+                    //     font.bold: true
+                    //     onClicked: TpInvDataProcessing.generateMockData(wavePage.sampleCount)
+                    // }
                 }
             }
 
@@ -630,9 +642,22 @@ MosRectangle {
                         }
 
                         RealtimeBadge {}
+
+                        MosButton {
+                            Layout.preferredWidth: 44
+                            Layout.preferredHeight: 22
+                            text: "重置"
+                            radiusBg.all: 6
+                            colorBg: wavePage.controlBg
+                            colorBorder: MosTheme.Primary.colorBorder
+                            colorText: wavePage.textMuted
+                            font.pixelSize: 11
+                            onClicked: voltageChart.resetZoom()
+                        }
                     }
 
                     MosCanvasChart {
+                        id: voltageChart
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.max(280, Math.round((waveFlick.height - 132) / 2))
                         chartType: MosCanvasChart.Type_Line
@@ -648,8 +673,8 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        // autoXRange: true
-                        // autoYRange: true
+                        zoomEnabled: true
+                        panEnabled: true
                         autoXRange: false
                         autoYRange: true
                         xMin: 0
@@ -671,6 +696,12 @@ MosRectangle {
                         radiusBg.all: 7
                         formatter: value => Number(value).toFixed(1)
                         xFormatter: value => String(Math.round(value))
+
+                        onChartZoomed: {
+                            currentChart.autoXRange = false;
+                            currentChart.xMin = xMin;
+                            currentChart.xMax = xMax;
+                        }
                     }
                 }
             }
@@ -711,9 +742,22 @@ MosRectangle {
                         }
 
                         RealtimeBadge {}
+
+                        MosButton {
+                            Layout.preferredWidth: 44
+                            Layout.preferredHeight: 22
+                            text: "重置"
+                            radiusBg.all: 6
+                            colorBg: wavePage.controlBg
+                            colorBorder: MosTheme.Primary.colorBorder
+                            colorText: wavePage.textMuted
+                            font.pixelSize: 11
+                            onClicked: currentChart.resetZoom()
+                        }
                     }
 
                     MosCanvasChart {
+                        id: currentChart
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.max(280, Math.round((waveFlick.height - 132) / 2))
                         chartType: MosCanvasChart.Type_Line
@@ -729,8 +773,8 @@ MosRectangle {
                         animationEnabled: false
                         highPerformance: true
                         fillBackground: false
-                        // autoXRange: true
-                        // autoYRange: true
+                        zoomEnabled: true
+                        panEnabled: true
                         autoXRange: false
                         autoYRange: true
 
@@ -753,6 +797,12 @@ MosRectangle {
                         radiusBg.all: 7
                         formatter: value => Number(value).toFixed(1)
                         xFormatter: value => String(Math.round(value))
+
+                        onChartZoomed: {
+                            voltageChart.autoXRange = false;
+                            voltageChart.xMin = xMin;
+                            voltageChart.xMax = xMax;
+                        }
                     }
                 }
             }
