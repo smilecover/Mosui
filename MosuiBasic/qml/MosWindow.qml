@@ -103,10 +103,9 @@ Window {
             return false;
         }
 
-        // QWindowKit 存属性（best-effort KDE blur），QML 渲染毛玻璃
-        windowAgent.setWindowAttribute(name, true);
-
         if (__isLinux) {
+            // KDE best-effort + QML 毛玻璃渲染
+            windowAgent.setWindowAttribute(name, true);
             root.effect = newEffect;
             root.color = "transparent";
             linuxTint.opacity = __tintOpacity(newEffect);
@@ -190,31 +189,7 @@ Window {
     Component.onCompleted: {
         initialized = true;
         windowAgent.setTitleBar(captionbar);
-
-        if (effect != MosWindow.Effect_None) {
-            var name = __effectNameMap[effect];
-
-            if (__isMacOS && effect === MosWindow.Effect_mac_blur) {
-                if (!windowAgent.setWindowAttribute(name, "auto")) {
-                    root.effect = MosWindow.Effect_None;
-                    root.color = MosTheme.Primary.colorBgBase;
-                }
-            } else if (__isLinux) {
-                windowAgent.setWindowAttribute(name, true);
-                linuxTint.opacity = __tintOpacity(effect);
-                linuxTint.visible = true;
-                linuxNoise.opacity = __noiseStrength(effect);
-                linuxNoise.visible = true;
-            } else {
-                if (!windowAgent.setWindowAttribute(name, true)) {
-                    root.effect = MosWindow.Effect_None;
-                    root.color = MosTheme.Primary.colorBgBase;
-                }
-            }
-        } else {
-            root.color = MosTheme.Primary.colorBgBase;
-        }
-
+        setEffect(effect);
         if (followThemeSwitch) __connections.onIsDarkChanged();
         captionbar.windowAgent = windowAgent;
         root.visible = true;

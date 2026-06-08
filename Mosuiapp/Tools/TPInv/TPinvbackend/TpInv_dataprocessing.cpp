@@ -316,13 +316,7 @@ private:
 TpInvDataProcessing::TpInvDataProcessing(QObject *parent)
     : QObject(parent)
 {
-    autoRequestTimer_ = new QTimer(this);
-    autoRequestTimer_->setInterval(1000);
-    autoRequestTimer_->setTimerType(Qt::CoarseTimer);
-    connect(autoRequestTimer_, &QTimer::timeout, this, [this]() {
-        requestWaveformData();
-    });
-
+    // 下位机改为 100Hz 自动推送模式，不再需要主动请求
     workerThread_ = new QThread(this);
     workerThread_->setObjectName(QStringLiteral("TpInvDataProcessingThread"));
     worker_ = new TpInvDataProcessingWorker(
@@ -441,7 +435,7 @@ void TpInvDataProcessing::setSelectedPortName(const QString &portName)
     emit selectedPortNameChanged();
     updateWavePortOpen();
     syncConnectedBaudRate();
-    updateAutoRequestTimer();
+
 }
 
 bool TpInvDataProcessing::wavePortOpen() const
@@ -478,22 +472,7 @@ void TpInvDataProcessing::setWaveformPaused(bool paused)
     emit waveformPausedChanged();
     if (!waveformPaused_)
         rebuildSeries();
-    updateAutoRequestTimer();
-}
 
-bool TpInvDataProcessing::autoRequestEnabled() const
-{
-    return autoRequestEnabled_;
-}
-
-void TpInvDataProcessing::setAutoRequestEnabled(bool enabled)
-{
-    if (autoRequestEnabled_ == enabled)
-        return;
-
-    autoRequestEnabled_ = enabled;
-    emit autoRequestEnabledChanged();
-    updateAutoRequestTimer();
 }
 
 int TpInvDataProcessing::receivedByteCount() const
@@ -514,11 +493,6 @@ QString TpInvDataProcessing::lastWaveText() const
 QString TpInvDataProcessing::lastWaveRxTime() const
 {
     return lastWaveRxTime_;
-}
-
-QString TpInvDataProcessing::lastWaveRequestTime() const
-{
-    return lastWaveRequestTime_;
 }
 
 QString TpInvDataProcessing::waveStatusText() const
@@ -694,7 +668,7 @@ void TpInvDataProcessing::initializeWavePage(int capacity)
     refreshSerialPorts();
     updateWavePortOpen();
     setWaveStatusText(wavePortOpen_ ? QStringLiteral("等待波形数据") : QStringLiteral("串口未连接"));
-    updateAutoRequestTimer();
+
 }
 
 QVariantList TpInvDataProcessing::refreshSerialPorts()
@@ -715,7 +689,7 @@ QVariantList TpInvDataProcessing::refreshSerialPorts()
 
     updateWavePortOpen();
     syncConnectedBaudRate();
-    updateAutoRequestTimer();
+
     return portOptions_;
 }
 
@@ -733,7 +707,7 @@ bool TpInvDataProcessing::toggleSerialPort()
     if (serialManager->isPortOpen(selectedPortName_)) {
         serialManager->closePort(selectedPortName_);
         updateWavePortOpen();
-        updateAutoRequestTimer();
+    
         setWaveStatusText(QStringLiteral("串口已关闭"));
         return true;
     }
@@ -754,33 +728,10 @@ bool TpInvDataProcessing::toggleSerialPort()
 
     updateWavePortOpen();
     syncConnectedBaudRate();
-    updateAutoRequestTimer();
+
     setWaveStatusText(opened ? QStringLiteral("等待波形数据")
                              : QStringLiteral("打开串口失败: %1").arg(serialManager->errorString()));
     return opened;
-}
-
-bool TpInvDataProcessing::requestWaveformData()
-{
-    auto *serialManager = MosSerialPortManager::instance();
-    updateWavePortOpen();
-    if (!wavePortOpen_) {
-        setWaveStatusText(QStringLiteral("串口未连接"));
-        return false;
-    }
-
-    lastWaveRequestTime_ = QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz"));
-    emit requestInfoChanged();
-
-    const bool sent = serialManager->SendHexToPort(selectedPortName_, QStringLiteral("FF CC 01 00 01 CC"));
-    if (sent) {
-        setWaveStatusText(QStringLiteral("已发送波形请求"));
-    } else {
-        const QString error = serialManager->errorString();
-        setWaveStatusText(error.isEmpty() ? QStringLiteral("波形请求失败")
-                                          : QStringLiteral("波形请求失败: %1").arg(error));
-    }
-    return sent;
 }
 
 void TpInvDataProcessing::clearWaveformData()
@@ -805,7 +756,7 @@ void TpInvDataProcessing::bindSerialManagerSignals()
     connect(serialManager, &MosSerialPortManager::openPortsChanged, this, [this]() {
         updateWavePortOpen();
         syncConnectedBaudRate();
-        updateAutoRequestTimer();
+    
     });
 
     connect(serialManager,
@@ -855,21 +806,6 @@ void TpInvDataProcessing::syncConnectedBaudRate()
     }
 }
 
-void TpInvDataProcessing::updateAutoRequestTimer()
-{
-    if (!autoRequestTimer_)
-        return;
-
-    const bool shouldRun = autoRequestEnabled_ && wavePortOpen_ && !waveformPaused_;
-    if (shouldRun) {
-        if (!autoRequestTimer_->isActive()) {
-            autoRequestTimer_->start();
-            requestWaveformData();
-        }
-    } else if (autoRequestTimer_->isActive()) {
-        autoRequestTimer_->stop();
-    }
-}
 
 void TpInvDataProcessing::handleSerialData(const QString &portName,
                                            const QByteArray &data,
@@ -904,9 +840,7 @@ void TpInvDataProcessing::resetReceiveInfo()
     lastWaveHex_.clear();
     lastWaveText_.clear();
     lastWaveRxTime_.clear();
-    lastWaveRequestTime_.clear();
     emit receiveInfoChanged();
-    emit requestInfoChanged();
 }
 
 bool TpInvDataProcessing::hasPort(const QString &portName) const
@@ -976,10 +910,18 @@ QVariantMap TpInvDataProcessing::makeSeriesItem(const QString &name,
                                                 const QString &color,
                                                 const QVariantList &values)
 {
+    QVariantList wrapped;
+    wrapped.reserve(values.size());
+    for (const QVariant &v : values) {
+        QVariantMap point;
+        point.insert(QStringLiteral("value"), v);
+        wrapped.append(point);
+    }
+
     QVariantMap item;
     item.insert(QStringLiteral("name"), name);
     item.insert(QStringLiteral("color"), color);
-    item.insert(QStringLiteral("values"), values);
+    item.insert(QStringLiteral("values"), wrapped);
     return item;
 }
 

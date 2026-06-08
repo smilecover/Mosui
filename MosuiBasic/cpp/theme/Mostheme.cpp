@@ -300,31 +300,36 @@ void MosThemePrivate::reloadComponentThemeFile(QObject *themeObject, const QStri
     auto tokenMapPtr = componentTheme.tokenMap;
     auto installTokenMap = componentTheme.installTokenMap;
 
-    auto style = QJsonObject();
+    auto &style = componentTheme.styleCache;
 
-    if (reloadComponentImport(style, componentName)) {
-        // 第一遍：先处理所有 $ 函数（如 $genColor），这些会生成基础 token
-        for (auto it = style.constBegin(); it != style.constEnd(); it++) {
-            auto expr = it.value().toString().simplified();
-            if (expr.startsWith('$')) {
-                parseComponentExpr(tokenMapPtr, it.key(), expr);
-            }
-        }
-        // 第二遍：处理 @ 引用和其他表达式
-        for (auto it = style.constBegin(); it != style.constEnd(); it++) {
-            auto expr = it.value().toString().simplified();
-            if (!expr.startsWith('$')) {
-                parseComponentExpr(tokenMapPtr, it.key(), expr);
-            }
-        }
-        /*! 读取通过 @link installComponentToken() 安装的变量, 存在则覆盖, 否则添加 */
-        for (auto it = installTokenMap.constBegin(); it != installTokenMap.constEnd(); it++) {
-            parseComponentExpr(tokenMapPtr, it.key(), it.value());
-        }
+    // 首次加载时读取并缓存 JSON，后续主题切换直接复用缓存
+    if (style.isEmpty() && !reloadComponentImport(style, componentName))
+        return;
 
-        auto signalName = componentName + "Changed";
-        QMetaObject::invokeMethod(themeObject, signalName.toStdString().c_str());
+    if (style.isEmpty())
+        return;
+
+    // 第一遍：先处理所有 $ 函数（如 $genColor），这些会生成基础 token
+    for (auto it = style.constBegin(); it != style.constEnd(); it++) {
+        auto expr = it.value().toString().simplified();
+        if (expr.startsWith('$')) {
+            parseComponentExpr(tokenMapPtr, it.key(), expr);
+        }
     }
+    // 第二遍：处理 @ 引用和其他表达式
+    for (auto it = style.constBegin(); it != style.constEnd(); it++) {
+        auto expr = it.value().toString().simplified();
+        if (!expr.startsWith('$')) {
+            parseComponentExpr(tokenMapPtr, it.key(), expr);
+        }
+    }
+    /*! 读取通过 @link installComponentToken() 安装的变量, 存在则覆盖, 否则添加 */
+    for (auto it = installTokenMap.constBegin(); it != installTokenMap.constEnd(); it++) {
+        parseComponentExpr(tokenMapPtr, it.key(), it.value());
+    }
+
+    auto signalName = componentName + "Changed";
+    QMetaObject::invokeMethod(themeObject, signalName.toStdString().c_str());
 }
 // @brief 组件文件重新加载
 // @Function void reloadComponentImport(QJsonObject &style, const QString &componentName)

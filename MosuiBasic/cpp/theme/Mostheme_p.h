@@ -33,6 +33,7 @@ struct ThemeData
         QString path;
         QVariantMap *tokenMap;
         QMap<QString, QString> installTokenMap;
+        mutable QJsonObject styleCache; // 缓存合并后的 JSON（mutable 允许 const 迭代时写入）
     };
     QObject *themeObject = nullptr;
     QMap<QString, Component> componentMap;
@@ -74,7 +75,7 @@ public:
     // 组件主题重新加载
     void reloadComponentTheme(const QMap<QObject *, ThemeData> &dataMap);
     // 组件文件
-    void reloadComponentThemeFile(QObject *themeObject, const QString &componentName,const ThemeData::Component &componentTheme);
+    void reloadComponentThemeFile(QObject *themeObject, const QString &componentName, const ThemeData::Component &componentTheme);
     // 组件文件重新加载
     bool reloadComponentImport(QJsonObject &style, const QString &componentName);
     // 主题变量var处理

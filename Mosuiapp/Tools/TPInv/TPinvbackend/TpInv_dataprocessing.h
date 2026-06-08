@@ -27,12 +27,10 @@ class TpInvDataProcessing : public QObject
     Q_PROPERTY(bool wavePortOpen READ wavePortOpen NOTIFY wavePortOpenChanged FINAL)
     Q_PROPERTY(int selectedBaudRate READ selectedBaudRate WRITE setSelectedBaudRate NOTIFY selectedBaudRateChanged FINAL)
     Q_PROPERTY(bool waveformPaused READ waveformPaused WRITE setWaveformPaused NOTIFY waveformPausedChanged FINAL)
-    Q_PROPERTY(bool autoRequestEnabled READ autoRequestEnabled WRITE setAutoRequestEnabled NOTIFY autoRequestEnabledChanged FINAL)
     Q_PROPERTY(int receivedByteCount READ receivedByteCount NOTIFY receiveInfoChanged FINAL)
     Q_PROPERTY(QString lastWaveHex READ lastWaveHex NOTIFY receiveInfoChanged FINAL)
     Q_PROPERTY(QString lastWaveText READ lastWaveText NOTIFY receiveInfoChanged FINAL)
     Q_PROPERTY(QString lastWaveRxTime READ lastWaveRxTime NOTIFY receiveInfoChanged FINAL)
-    Q_PROPERTY(QString lastWaveRequestTime READ lastWaveRequestTime NOTIFY requestInfoChanged FINAL)
     Q_PROPERTY(QString waveStatusText READ waveStatusText NOTIFY waveStatusTextChanged FINAL)
     Q_PROPERTY(bool voltageAEnabled READ voltageAEnabled WRITE setVoltageAEnabled NOTIFY channelEnabledChanged FINAL)
     Q_PROPERTY(bool voltageBEnabled READ voltageBEnabled WRITE setVoltageBEnabled NOTIFY channelEnabledChanged FINAL)
@@ -80,13 +78,10 @@ public:
     void setSelectedBaudRate(int baudRate);
     bool waveformPaused() const;
     void setWaveformPaused(bool paused);
-    bool autoRequestEnabled() const;
-    void setAutoRequestEnabled(bool enabled);
     int receivedByteCount() const;
     QString lastWaveHex() const;
     QString lastWaveText() const;
     QString lastWaveRxTime() const;
-    QString lastWaveRequestTime() const;
     QString waveStatusText() const;
     bool voltageAEnabled() const;
     void setVoltageAEnabled(bool enabled);
@@ -116,7 +111,6 @@ public:
     Q_INVOKABLE void initializeWavePage(int capacity);
     Q_INVOKABLE QVariantList refreshSerialPorts();
     Q_INVOKABLE bool toggleSerialPort();
-    Q_INVOKABLE bool requestWaveformData();
     Q_INVOKABLE void clearWaveformData();
     Q_INVOKABLE QString compactHex(const QString &hex) const;
 
@@ -129,9 +123,7 @@ Q_SIGNALS:
     void wavePortOpenChanged();
     void selectedBaudRateChanged();
     void waveformPausedChanged();
-    void autoRequestEnabledChanged();
     void receiveInfoChanged();
-    void requestInfoChanged();
     void waveStatusTextChanged();
     void channelEnabledChanged();
     void voltageSeriesChanged();
@@ -143,7 +135,6 @@ private:
     void bindSerialManagerSignals();
     void updateWavePortOpen();
     void syncConnectedBaudRate();
-    void updateAutoRequestTimer();
     void handleSerialData(const QString &portName, const QByteArray &data, const QString &text, const QString &hex);
     void setWaveStatusText(const QString &text);
     void resetReceiveInfo();
@@ -166,7 +157,6 @@ private:
 
     QThread *workerThread_ = nullptr;
     TpInvDataProcessingWorker *worker_ = nullptr;
-    QTimer *autoRequestTimer_ = nullptr;
     int sampleCapacity_ = DefaultSampleCapacity;
     int sampleCount_ = 0;
     int parsedFrameCount_ = 0;
@@ -176,12 +166,10 @@ private:
     bool wavePortOpen_ = false;
     int selectedBaudRate_ = 115200;
     bool waveformPaused_ = false;
-    bool autoRequestEnabled_ = true;
     int receivedByteCount_ = 0;
     QString lastWaveHex_;
     QString lastWaveText_;
     QString lastWaveRxTime_;
-    QString lastWaveRequestTime_;
     QString waveStatusText_ = QStringLiteral("等待波形数据");
     bool voltageAEnabled_ = true;
     bool voltageBEnabled_ = true;

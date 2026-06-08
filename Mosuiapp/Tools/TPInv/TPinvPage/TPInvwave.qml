@@ -26,12 +26,10 @@ MosRectangle {
     property bool wavePortOpen: TpInvDataProcessing.wavePortOpen
     property int selectedBaudRate: TpInvDataProcessing.selectedBaudRate
     property int sampleCount: 352
-    property bool autoRequestEnabled: TpInvDataProcessing.autoRequestEnabled
     property int receivedByteCount: TpInvDataProcessing.receivedByteCount
     property string lastWaveHex: TpInvDataProcessing.lastWaveHex
     property string lastWaveText: TpInvDataProcessing.lastWaveText
     property string lastWaveRxTime: TpInvDataProcessing.lastWaveRxTime
-    property string lastWaveRequestTime: TpInvDataProcessing.lastWaveRequestTime
     property string waveStatusText: TpInvDataProcessing.waveStatusText
 
     property bool voltageAEnabled: TpInvDataProcessing.voltageAEnabled
@@ -50,7 +48,9 @@ MosRectangle {
         { value: 38400, label: "38400" },
         { value: 57600, label: "57600" },
         { value: 115200, label: "115200" },
-        { value: 230400, label: "230400" }
+        { value: 230400, label: "230400" },
+        { value: 460800, label: "460800" },
+        { value: 921600, label: "921600" }
     ]
 
     function isConnected() {
@@ -63,10 +63,6 @@ MosRectangle {
 
     function toggleSerialPort() {
         return TpInvDataProcessing.toggleSerialPort()
-    }
-
-    function requestWaveformData() {
-        return TpInvDataProcessing.requestWaveformData()
     }
 
     function compactHex(hex) {
@@ -410,33 +406,78 @@ MosRectangle {
 
             MosRectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: requestWaveRow.implicitHeight + 36
-                Layout.minimumHeight: requestWaveRow.implicitHeight + 36
+                Layout.preferredHeight: autoReceiveRow.implicitHeight + 36
+                Layout.minimumHeight: autoReceiveRow.implicitHeight + 36
                 radius: 10
                 color: wavePage.panelBg
                 border.width: 1
                 border.color: wavePage.panelBorder
 
-                RowLayout {
-                    id: requestWaveRow
+                ColumnLayout {
+                    id: autoReceiveRow
                     anchors.fill: parent
                     anchors.margins: 18
                     spacing: 8
 
-                    MosButton {
+                    RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 38
-                        text: "请求波形"
-                        enabled: wavePage.isConnected()
-                        radiusBg.all: 8
-                        type: MosButton.Type_Primary
-                        onClicked: wavePage.requestWaveformData()
+                        spacing: 8
+
+                        MosRectangle {
+                            Layout.preferredWidth: 5
+                            Layout.preferredHeight: 5
+                            Layout.alignment: Qt.AlignVCenter
+                            radius: 3
+                            color: "#56a8ff"
+                        }
+
+                        MosText {
+                            Layout.fillWidth: true
+                            text: "接收模式"
+                            color: wavePage.textMuted
+                            font.pixelSize: 12
+                        }
+                    }
+
+                    MosRectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 36
+                        radius: 7
+                        color: wavePage.isConnected() ? "#1a2e2d" : "#2a2130"
+                        border.width: 1
+                        border.color: wavePage.isConnected() ? "#2ce0a0" : "#ce3f5b"
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
+                            spacing: 8
+
+                            MosRectangle {
+                                Layout.preferredWidth: 8
+                                Layout.preferredHeight: 8
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: 4
+                                color: wavePage.isConnected() && TpInvDataProcessing.parsedFrameCount > 0 ? "#2cff9a" : "#ff5660"
+                            }
+
+                            MosText {
+                                Layout.fillWidth: true
+                                text: wavePage.isConnected()
+                                      ? (TpInvDataProcessing.parsedFrameCount > 0
+                                         ? "自动接收中"
+                                         : "等待数据推送...")
+                                      : "未连接"
+                                color: wavePage.isConnected() ? "#62ffc4" : "#ff5e73"
+                                font.bold: true
+                            }
+                        }
                     }
 
                     MosButton {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 38
-                        text: "清空"
+                        Layout.preferredHeight: 36
+                        text: "清空数据"
                         radiusBg.all: 8
                         colorBg: wavePage.controlBg
                         colorBorder: MosTheme.Primary.colorBorder
@@ -505,11 +546,6 @@ MosRectangle {
                     InfoRow {
                         label: "接收"
                         value: wavePage.receivedByteCount + " B"
-                    }
-
-                    InfoRow {
-                        label: "请求"
-                        value: wavePage.lastWaveRequestTime.length > 0 ? wavePage.lastWaveRequestTime : "--"
                     }
 
                     InfoRow {
@@ -615,11 +651,9 @@ MosRectangle {
                         // autoXRange: true
                         // autoYRange: true
                         autoXRange: false
-                        autoYRange: false
+                        autoYRange: true
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
-                        yMin: -50
-                        yMax: 50
                         xBlockCount: 8
                         yBlockCount: 4
                         unit: "V"
@@ -698,12 +732,10 @@ MosRectangle {
                         // autoXRange: true
                         // autoYRange: true
                         autoXRange: false
-                        autoYRange: false
+                        autoYRange: true
 
                         xMin: 0
                         xMax: wavePage.sampleCount - 1
-                        yMin: -1
-                        yMax: 1
                         xBlockCount: 8
                         yBlockCount: 4
                         unit: "A"

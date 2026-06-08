@@ -1,15 +1,17 @@
 #include "MosSerialPortManager.h"
 #include "MosSerialPortManager_p.h"
 
+#include <QAtomicInt>
+#include <QEventLoop>
 #include <QHash>
 #include <QIODevice>
 #include <QMetaObject>
 #include <QQmlEngine>
-#include <QSemaphore>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QStringList>
 #include <QThread>
+#include <QTimer>
 #include <QVariantMap>
 
 #include <functional>
@@ -416,6 +418,10 @@ private:
     ErrorCallback errorCallback_;
 };
 
+// 防重入锁：invokeOperation 在等待 worker 结果时会让出事件循环，
+// 防止事件循环中再次触发串口操作导致状态混乱。
+static QAtomicInt g_operationInFlight { 0 };
+
 template <typename Function>
 std::optional<MosSerialPortWorker::OperationResult> invokeOperation(MosSerialPortWorker *worker,
                                                                     int timeoutMs,
@@ -426,21 +432,45 @@ std::optional<MosSerialPortWorker::OperationResult> invokeOperation(MosSerialPor
     if (QThread::currentThread() == worker->thread())
         return function();
 
+    // 防重入：如果已有操作在进行中（事件循环嵌套调用），直接拒绝
+    if (!g_operationInFlight.testAndSetAcquire(0, 1))
+        return std::nullopt;
+
     struct InvocationState {
-        QSemaphore done { 0 };
         std::optional<MosSerialPortWorker::OperationResult> result;
+        bool done { false };
     };
 
     auto state = std::make_shared<InvocationState>();
+    QEventLoop loop;
+
+    // 超时定时器
+    QTimer timer;
+    timer.setSingleShot(true);
+    QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+
     const bool posted = QMetaObject::invokeMethod(worker,
-                                                  [state, function = std::forward<Function>(function)]() mutable {
+                                                  [state, &loop, function = std::forward<Function>(function)]() mutable {
         state->result = function();
-        state->done.release();
+        state->done = true;
+        // 唤醒调用线程的事件循环
+        QMetaObject::invokeMethod(&loop, &QEventLoop::quit, Qt::QueuedConnection);
     }, Qt::QueuedConnection);
 
-    if (!posted)
+    if (!posted) {
+        g_operationInFlight.storeRelease(0);
         return std::nullopt;
-    if (!state->done.tryAcquire(1, timeoutMs))
+    }
+
+    // 启动超时（超时也会触发 loop.quit）
+    timer.start(timeoutMs);
+
+    // 用事件循环等待，GUI 保持响应
+    loop.exec();
+
+    g_operationInFlight.storeRelease(0);
+
+    if (!state->done)
         return std::nullopt;
 
     return std::move(state->result);
