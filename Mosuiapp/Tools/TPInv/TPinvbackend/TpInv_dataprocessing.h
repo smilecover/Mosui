@@ -161,6 +161,9 @@ private:
     QThread *workerThread_ = nullptr;
     TpInvDataProcessingWorker *worker_ = nullptr;
     QTimer *rebuildTimer_ = nullptr;
+    int seriesVersion_ = 0;
+    int lastVoltageSeriesVersion_ = -1;
+    int lastCurrentSeriesVersion_ = -1;
     int sampleCapacity_ = DefaultSampleCapacity;
     int sampleCount_ = 0;
     int parsedFrameCount_ = 0;
@@ -168,7 +171,7 @@ private:
     QVariantList portOptions_;
     QString selectedPortName_;
     bool wavePortOpen_ = false;
-    int selectedBaudRate_ = 115200;
+    int selectedBaudRate_ = 3000000;
     bool waveformPaused_ = false;
     int receivedByteCount_ = 0;
     QString lastWaveHex_;

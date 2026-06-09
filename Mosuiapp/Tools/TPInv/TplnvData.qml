@@ -17,7 +17,7 @@ QtObject {
     property var serialPortOptions: []
 
     property string controlSerialPortName: ""
-    property int controlSerialBaudRate: 115200
+    property int controlSerialBaudRate: 3000000
     property int controlSerialDataBits: 8
     property string controlSerialParity: "none"
     property string controlSerialStopBits: "1"

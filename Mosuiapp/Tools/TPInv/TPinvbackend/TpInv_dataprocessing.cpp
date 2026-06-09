@@ -270,38 +270,36 @@ private:
                                     sizeof(Sample));
     }
 
-    QVariantList valuesForChannel(Channel channel) const
-    {
-        QVariantList result;
-        const int count = sampleCount();
-        result.reserve(count);
-
-        if (count == 0)
-            return result;
-
-        std::vector<tpinv::RingBuffer::value_type> raw(static_cast<std::size_t>(count) * sizeof(Sample));
-        sampleBuffer_.peek(raw.data(), raw.size());
-
-        for (int i = 0; i < count; ++i) {
-            Sample sample;
-            std::memcpy(&sample, raw.data() + static_cast<std::size_t>(i) * sizeof(Sample), sizeof(Sample));
-            result.push_back(sample.values[channel]);
-        }
-
-        return result;
-    }
-
     void emitSnapshot()
     {
-        snapshotCallback_(sampleCount(),
-                          parsedFrameCount_,
-                          droppedFrameCount_,
-                          valuesForChannel(VoltageA),
-                          valuesForChannel(VoltageB),
-                          valuesForChannel(VoltageC),
-                          valuesForChannel(CurrentA),
-                          valuesForChannel(CurrentB),
-                          valuesForChannel(CurrentC));
+        const int count = sampleCount();
+
+        QVariantList va, vb, vc, ca, cb, cc;
+        if (count > 0) {
+            va.reserve(count);
+            vb.reserve(count);
+            vc.reserve(count);
+            ca.reserve(count);
+            cb.reserve(count);
+            cc.reserve(count);
+
+            const auto totalBytes = static_cast<std::size_t>(count) * sizeof(Sample);
+            std::vector<tpinv::RingBuffer::value_type> raw(totalBytes);
+            sampleBuffer_.peek(raw.data(), totalBytes);
+
+            for (int i = 0; i < count; ++i) {
+                Sample s;
+                std::memcpy(&s, raw.data() + static_cast<std::size_t>(i) * sizeof(Sample), sizeof(Sample));
+                va.append(s.values[VoltageA]);
+                vb.append(s.values[VoltageB]);
+                vc.append(s.values[VoltageC]);
+                ca.append(s.values[CurrentA]);
+                cb.append(s.values[CurrentB]);
+                cc.append(s.values[CurrentC]);
+            }
+        }
+
+        snapshotCallback_(count, parsedFrameCount_, droppedFrameCount_, va, vb, vc, ca, cb, cc);
     }
 
     tpinv::RingBuffer rxBuffer_;
@@ -519,6 +517,7 @@ void TpInvDataProcessing::setVoltageAEnabled(bool enabled)
         return;
 
     voltageAEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildVoltageSeries();
 }
@@ -534,6 +533,7 @@ void TpInvDataProcessing::setVoltageBEnabled(bool enabled)
         return;
 
     voltageBEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildVoltageSeries();
 }
@@ -549,6 +549,7 @@ void TpInvDataProcessing::setVoltageCEnabled(bool enabled)
         return;
 
     voltageCEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildVoltageSeries();
 }
@@ -564,6 +565,7 @@ void TpInvDataProcessing::setCurrentAEnabled(bool enabled)
         return;
 
     currentAEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildCurrentSeries();
 }
@@ -579,6 +581,7 @@ void TpInvDataProcessing::setCurrentBEnabled(bool enabled)
         return;
 
     currentBEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildCurrentSeries();
 }
@@ -594,6 +597,7 @@ void TpInvDataProcessing::setCurrentCEnabled(bool enabled)
         return;
 
     currentCEnabled_ = enabled;
+    ++seriesVersion_;
     emit channelEnabledChanged();
     rebuildCurrentSeries();
 }
@@ -932,6 +936,10 @@ void TpInvDataProcessing::rebuildSeries()
 
 void TpInvDataProcessing::rebuildVoltageSeries()
 {
+    if (lastVoltageSeriesVersion_ == seriesVersion_)
+        return;
+    lastVoltageSeriesVersion_ = seriesVersion_;
+
     QVariantList nextSeries;
     if (voltageAEnabled_)
         nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电压"), QStringLiteral("#FFCC00"), voltageAValues_));
@@ -940,15 +948,16 @@ void TpInvDataProcessing::rebuildVoltageSeries()
     if (voltageCEnabled_)
         nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电压"), QStringLiteral("#ff4f63"), voltageCValues_));
 
-    if (voltageSeries_ == nextSeries)
-        return;
-
     voltageSeries_ = nextSeries;
     emit voltageSeriesChanged();
 }
 
 void TpInvDataProcessing::rebuildCurrentSeries()
 {
+    if (lastCurrentSeriesVersion_ == seriesVersion_)
+        return;
+    lastCurrentSeriesVersion_ = seriesVersion_;
+
     QVariantList nextSeries;
     if (currentAEnabled_)
         nextSeries.push_back(makeSeriesItem(QStringLiteral("A相电流"), QStringLiteral("#FFCC00"), currentAValues_));
@@ -956,9 +965,6 @@ void TpInvDataProcessing::rebuildCurrentSeries()
         nextSeries.push_back(makeSeriesItem(QStringLiteral("B相电流"), QStringLiteral("#01ff45"), currentBValues_));
     if (currentCEnabled_)
         nextSeries.push_back(makeSeriesItem(QStringLiteral("C相电流"), QStringLiteral("#ff4f63"), currentCValues_));
-
-    if (currentSeries_ == nextSeries)
-        return;
 
     currentSeries_ = nextSeries;
     emit currentSeriesChanged();
@@ -994,6 +1000,7 @@ void TpInvDataProcessing::applySnapshot(int sampleCount,
     currentAValues_ = currentAValues;
     currentBValues_ = currentBValues;
     currentCValues_ = currentCValues;
+    ++seriesVersion_;
     emit samplesChanged();
     emit statsChanged();
     if (!waveformPaused_)
@@ -1023,6 +1030,7 @@ void TpInvDataProcessing::resetCachedValues()
     currentAValues_.clear();
     currentBValues_.clear();
     currentCValues_.clear();
+    ++seriesVersion_;
     emit samplesChanged();
     emit statsChanged();
     rebuildSeries();

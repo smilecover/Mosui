@@ -26,7 +26,8 @@ MosRectangle {
     property string selectedPortName: TpInvDataProcessing.selectedPortName
     property bool wavePortOpen: TpInvDataProcessing.wavePortOpen
     property int selectedBaudRate: TpInvDataProcessing.selectedBaudRate
-    property int sampleCount: 352
+    property int sampleCount: 400
+    property int maxAdaptiveRenderPoints: 1600
     property int receivedByteCount: TpInvDataProcessing.receivedByteCount
     property string lastWaveHex: TpInvDataProcessing.lastWaveHex
     property string lastWaveText: TpInvDataProcessing.lastWaveText
@@ -51,7 +52,12 @@ MosRectangle {
         { value: 115200, label: "115200" },
         { value: 230400, label: "230400" },
         { value: 460800, label: "460800" },
-        { value: 921600, label: "921600" }
+        { value: 921600, label: "921600" },
+        { value: 1000000, label: "1M" },
+        { value: 1500000, label: "1.5M" },
+        { value: 2000000, label: "2M" },
+        { value: 2500000, label: "2.5M" },
+        { value: 3000000, label: "3M" }
     ]
 
     function isConnected() {
@@ -74,8 +80,59 @@ MosRectangle {
         TpInvDataProcessing.clearWaveformData()
     }
 
+    function updateAdaptiveRenderPoints() {
+        const vLimit = Math.max(50, Math.min(Math.round(voltageChart.width), maxAdaptiveRenderPoints))
+        const cLimit = Math.max(50, Math.min(Math.round(currentChart.width), maxAdaptiveRenderPoints))
+        if (voltageChart.maxRenderPoints !== vLimit)
+            voltageChart.maxRenderPoints = vLimit
+        if (currentChart.maxRenderPoints !== cLimit)
+            currentChart.maxRenderPoints = cLimit
+    }
+
+    function scheduleCapacityUpdate() {
+        capacityDebounce.restart()
+    }
+
+    function updateSampleCapacityFromZoom() {
+        const actualCount = TpInvDataProcessing.sampleCount
+        if (actualCount <= 0)
+            return
+
+        const visibleRange = Math.max(1, voltageChart.xMax - voltageChart.xMin + 1)
+        const zoomRatio = visibleRange / Math.max(visibleRange, actualCount)
+        const minNeeded = Math.max(400, voltageChart.xMax + 1)
+        const targetCapacity = Math.min(1600, Math.max(minNeeded,
+            Math.round(400 + 1200 * (1 - zoomRatio))))
+
+        if (TpInvDataProcessing.sampleCapacity !== targetCapacity)
+            TpInvDataProcessing.sampleCapacity = targetCapacity
+    }
+
+    Timer {
+        id: capacityDebounce
+        interval: 300
+        repeat: false
+        onTriggered: wavePage.updateSampleCapacityFromZoom()
+    }
+
+    function clampChartRange(chart) {
+        const actualCount = TpInvDataProcessing.sampleCount
+        const maxIndex = Math.max(0, actualCount - 1)
+        if (chart.xMin < 0)
+            chart.xMin = 0
+        if (chart.xMax > maxIndex)
+            chart.xMax = maxIndex
+        const maxRange = Math.max(10, maxIndex + 1)
+        if (chart.xMax - chart.xMin > maxRange) {
+            const mid = (chart.xMin + chart.xMax) / 2
+            chart.xMin = Math.max(0, mid - maxRange / 2)
+            chart.xMax = Math.min(maxIndex, mid + maxRange / 2)
+        }
+    }
+
     Component.onCompleted: {
         TpInvDataProcessing.initializeWavePage(wavePage.sampleCount)
+        updateAdaptiveRenderPoints()
     }
 
     MosRectangle {
@@ -246,7 +303,7 @@ MosRectangle {
                                 if (wavePage.baudRateOptions[i].value === wavePage.selectedBaudRate)
                                     return i
                             }
-                            return 0
+                            return wavePage.baudRateOptions.length - 1
                         }
                         onActivated: TpInvDataProcessing.selectedBaudRate = currentValue
                     }
@@ -661,7 +718,15 @@ MosRectangle {
                             onClicked: {
                                 voltageChart.resetZoom()
                                 currentChart.resetZoom()
+                                TpInvDataProcessing.sampleCapacity = 400
+                                voltageChart.autoXRange = false
+                                voltageChart.xMin = 0
+                                voltageChart.xMax = wavePage.sampleCount - 1
+                                currentChart.autoXRange = false
+                                currentChart.xMin = 0
+                                currentChart.xMax = wavePage.sampleCount - 1
                                 wavePage.chartModified = false
+                                wavePage.updateAdaptiveRenderPoints()
                             }
                         }
                     }
@@ -695,8 +760,8 @@ MosRectangle {
                         lineWidth: 2
                         pointSize: 2
                         pointRenderThreshold: 1
-                        maxRenderPoints: 900
-                        maxInteractivePoints: 900
+                        maxRenderPoints: 1600
+                        maxInteractivePoints: 1600
                         colorBg: wavePage.chartBg
                         colorPlotBg: wavePage.chartBg
                         colorText: wavePage.textStrong
@@ -708,11 +773,16 @@ MosRectangle {
                         xFormatter: value => String(Math.round(value))
 
                         onChartZoomed: {
-                            wavePage.chartModified = true;
-                            currentChart.autoXRange = false;
-                            currentChart.xMin = xMin;
-                            currentChart.xMax = xMax;
+                            wavePage.chartModified = true
+                            wavePage.scheduleCapacityUpdate()
+                            wavePage.clampChartRange(voltageChart)
+                            currentChart.autoXRange = false
+                            currentChart.xMin = voltageChart.xMin
+                            currentChart.xMax = voltageChart.xMax
+                            wavePage.clampChartRange(currentChart)
+                            wavePage.updateAdaptiveRenderPoints()
                         }
+                        onWidthChanged: wavePage.updateAdaptiveRenderPoints()
                     }
                 }
             }
@@ -771,7 +841,15 @@ MosRectangle {
                             onClicked: {
                                 voltageChart.resetZoom()
                                 currentChart.resetZoom()
+                                TpInvDataProcessing.sampleCapacity = 400
+                                voltageChart.autoXRange = false
+                                voltageChart.xMin = 0
+                                voltageChart.xMax = wavePage.sampleCount - 1
+                                currentChart.autoXRange = false
+                                currentChart.xMin = 0
+                                currentChart.xMax = wavePage.sampleCount - 1
                                 wavePage.chartModified = false
+                                wavePage.updateAdaptiveRenderPoints()
                             }
                         }
                     }
@@ -806,8 +884,8 @@ MosRectangle {
                         lineWidth: 2
                         pointSize: 2
                         pointRenderThreshold: 1
-                        maxRenderPoints: 900
-                        maxInteractivePoints: 900
+                        maxRenderPoints: 1600
+                        maxInteractivePoints: 1600
                         colorBg: wavePage.chartBg
                         colorPlotBg: wavePage.chartBg
                         colorText: wavePage.textStrong
@@ -819,11 +897,16 @@ MosRectangle {
                         xFormatter: value => String(Math.round(value))
 
                         onChartZoomed: {
-                            wavePage.chartModified = true;
-                            voltageChart.autoXRange = false;
-                            voltageChart.xMin = xMin;
-                            voltageChart.xMax = xMax;
+                            wavePage.chartModified = true
+                            wavePage.scheduleCapacityUpdate()
+                            wavePage.clampChartRange(currentChart)
+                            voltageChart.autoXRange = false
+                            voltageChart.xMin = currentChart.xMin
+                            voltageChart.xMax = currentChart.xMax
+                            wavePage.clampChartRange(voltageChart)
+                            wavePage.updateAdaptiveRenderPoints()
                         }
+                        onWidthChanged: wavePage.updateAdaptiveRenderPoints()
                     }
                 }
             }
