@@ -21,49 +21,49 @@ QtObject{
             menuChildren: [
                 {
                     key: 'ExpMosButton',
-                    label: qsTr('MosButton 按钮'),
+                    label: qsTr('按钮'),
                     iconSource: MosIcon.ButtonOutlined,
                     source: './Controls/Universal/ExpMosButton.qml',
                     addVersion: '0.0.1',
                 },
                 {
                     key: 'ExpMosButtonBlock',
-                    label: qsTr('MosButtonBlock 按钮块'),
+                    label: qsTr('按钮块'),
                     iconSource: MosIcon.ButtonOutlined,
                     source: './Controls/Universal/ExpMosButtonBlock.qml',
                     addVersion: '0.0.2',
                 },
                 {
                     key: 'ExpMosCaptionbar',
-                    label: qsTr('MosCaptionbar 标题栏'),
+                    label: qsTr('标题栏'),
                     iconSource: MosIcon.CaptionbarOutlined,
                     source: './Controls/Universal/ExpMosCaptionbar.qml',
                     addVersion: '0.0.2',
                 },
                 {
                     key: 'ExpMosCaptionButton',
-                    label: qsTr('MosCaptionButton 标题按钮'),
+                    label: qsTr('标题按钮'),
                     iconSource: MosIcon.CaptionbarOutlined,
                     source: './Controls/Universal/ExpMosCaptionButton.qml',
                     addVersion: '0.0.2',
                 },
                 {
                     key: 'ExpCopyableText',
-                    label: qsTr('MosCopyableText 可复制文本'),
+                    label: qsTr('可复制文本'),
                     iconSource: MosIcon.CopyOutlined,
                     source: './Controls/Universal/ExpCopyableText.qml',
                     addVersion: '0.0.2',
                 },
                 {
                     key: 'ExpCanvasChart',
-                    label: qsTr('MosCanvasChart 图表'),
+                    label: qsTr('Canvas图表'),
                     iconSource: MosIcon.ChartOutlined,
                     source: './Controls/Universal/ExpCanvasChart.qml',
                     addVersion: '0.0.2',
                 },
                 {
                     key: 'ExpMosHighperchart',
-                    label: qsTr('MosHighperchart 图表'),
+                    label: qsTr('Mos高性能图表'),
                     iconSource: MosIcon.ChartOutlined,
                     source: './Controls/Universal/ExpMosHighperchart.qml',
                     addVersion: '0.0.2',
@@ -74,7 +74,27 @@ QtObject{
                     iconSource: MosIcon.SerialPortOutlined,
                     source: './Controls/Universal/ExpSerialPortManager.qml',
                     addVersion: '0.0.2'
-                    
+                },
+                {
+                    key:'ExpAnimatedImage',
+                    label:qsTr('动画图片'),
+                    iconSource: MosIcon.AnimatedImageOutlined,
+                    source: './Controls/Universal/ExpAnimatedImage.qml',
+                    addVersion: '0.0.3'
+                },
+                {
+                    key:'ExpAvatar',
+                    label:qsTr('头像'),
+                    iconSource: MosIcon.AvatarOutlined,
+                    source: './Controls/Universal/ExpAvatar.qml',
+                    addVersion: '0.0.3'
+                },
+                {
+                    key:'ExpBadge',
+                    label:qsTr('徽标'),
+                    iconSource: MosIcon.BadgeOutlined,
+                    source: './Controls/Universal/ExpBadge.qml',
+                    addVersion: '0.0.3'
                 }
             ]
         },

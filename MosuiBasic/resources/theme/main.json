@@ -106,6 +106,13 @@
                 "colorInfoText": "@colorInfoBase-9",
                 "colorInfoTextActive": "@colorInfoBase-10",
 
+                "colorBgLayout": "$brightness(@colorBgBase, 107)",
+                "colorBgContainer": "$darker(@colorBgBase, 0)",
+                "colorBgElevated": "$darker(@colorBgBase, 0)",
+                "colorBgSpotlight": "$alpha(@colorTextBase, 0.85)",
+                "colorBgBlur": "transparent",
+                "colorBgMask": "$alpha(#000, 0.45)",
+
                 "colorSuccessBg": "@colorSuccessBase-1",
                 "colorSuccessBgHover": "@colorSuccessBase-2",
                 "colorSuccessBorder": "@colorSuccessBase-3",
@@ -168,6 +175,9 @@
                 "MosTextArea": ":/theme/theme/MosTextArea.json",
                 "MosTableView": ":/theme/theme/MosTableView.json",
                 "MosTag": ":/theme/theme/MosTag.json",
-                "MosCanvasChart": ":/theme/theme/MosCanvasChart.json"
+                "MosCanvasChart": ":/theme/theme/MosCanvasChart.json",
+                "MosImage": ":/theme/theme/MosImage.json",
+                "MosSwitch": ":/theme/theme/MosSwitch.json",
+                "MosTour": ":/theme/theme/MosTour.json"
         }
 }

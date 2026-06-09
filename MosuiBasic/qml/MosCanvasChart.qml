@@ -303,6 +303,7 @@ T.Control {
             id: __chartMouse
             anchors.fill: parent
             hoverEnabled: root.hoverable
+            preventStealing: root.panEnabled
             cursorShape: __canvas.__panActive ? Qt.ClosedHandCursor
                          : (root.hoverable ? Qt.PointingHandCursor : Qt.ArrowCursor)
 

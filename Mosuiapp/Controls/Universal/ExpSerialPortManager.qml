@@ -479,6 +479,8 @@ Connections {
 
                 Connections {
                     target: MosSerialPortManager
+                    // QByteArray 不是 QML 原生类型，需要忽略未识别的信号名
+                    ignoreUnknownSignals: true
 
                     function onReceiveDataFromPort(portName, data, text, hex) {
                         receivePreview.text += "[" + portName + "] HEX " + hex + "\\n"

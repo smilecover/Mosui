@@ -219,6 +219,9 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosTableView);
         ADD_COMPONENT_PROPERTY(MosTag);
         ADD_COMPONENT_PROPERTY(MosCanvasChart);
+        ADD_COMPONENT_PROPERTY(MosImage);
+        ADD_COMPONENT_PROPERTY(MosSwitch);
+        ADD_COMPONENT_PROPERTY(MosTour);
     }
 }
 // @brief 注册默认组件主题

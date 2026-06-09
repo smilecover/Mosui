@@ -358,10 +358,17 @@ TpInvDataProcessing::TpInvDataProcessing(QObject *parent)
 
     bindSerialManagerSignals();
     rebuildSeries();
+
+    rebuildTimer_ = new QTimer(this);
+    rebuildTimer_->setInterval(RebuildIntervalMs);
+    rebuildTimer_->setSingleShot(true);
+    connect(rebuildTimer_, &QTimer::timeout, this, &TpInvDataProcessing::rebuildSeries);
 }
 
 TpInvDataProcessing::~TpInvDataProcessing()
 {
+    if (rebuildTimer_)
+        rebuildTimer_->stop();
     if (workerThread_) {
         workerThread_->quit();
         workerThread_->wait();
@@ -961,18 +968,10 @@ QVariantMap TpInvDataProcessing::makeSeriesItem(const QString &name,
                                                 const QString &color,
                                                 const QVariantList &values)
 {
-    QVariantList wrapped;
-    wrapped.reserve(values.size());
-    for (const QVariant &v : values) {
-        QVariantMap point;
-        point.insert(QStringLiteral("value"), v);
-        wrapped.append(point);
-    }
-
     QVariantMap item;
     item.insert(QStringLiteral("name"), name);
     item.insert(QStringLiteral("color"), color);
-    item.insert(QStringLiteral("values"), wrapped);
+    item.insert(QStringLiteral("values"), values);
     return item;
 }
 
@@ -998,13 +997,19 @@ void TpInvDataProcessing::applySnapshot(int sampleCount,
     emit samplesChanged();
     emit statsChanged();
     if (!waveformPaused_)
-        rebuildSeries();
+        scheduleRebuild();
 
     if (sampleCount_ > 0) {
         setWaveStatusText(QStringLiteral("已解析波形数据"));
     } else if (!lastWaveHex_.isEmpty()) {
         setWaveStatusText(QStringLiteral("收到数据，暂未解析到有效帧"));
     }
+}
+
+void TpInvDataProcessing::scheduleRebuild()
+{
+    if (!rebuildTimer_->isActive())
+        rebuildTimer_->start();
 }
 
 void TpInvDataProcessing::resetCachedValues()

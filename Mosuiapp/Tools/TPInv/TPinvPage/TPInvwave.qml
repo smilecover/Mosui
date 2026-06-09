@@ -20,6 +20,7 @@ MosRectangle {
     readonly property color gridColor: MosTheme.Primary.colorSplit
     readonly property color axisColor: MosTheme.Primary.colorTextTertiary
 
+    property bool chartModified: false
     property bool waveformPaused: TpInvDataProcessing.waveformPaused
     property var portOptions: TpInvDataProcessing.portOptions
     property string selectedPortName: TpInvDataProcessing.selectedPortName
@@ -641,18 +642,27 @@ MosRectangle {
                             font.bold: true
                         }
 
-                        RealtimeBadge {}
+                        MosTag {
+                            Layout.alignment: Qt.AlignVCenter
+                            tagState: MosTag.State_Success
+                            text: "实时"
+                        }
 
                         MosButton {
-                            Layout.preferredWidth: 44
+                            Layout.preferredWidth: 60
                             Layout.preferredHeight: 22
                             text: "重置"
+                            visible: wavePage.chartModified
                             radiusBg.all: 6
                             colorBg: wavePage.controlBg
                             colorBorder: MosTheme.Primary.colorBorder
                             colorText: wavePage.textMuted
                             font.pixelSize: 11
-                            onClicked: voltageChart.resetZoom()
+                            onClicked: {
+                                voltageChart.resetZoom()
+                                currentChart.resetZoom()
+                                wavePage.chartModified = false
+                            }
                         }
                     }
 
@@ -698,6 +708,7 @@ MosRectangle {
                         xFormatter: value => String(Math.round(value))
 
                         onChartZoomed: {
+                            wavePage.chartModified = true;
                             currentChart.autoXRange = false;
                             currentChart.xMin = xMin;
                             currentChart.xMax = xMax;
@@ -741,18 +752,27 @@ MosRectangle {
                             font.bold: true
                         }
 
-                        RealtimeBadge {}
+                        MosTag {
+                            Layout.alignment: Qt.AlignVCenter
+                            tagState: MosTag.State_Success
+                            text: "实时"
+                        }
 
                         MosButton {
-                            Layout.preferredWidth: 44
+                            Layout.preferredWidth: 60
                             Layout.preferredHeight: 22
                             text: "重置"
+                            visible: wavePage.chartModified
                             radiusBg.all: 6
                             colorBg: wavePage.controlBg
                             colorBorder: MosTheme.Primary.colorBorder
                             colorText: wavePage.textMuted
                             font.pixelSize: 11
-                            onClicked: currentChart.resetZoom()
+                            onClicked: {
+                                voltageChart.resetZoom()
+                                currentChart.resetZoom()
+                                wavePage.chartModified = false
+                            }
                         }
                     }
 
@@ -799,6 +819,7 @@ MosRectangle {
                         xFormatter: value => String(Math.round(value))
 
                         onChartZoomed: {
+                            wavePage.chartModified = true;
                             voltageChart.autoXRange = false;
                             voltageChart.xMin = xMin;
                             voltageChart.xMax = xMax;
@@ -807,37 +828,6 @@ MosRectangle {
                 }
             }
         }
-        }
-    }
-
-    component RealtimeBadge: MosRectangle {
-        Layout.preferredWidth: 54
-        Layout.preferredHeight: 22
-        Layout.alignment: Qt.AlignVCenter
-        radius: 11
-        color: MosTheme.Primary.colorSuccessBg
-        border.width: 1
-        border.color: MosTheme.Primary.colorSuccessBorder
-
-        RowLayout {
-            anchors.centerIn: parent
-            spacing: 5
-
-            MosRectangle {
-                Layout.preferredWidth: 4
-                Layout.preferredHeight: 4
-                Layout.alignment: Qt.AlignVCenter
-                radius: 2
-                color: "#23ffc2"
-            }
-
-            MosText {
-                Layout.alignment: Qt.AlignVCenter
-                text: "实时"
-                color: MosTheme.Primary.colorSuccessText
-                font.pixelSize: 11
-                font.bold: true
-            }
         }
     }
 

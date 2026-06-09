@@ -132,6 +132,7 @@ Q_SIGNALS:
 
 private:
     static constexpr int DefaultSampleCapacity = 512;
+    static constexpr int RebuildIntervalMs = 40;
 
     void bindSerialManagerSignals();
     void updateWavePortOpen();
@@ -144,6 +145,7 @@ private:
     void rebuildSeries();
     void rebuildVoltageSeries();
     void rebuildCurrentSeries();
+    void scheduleRebuild();
     static QVariantMap makeSeriesItem(const QString &name, const QString &color, const QVariantList &values);
     void applySnapshot(int sampleCount,
                        int parsedFrameCount,
@@ -158,6 +160,7 @@ private:
 
     QThread *workerThread_ = nullptr;
     TpInvDataProcessingWorker *worker_ = nullptr;
+    QTimer *rebuildTimer_ = nullptr;
     int sampleCapacity_ = DefaultSampleCapacity;
     int sampleCount_ = 0;
     int parsedFrameCount_ = 0;
