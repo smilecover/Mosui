@@ -40,18 +40,25 @@ find_package(Qt6 QUIET COMPONENTS WebEngineQuick)
 qt_standard_project_setup(REQUIRES 6.5)
 qt_policy(SET QTP0004 NEW)
 set(QT_QML_GENERATE_QMLLS_INI ON CACHE BOOL "" FORCE)
-# Windows 下 exe 有 .exe 后缀不冲突；Linux/macOS 下可执行文件无后缀，与 QML 模块目录同名，需放到 bin 子目录
-if(UNIX)
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/bin)
+# exe 输出目录：根据库类型选择 static/ 或 shared/
+if(MOSUIBASIC_BUILD_STATIC)
+    set(EXE_OUTPUT_DIR ${LIBRARY_STATIC_OUTPUT_DIRECTORY})
+elseif(UNIX)
+    set(EXE_OUTPUT_DIR ${LIBRARY_SHARED_OUTPUT_DIRECTORY}/bin)
 else()
-    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
+    set(EXE_OUTPUT_DIR ${LIBRARY_SHARED_OUTPUT_DIRECTORY})
 endif()
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXE_OUTPUT_DIR})
 # 设置 Mosui 版本
 set(MOSUI_VERSION_MAJOR 1)
 set(MOSUI_VERSION_MINOR 0)
 set(MOSUI_VERSION_PATCH 0)
 set(MOSUI_VERSION ${MOSUI_VERSION_MAJOR}.${MOSUI_VERSION_MINOR}.${MOSUI_VERSION_PATCH})
 
+
+# MosuiBasic 库类型选择：OFF=动态库(默认)  ON=静态库
+# 用法: cmake -DMOSUIBASIC_BUILD_STATIC=ON ..
+option(MOSUIBASIC_BUILD_STATIC "Build MosuiBasic as a static library" ON)
 
 add_subdirectory(MosuiBasic)
 

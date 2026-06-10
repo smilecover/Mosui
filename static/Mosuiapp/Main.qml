@@ -1,0 +1,100 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+import MosuiBasic
+import "./Controls" as C
+
+MosWindow{
+    id: rootWindow
+
+    visible: true
+    width: 1200
+    height: 800
+    title: "MosUI"
+    
+    windowIcon: "qrc:/logo.png"
+    MenuModel{id: menumodel}
+    MosRouter{id: galleryRouter}
+    C.Data{id: appData}
+
+    Rectangle {
+        id: rootBackground
+        anchors.fill: parent
+        color:MosTheme.Primary.colorBgBase
+        z: -999
+        opacity: 0.2
+    }
+
+    MosMenu{
+        id: menu
+        anchors.top: captionbar.bottom
+        anchors.left: parent.left
+        anchors.bottom: linemenutosetting.top
+        showEdge: true
+        compactMode: appData.menuType
+
+        initModel: menumodel.menus
+        defaultSelectedKeys: ['HomePage']
+        onClickMenu: function(deep, key, keyPath, data) 
+        {
+            if (data.source) 
+            {
+                galleryRouter.push(Qt.resolvedUrl(data.source))
+            }
+        }
+    }
+    Component.onCompleted: {
+        galleryRouter.push(Qt.resolvedUrl('./Controls/HomePage.qml'))
+    }
+    MosDivider{
+        id: linemenutosetting
+        anchors.bottom: settingItem.top
+        anchors.left: menu.left
+        anchors.leftMargin: 2
+        anchors.right: menu.right
+        anchors.bottomMargin: 0
+    }
+    Item{
+        id: settingItem
+        anchors.left: menu.left
+        anchors.right: menu.right
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 5
+        height: 30
+        property Component settingButtonComponent: MosRotateIconButton {
+            iconSource: MosIcon.SettingsOutlined
+            iconSize: 30
+            onClicked: {
+                galleryRouter.push(Qt.resolvedUrl('./Controls/SettingsPage.qml'))
+                menu.clearSelection()
+            }
+        }
+        Loader{
+            anchors.fill: parent
+            id: settingsButtonLoader
+            sourceComponent: settingItem.settingButtonComponent
+            visible: settingItem.settingButtonComponent !== null && rootWindow.visible
+        }
+    }
+
+    Item{
+        id: item
+        anchors.left: menu.right
+        anchors.right: parent.right
+        anchors.top: captionbar.bottom
+        anchors.bottom: parent.bottom
+        anchors.margins: 0
+        clip: true
+
+        Loader{
+            id: nextpage
+            visible: false
+        }
+        Loader {
+            id: containerLoader
+            anchors.fill: parent
+            source: galleryRouter.currentUrl
+            anchors.horizontalCenter: parent.horizontalCenter
+        }
+    }
+}

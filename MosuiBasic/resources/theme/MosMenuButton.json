@@ -3,6 +3,9 @@
         "__import__": ["MosButton"]
     },
     "__style__":{
-        
+        "colorBgHover": "$alpha(@colorPrimaryBgActive, 0.15)",
+        "colorBgActive": "$alpha(@colorPrimaryBgActive, 0.25)",
+        "colorText": "@colorTextBase",
+        "colorTextActive": "@colorPrimaryTextHover"
     }
 }

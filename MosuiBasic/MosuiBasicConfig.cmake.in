@@ -1,0 +1,30 @@
+@PACKAGE_INIT@
+
+# ====== MosuiBasic CMake 包配置 ======
+# 用法: find_package(MosuiBasic REQUIRED)
+# 然后 target_link_libraries(your_app PRIVATE MosuiBasic::MosuiBasic)
+
+# 查找 Qt6 依赖（与 MosuiBasic 构建时的版本需一致）
+find_dependency(Qt6 REQUIRED COMPONENTS Core Qml Quick QuickTemplates2 WebView SerialPort)
+
+# Unix 平台需要私有模块
+if(UNIX)
+    find_dependency(Qt6 QUIET COMPONENTS QuickPrivate QuickTemplates2Private)
+endif()
+
+# 加载导出的 CMake 目标（MosuiBasic, QWKCore, QWKQuick）
+include("${CMAKE_CURRENT_LIST_DIR}/MosuiBasicTargets.cmake")
+
+# QML 模块路径（消费者需要 addImportPath）
+set_and_check(MOSUIBASIC_QML_DIR "${PACKAGE_PREFIX_DIR}/qml/MosuiBasic")
+
+# 是否为静态库（消费者需据此决定是否使用 whole-archive）
+set(MOSUIBASIC_IS_STATIC @MOSUIBASIC_BUILD_STATIC@)
+
+if(MOSUIBASIC_IS_STATIC)
+    # 静态库模式：告知消费者使用 whole-archive 链接
+    # 用法: target_link_libraries(your_app PRIVATE $<LINK_LIBRARY:WHOLE_ARCHIVE,MosuiBasic::MosuiBasic>)
+    set(MOSUIBASIC_LINK_LIBRARY $<LINK_LIBRARY:WHOLE_ARCHIVE,MosuiBasic::MosuiBasic>)
+else()
+    set(MOSUIBASIC_LINK_LIBRARY MosuiBasic::MosuiBasic)
+endif()
