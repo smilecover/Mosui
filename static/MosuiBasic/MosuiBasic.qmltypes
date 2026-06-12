@@ -550,6 +550,214 @@ Module {
         exportMetaObjectRevisions: [256]
     }
     Component {
+        file: "MosMqttManager.h"
+        name: "MosMqttManager"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["MosuiBasic/MosMqttManager 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "host"
+            type: "QString"
+            read: "host"
+            write: "setHost"
+            notify: "hostChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "port"
+            type: "int"
+            read: "port"
+            write: "setPort"
+            notify: "portChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "clientId"
+            type: "QString"
+            read: "clientId"
+            write: "setClientId"
+            notify: "clientIdChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
+            name: "username"
+            type: "QString"
+            read: "username"
+            write: "setUsername"
+            notify: "usernameChanged"
+            index: 3
+            isFinal: true
+        }
+        Property {
+            name: "password"
+            type: "QString"
+            read: "password"
+            write: "setPassword"
+            notify: "passwordChanged"
+            index: 4
+            isFinal: true
+        }
+        Property {
+            name: "isConnected"
+            type: "bool"
+            read: "isConnected"
+            notify: "isConnectedChanged"
+            index: 5
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "state"
+            type: "int"
+            read: "state"
+            notify: "stateChanged"
+            index: 6
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "errorString"
+            type: "QString"
+            read: "errorString"
+            notify: "errorStringChanged"
+            index: 7
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "subscriptions"
+            type: "QStringList"
+            read: "subscriptions"
+            notify: "subscriptionsChanged"
+            index: 8
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "keepAlive"
+            type: "int"
+            read: "keepAlive"
+            write: "setKeepAlive"
+            notify: "keepAliveChanged"
+            index: 9
+            isFinal: true
+        }
+        Property {
+            name: "autoReconnect"
+            type: "bool"
+            read: "autoReconnect"
+            write: "setAutoReconnect"
+            notify: "autoReconnectChanged"
+            index: 10
+            isFinal: true
+        }
+        Signal { name: "hostChanged" }
+        Signal { name: "portChanged" }
+        Signal { name: "clientIdChanged" }
+        Signal { name: "usernameChanged" }
+        Signal { name: "passwordChanged" }
+        Signal { name: "isConnectedChanged" }
+        Signal { name: "stateChanged" }
+        Signal { name: "errorStringChanged" }
+        Signal { name: "subscriptionsChanged" }
+        Signal { name: "keepAliveChanged" }
+        Signal { name: "autoReconnectChanged" }
+        Signal { name: "connected" }
+        Signal { name: "disconnected" }
+        Signal {
+            name: "messageReceived"
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+        }
+        Signal {
+            name: "bytesReceived"
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
+        }
+        Signal {
+            name: "published"
+            Parameter { name: "id"; type: "int" }
+        }
+        Signal {
+            name: "errorOccurred"
+            Parameter { name: "message"; type: "QString" }
+        }
+        Method { name: "connectToHost" }
+        Method {
+            name: "connectToHost"
+            Parameter { name: "host"; type: "QString" }
+            Parameter { name: "port"; type: "int" }
+        }
+        Method { name: "disconnectFromHost" }
+        Method {
+            name: "publish"
+            type: "int"
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+            Parameter { name: "qos"; type: "int" }
+            Parameter { name: "retain"; type: "bool" }
+        }
+        Method {
+            name: "publish"
+            type: "int"
+            isCloned: true
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+            Parameter { name: "qos"; type: "int" }
+        }
+        Method {
+            name: "publish"
+            type: "int"
+            isCloned: true
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "message"; type: "QString" }
+        }
+        Method {
+            name: "publishBytes"
+            type: "int"
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
+            Parameter { name: "qos"; type: "int" }
+            Parameter { name: "retain"; type: "bool" }
+        }
+        Method {
+            name: "publishBytes"
+            type: "int"
+            isCloned: true
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
+            Parameter { name: "qos"; type: "int" }
+        }
+        Method {
+            name: "publishBytes"
+            type: "int"
+            isCloned: true
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "data"; type: "QByteArray" }
+        }
+        Method {
+            name: "subscribe"
+            Parameter { name: "topic"; type: "QString" }
+            Parameter { name: "qos"; type: "int" }
+        }
+        Method {
+            name: "subscribe"
+            isCloned: true
+            Parameter { name: "topic"; type: "QString" }
+        }
+        Method {
+            name: "unsubscribe"
+            Parameter { name: "topic"; type: "QString" }
+        }
+        Method { name: "clearError" }
+    }
+    Component {
         file: "Mosrectangle.h"
         name: "MosPen"
         accessSemantics: "reference"

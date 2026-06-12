@@ -2,8 +2,8 @@
 # 文档: https://clangd.llvm.org/config
 
 CompileFlags:
-  # compile_commands.json 所在目录
-  CompilationDatabase: build/
+  # 递归搜索项目根目录下所有 compile_commands.json
+  CompilationDatabase: /build-clang/Release
 
 Diagnostics:
   # Qt 头文件经常被误判为未使用（MOC 在背后依赖它们）

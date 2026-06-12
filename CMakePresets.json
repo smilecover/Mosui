@@ -1,0 +1,108 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 16,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "msvc-release",
+            "displayName": "MSVC Release",
+            "description": "使用 MSVC 编译器，Release 模式",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-msvc/Release",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "D:/Qt/6.8.3/msvc2022_64",
+                "CMAKE_TOOLCHAIN_FILE": "D:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/qt.toolchain.cmake",
+                "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "MOSUIBASIC_BUILD_STATIC": "ON"
+            },
+            "environment": {
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin"
+            }
+        },
+        {
+            "name": "msvc-debug",
+            "displayName": "MSVC Debug",
+            "description": "使用 MSVC 编译器，Debug 模式",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-msvc/Debug",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "D:/Qt/6.8.3/msvc2022_64",
+                "CMAKE_TOOLCHAIN_FILE": "D:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/qt.toolchain.cmake",
+                "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "MOSUIBASIC_BUILD_STATIC": "ON"
+            },
+            "environment": {
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin"
+            }
+        },
+        {
+            "name": "clang-release",
+            "displayName": "Clang Release",
+            "description": "使用 clang-cl 编译器，Release 模式",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-clang/Release",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "D:/Qt/6.8.3/msvc2022_64",
+                "CMAKE_TOOLCHAIN_FILE": "D:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/qt.toolchain.cmake",
+                "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+                "CMAKE_C_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_CXX_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "MOSUIBASIC_BUILD_STATIC": "ON"
+            },
+            "environment": {
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin"
+            }
+        },
+        {
+            "name": "clang-debug",
+            "displayName": "Clang Debug",
+            "description": "使用 clang-cl 编译器，Debug 模式",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-clang/Debug",
+            "cacheVariables": {
+                "CMAKE_PREFIX_PATH": "D:/Qt/6.8.3/msvc2022_64",
+                "CMAKE_TOOLCHAIN_FILE": "D:/Qt/6.8.3/msvc2022_64/lib/cmake/Qt6/qt.toolchain.cmake",
+                "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
+                "CMAKE_C_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_CXX_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "MOSUIBASIC_BUILD_STATIC": "OFF"
+            },
+            "environment": {
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "msvc-release",
+            "configurePreset": "msvc-release",
+            "displayName": "MSVC Release 构建"
+        },
+        {
+            "name": "msvc-debug",
+            "configurePreset": "msvc-debug",
+            "displayName": "MSVC Debug 构建"
+        },
+        {
+            "name": "clang-release",
+            "configurePreset": "clang-release",
+            "displayName": "Clang Release 构建"
+        },
+        {
+            "name": "clang-debug",
+            "configurePreset": "clang-debug",
+            "displayName": "Clang Debug 构建"
+        }
+    ]
+}

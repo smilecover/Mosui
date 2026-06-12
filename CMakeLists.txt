@@ -25,7 +25,7 @@ set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静�
 set(QT_NO_PRIVATE_MODULE_WARNING ON CACHE BOOL "" FORCE)
 
 # 基础 Qt 组件（所有平台通用）
-set(QT_REQUIRED_COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat)
+set(QT_REQUIRED_COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat Mqtt)
 
 # Linux/macOS 下私有模块有独立的 CMake 包，需要显式声明
 if(UNIX)
@@ -63,3 +63,12 @@ option(MOSUIBASIC_BUILD_STATIC "Build MosuiBasic as a static library" ON)
 add_subdirectory(MosuiBasic)
 
 add_subdirectory(Mosuiapp)
+
+# 将 compile_commands.json 复制到项目根目录，供 clangd 使用
+add_custom_target(sync_compile_commands ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_BINARY_DIR}/compile_commands.json"
+        "${CMAKE_SOURCE_DIR}/compile_commands.json"
+    COMMENT "Syncing compile_commands.json to project root for clangd"
+    VERBATIM
+)

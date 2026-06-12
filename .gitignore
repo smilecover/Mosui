@@ -1,6 +1,8 @@
 # ========== Qt 自动生成文件 ==========
 build/
 build-*
+build-clang/
+build-msvc/
 *.pro.user
 *.pro.user.*
 *.qbs.user
@@ -50,7 +52,7 @@ compile_commands.json
 .cache/
 .claude/
 .qtcreator/
-shared/
+/shared/
 build-clang/
 *.md
 opencode.json

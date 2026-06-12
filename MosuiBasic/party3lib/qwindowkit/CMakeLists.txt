@@ -120,6 +120,10 @@ if(NOT TARGET qmsetup::library)
     qm_install_package(qmsetup
         SOURCE_DIR ${_source_dir}
         BUILD_TYPE Release
+        CONFIGURE_ARGS
+            -DCMAKE_MAKE_PROGRAM=${CMAKE_MAKE_PROGRAM}
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         RESULT_PATH _package_path
     )
 
