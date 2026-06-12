@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QSslConfiguration>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
@@ -24,13 +25,28 @@ class MOSUIBASIC_EXPORT MosMqttManager : public QObject
     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged FINAL)
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
     Q_PROPERTY(bool isConnected READ isConnected NOTIFY isConnectedChanged FINAL)
-    Q_PROPERTY(int state READ state NOTIFY stateChanged FINAL)
+    Q_PROPERTY(State state READ state NOTIFY stateChanged FINAL)
     Q_PROPERTY(QString errorString READ errorString NOTIFY errorStringChanged FINAL)
     Q_PROPERTY(QStringList subscriptions READ subscriptions NOTIFY subscriptionsChanged FINAL)
     Q_PROPERTY(int keepAlive READ keepAlive WRITE setKeepAlive NOTIFY keepAliveChanged FINAL)
     Q_PROPERTY(bool autoReconnect READ autoReconnect WRITE setAutoReconnect NOTIFY autoReconnectChanged FINAL)
+    Q_PROPERTY(int reconnectInterval READ reconnectInterval WRITE setReconnectInterval NOTIFY reconnectIntervalChanged FINAL)
+    Q_PROPERTY(bool sslEnabled READ sslEnabled WRITE setSslEnabled NOTIFY sslEnabledChanged FINAL)
+    Q_PROPERTY(QString sslCaCertPath READ sslCaCertPath WRITE setSslCaCertPath NOTIFY sslCaCertPathChanged FINAL)
+    Q_PROPERTY(bool sslPeerVerify READ sslPeerVerify WRITE setSslPeerVerify NOTIFY sslPeerVerifyChanged FINAL)
+    Q_PROPERTY(QString willTopic READ willTopic WRITE setWillTopic NOTIFY willTopicChanged FINAL)
+    Q_PROPERTY(QString willMessage READ willMessage WRITE setWillMessage NOTIFY willMessageChanged FINAL)
+    Q_PROPERTY(int willQos READ willQos WRITE setWillQos NOTIFY willQosChanged FINAL)
+    Q_PROPERTY(bool willRetain READ willRetain WRITE setWillRetain NOTIFY willRetainChanged FINAL)
 
 public:
+    enum State {
+        Disconnected = 0,
+        Connecting  = 1,
+        Connected   = 2
+    };
+    Q_ENUM(State)
+
     ~MosMqttManager() override;
 
     static MosMqttManager *instance();
@@ -42,11 +58,19 @@ public:
     QString username() const;
     QString password() const;
     bool isConnected() const;
-    int state() const;
+    State state() const;
     QString errorString() const;
     QStringList subscriptions() const;
     int keepAlive() const;
     bool autoReconnect() const;
+    int reconnectInterval() const;
+    bool sslEnabled() const;
+    QString sslCaCertPath() const;
+    bool sslPeerVerify() const;
+    QString willTopic() const;
+    QString willMessage() const;
+    int willQos() const;
+    bool willRetain() const;
 
     void setHost(const QString &host);
     void setPort(int port);
@@ -55,6 +79,14 @@ public:
     void setPassword(const QString &password);
     void setKeepAlive(int keepAlive);
     void setAutoReconnect(bool enabled);
+    void setReconnectInterval(int ms);
+    void setSslEnabled(bool enabled);
+    void setSslCaCertPath(const QString &path);
+    void setSslPeerVerify(bool enabled);
+    void setWillTopic(const QString &topic);
+    void setWillMessage(const QString &message);
+    void setWillQos(int qos);
+    void setWillRetain(bool retain);
 
     Q_INVOKABLE void connectToHost();
     Q_INVOKABLE void connectToHost(const QString &host, int port);
@@ -77,6 +109,14 @@ Q_SIGNALS:
     void subscriptionsChanged();
     void keepAliveChanged();
     void autoReconnectChanged();
+    void reconnectIntervalChanged();
+    void sslEnabledChanged();
+    void sslCaCertPathChanged();
+    void sslPeerVerifyChanged();
+    void willTopicChanged();
+    void willMessageChanged();
+    void willQosChanged();
+    void willRetainChanged();
 
     void connected();
     void disconnected();

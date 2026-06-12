@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
-import MosuiBasic
+import MosuiBasic 1.0
 
 MosRectangle{
     id: serialportPage

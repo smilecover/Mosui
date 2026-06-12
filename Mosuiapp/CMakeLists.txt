@@ -104,3 +104,9 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
+# ====== 修正 .qmlls.ini ======
+cmake_language(DEFER CALL file WRITE
+    "${CMAKE_CURRENT_SOURCE_DIR}/.qmlls.ini"
+    "[General]\nbuildDir=\"${CMAKE_SOURCE_DIR}/static\"\nno-cmake-calls=false\ndocDir=D:/Qt/Docs/Qt-6.8.3\nimportPaths=\"D:/Qt/6.8.3/msvc2022_64/qml;${CMAKE_SOURCE_DIR}/static\"\n"
+)
+

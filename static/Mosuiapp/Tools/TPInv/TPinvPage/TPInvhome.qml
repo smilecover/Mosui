@@ -8,9 +8,6 @@ import QtQuick.Effects
 MosRectangle{
     id: homePage
     color: "transparent"
-
-
-
     enum Background {
         None = 0,
         FractalLand = 1,

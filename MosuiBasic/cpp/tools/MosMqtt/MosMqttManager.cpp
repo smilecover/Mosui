@@ -8,10 +8,15 @@
 #include <QMqttSubscription>
 #include <QMqttTopicFilter>
 #include <QMqttTopicName>
+#include <QPointer>
 #include <QQmlEngine>
+#include <QSslCertificate>
+#include <QSslConfiguration>
+#include <QSslSocket>
 #include <QThread>
 #include <QTimer>
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -20,6 +25,7 @@ namespace {
 
 constexpr int MqttOperationTimeoutMs = 5000;
 constexpr int MqttShutdownTimeoutMs = 5000;
+constexpr int MaxReconnectDelayMs = 60000;
 
 QString mqttErrorToString(QMqttClient::ClientError error)
 {
@@ -74,7 +80,7 @@ void setConnected(MosMqttManager *q, MosMqttManagerPrivate *d, bool connected)
         emit q->disconnected();
 }
 
-void setState(MosMqttManager *q, MosMqttManagerPrivate *d, int state)
+void setState(MosMqttManager *q, MosMqttManagerPrivate *d, MosMqttManager::State state)
 {
     if (d->state == state)
         return;
@@ -97,6 +103,8 @@ void setSubscriptions(MosMqttManager *q, MosMqttManagerPrivate *d, const QString
 
 class MosMqttWorker : public QObject
 {
+    Q_OBJECT
+
 public:
     struct OperationResult {
         bool ok { false };
@@ -104,7 +112,7 @@ public:
         int messageId { -1 };
     };
 
-    using StateCallback = std::function<void(bool, int)>;
+    using StateCallback = std::function<void(bool, MosMqttManager::State)>;
     using MessageCallback = std::function<void(QString, QByteArray)>;
     using PublishedCallback = std::function<void(int)>;
     using ErrorCallback = std::function<void(QString)>;
@@ -118,10 +126,14 @@ public:
           publishedCallback_(std::move(publishedCallback)),
           errorCallback_(std::move(errorCallback))
     {
+        reconnectTimer_ = new QTimer(this);
+        reconnectTimer_->setSingleShot(true);
+        QObject::connect(reconnectTimer_, &QTimer::timeout, this, &MosMqttWorker::attemptReconnect);
     }
 
     ~MosMqttWorker() override
     {
+        intentionalDisconnect_ = true;
         disconnectFromHost();
     }
 
@@ -131,7 +143,15 @@ public:
                                   const QString &username,
                                   const QString &password,
                                   int keepAlive,
-                                  bool autoReconnect)
+                                  bool autoReconnect,
+                                  int reconnectIntervalMs,
+                                  bool sslEnabled,
+                                  const QString &sslCaCertPath,
+                                  bool sslPeerVerify,
+                                  const QString &willTopic,
+                                  const QString &willMessage,
+                                  int willQos,
+                                  bool willRetain)
     {
         OperationResult result;
 
@@ -140,8 +160,34 @@ public:
             setupClientConnections();
         }
 
-        if (client_->state() == QMqttClient::Connected)
-            client_->disconnectFromHost();
+        // 检查当前状态：已连接则直接返回，连接中则拒绝
+        if (client_->state() == QMqttClient::Connected) {
+            result.ok = true;
+            return result;
+        }
+        if (client_->state() == QMqttClient::Connecting) {
+            result.error = tr("Already connecting, please wait or disconnect first.");
+            return result;
+        }
+
+        // 存储连接参数，用于重连
+        autoReconnect_ = autoReconnect;
+        reconnectIntervalMs_ = std::max(1000, reconnectIntervalMs);
+        savedHost_ = host;
+        savedPort_ = port;
+        savedClientId_ = clientId;
+        savedUsername_ = username;
+        savedPassword_ = password;
+        savedKeepAlive_ = keepAlive;
+        sslEnabled_ = sslEnabled;
+        sslCaCertPath_ = sslCaCertPath;
+        sslPeerVerify_ = sslPeerVerify;
+        savedWillTopic_ = willTopic;
+        savedWillMessage_ = willMessage;
+        savedWillQos_ = willQos;
+        savedWillRetain_ = willRetain;
+        intentionalDisconnect_ = false;
+        reconnectAttempt_ = 0;
 
         client_->setHostname(host);
         client_->setPort(static_cast<quint16>(port));
@@ -151,7 +197,35 @@ public:
         client_->setKeepAlive(static_cast<quint16>(keepAlive));
         client_->setAutoKeepAlive(true);
 
-        client_->connectToHost();
+        // 设置遗愿消息 (Will Message)
+        if (!willTopic.isEmpty()) {
+            client_->setWillTopic(willTopic);
+            client_->setWillMessage(willMessage.toUtf8());
+            client_->setWillQoS(static_cast<quint8>(willQos));
+            client_->setWillRetain(willRetain);
+        }
+
+        if (sslEnabled_) {
+            QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+            if (!sslCaCertPath_.isEmpty()) {
+                QList<QSslCertificate> certs = QSslCertificate::fromPath(sslCaCertPath_);
+                if (certs.isEmpty()) {
+                    // 证书加载失败，通过 error 信号报告
+                    const QString errMsg = tr("Failed to load CA certificate from: %1").arg(sslCaCertPath_);
+                    result.error = errMsg;
+                    errorCallback_(errMsg);
+                    return result;
+                }
+                sslConfig.setCaCertificates(certs);
+            }
+            if (!sslPeerVerify_) {
+                sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+            }
+            client_->connectToHostEncrypted(sslConfig);
+        } else {
+            client_->connectToHost();
+        }
+
         result.ok = true;
         return result;
     }
@@ -159,6 +233,9 @@ public:
     OperationResult disconnectFromHost()
     {
         OperationResult result;
+        intentionalDisconnect_ = true;
+        reconnectTimer_->stop();
+        reconnectAttempt_ = 0;
         if (client_ && client_->state() != QMqttClient::Disconnected) {
             client_->disconnectFromHost();
         }
@@ -167,16 +244,22 @@ public:
         return result;
     }
 
+    // 超时时取消挂起的连接操作，防止底层 QMqttClient 继续尝试连接
+    void cancelPendingConnection()
+    {
+        if (client_ && client_->state() != QMqttClient::Disconnected) {
+            client_->disconnectFromHost();
+        }
+    }
+
+    // 允许发送空消息。
+    // 空消息在 MQTT 协议中是合法的，常用于清除 retained 消息
+    // (发送空 payload 到同一主题即可清除)。
     OperationResult publish(const QString &topic, const QByteArray &data, int qos, bool retain)
     {
         OperationResult result;
         if (!client_ || client_->state() != QMqttClient::Connected) {
             result.error = tr("MQTT client is not connected.");
-            return result;
-        }
-
-        if (data.isEmpty()) {
-            result.ok = true;
             return result;
         }
 
@@ -202,8 +285,8 @@ public:
             return result;
         }
 
-        if (!subscriptions_.contains(topic))
-            subscriptions_.append(topic);
+        // 存储主题及其 QOS，用于断线重连后恢复
+        subscriptions_.insert(topic, qos);
         result.ok = true;
         return result;
     }
@@ -217,14 +300,14 @@ public:
         }
 
         client_->unsubscribe(QMqttTopicFilter(topic));
-        subscriptions_.removeAll(topic);
+        subscriptions_.remove(topic);
         result.ok = true;
         return result;
     }
 
     QStringList currentSubscriptions() const
     {
-        QStringList subs = subscriptions_;
+        QStringList subs = subscriptions_.keys();
         subs.sort();
         return subs;
     }
@@ -233,16 +316,48 @@ private:
     void setupClientConnections()
     {
         QObject::connect(client_, &QMqttClient::connected, this, [this]() {
-            stateCallback_(true, static_cast<int>(client_->state()));
+            reconnectAttempt_ = 0;
+            // 重连后使用存储的 QOS 值重新订阅所有主题
+            // 注意：subscriptions_ 可能在断线期间通过 unsubscribe 被移除，
+            // 被移除的主题不会被重新订阅。Broker 端的变化客户端无法感知，
+            // 这里选择恢复客户端记录的订阅状态。
+            QHashIterator<QString, int> it(subscriptions_);
+            while (it.hasNext()) {
+                it.next();
+                client_->subscribe(QMqttTopicFilter(it.key()), static_cast<quint8>(it.value()));
+            }
+            stateCallback_(true, MosMqttManager::Connected);
         });
 
         QObject::connect(client_, &QMqttClient::disconnected, this, [this]() {
-            stateCallback_(false, static_cast<int>(client_->state()));
+            const bool wasIntentional = intentionalDisconnect_;
+            intentionalDisconnect_ = false;
+
+            if (!wasIntentional && autoReconnect_) {
+                // 意外断连 + 启用自动重连: 保留 QHash 订阅列表，启动指数退避重连
+                scheduleReconnect();
+            } else {
+                // 主动断连或未启用重连: 清除订阅
+                subscriptions_.clear();
+            }
+
+            stateCallback_(false, MosMqttManager::Disconnected);
         });
 
-        QObject::connect(client_, &QMqttClient::stateChanged, this, [this](QMqttClient::ClientState state) {
-            const bool connected = (state == QMqttClient::Connected);
-            stateCallback_(connected, static_cast<int>(state));
+        QObject::connect(client_, &QMqttClient::stateChanged, this, [this](QMqttClient::ClientState clientState) {
+            MosMqttManager::State s;
+            switch (clientState) {
+            case QMqttClient::Connected:
+                s = MosMqttManager::Connected;
+                break;
+            case QMqttClient::Connecting:
+                s = MosMqttManager::Connecting;
+                break;
+            default:
+                s = MosMqttManager::Disconnected;
+                break;
+            }
+            stateCallback_(clientState == QMqttClient::Connected, s);
         });
 
         QObject::connect(client_, &QMqttClient::messageReceived, this,
@@ -260,15 +375,96 @@ private:
         });
     }
 
+    // 指数退避重连调度: delay = min(baseInterval * 2^attempt, MaxReconnectDelayMs)
+    void scheduleReconnect()
+    {
+        if (!autoReconnect_)
+            return;
+
+        const int delay = std::min(reconnectIntervalMs_ * (1 << reconnectAttempt_), MaxReconnectDelayMs);
+        reconnectAttempt_++;
+        reconnectTimer_->start(delay);
+    }
+
+    void attemptReconnect()
+    {
+        if (!client_ || !autoReconnect_)
+            return;
+
+        client_->setHostname(savedHost_);
+        client_->setPort(static_cast<quint16>(savedPort_));
+        client_->setClientId(savedClientId_);
+        client_->setUsername(savedUsername_);
+        client_->setPassword(savedPassword_);
+        client_->setKeepAlive(static_cast<quint16>(savedKeepAlive_));
+        client_->setAutoKeepAlive(true);
+
+        // 恢复遗愿消息
+        if (!savedWillTopic_.isEmpty()) {
+            client_->setWillTopic(savedWillTopic_);
+            client_->setWillMessage(savedWillMessage_.toUtf8());
+            client_->setWillQoS(static_cast<quint8>(savedWillQos_));
+            client_->setWillRetain(savedWillRetain_);
+        }
+
+        if (sslEnabled_) {
+            QSslConfiguration sslConfig = QSslConfiguration::defaultConfiguration();
+            if (!sslCaCertPath_.isEmpty()) {
+                QList<QSslCertificate> certs = QSslCertificate::fromPath(sslCaCertPath_);
+                if (certs.isEmpty()) {
+                    const QString errMsg = tr("Reconnect: failed to load CA certificate from: %1").arg(sslCaCertPath_);
+                    errorCallback_(errMsg);
+                    // 证书加载失败，安排下一次重连尝试
+                    scheduleReconnect();
+                    return;
+                }
+                sslConfig.setCaCertificates(certs);
+            }
+            if (!sslPeerVerify_) {
+                sslConfig.setPeerVerifyMode(QSslSocket::VerifyNone);
+            }
+            client_->connectToHostEncrypted(sslConfig);
+        } else {
+            client_->connectToHost();
+        }
+    }
+
     QMqttClient *client_ { nullptr };
-    QStringList subscriptions_;
+    // 订阅主题 → QOS 映射
+    QHash<QString, int> subscriptions_;
+    QTimer *reconnectTimer_ { nullptr };
     StateCallback stateCallback_;
     MessageCallback messageCallback_;
     PublishedCallback publishedCallback_;
     ErrorCallback errorCallback_;
+
+    // 自动重连
+    bool autoReconnect_ { false };
+    int reconnectIntervalMs_ { 5000 };
+    int reconnectAttempt_ { 0 };
+    bool intentionalDisconnect_ { false };
+    QString savedHost_;
+    int savedPort_ { 1883 };
+    QString savedClientId_;
+    QString savedUsername_;
+    QString savedPassword_;
+    int savedKeepAlive_ { 60 };
+
+    // SSL
+    bool sslEnabled_ { false };
+    QString sslCaCertPath_;
+    bool sslPeerVerify_ { true };
+
+    // 遗愿消息
+    QString savedWillTopic_;
+    QString savedWillMessage_;
+    int savedWillQos_ { 0 };
+    bool savedWillRetain_ { false };
 };
 
-// 防重入锁
+// 全局防重入锁，确保同一时间只有一个跨线程 invokeOperation 在执行。
+// 注意：此锁依赖于 MosMqttManager 为单例（Singleton），
+// 若未来移除单例模式，需改为实例成员变量以避免多实例间的竞争。
 static QAtomicInt g_operationInFlight { 0 };
 
 template <typename Function>
@@ -291,16 +487,19 @@ std::optional<MosMqttWorker::OperationResult> invokeOperation(MosMqttWorker *wor
 
     auto state = std::make_shared<InvocationState>();
     QEventLoop loop;
+    QPointer<QEventLoop> loopGuard(&loop);
 
     QTimer timer;
     timer.setSingleShot(true);
     QObject::connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
 
     const bool posted = QMetaObject::invokeMethod(worker,
-                                                  [state, &loop, function = std::forward<Function>(function)]() mutable {
+                                                  [state, loopGuard, function = std::forward<Function>(function)]() mutable {
         state->result = function();
         state->done = true;
-        QMetaObject::invokeMethod(&loop, &QEventLoop::quit, Qt::QueuedConnection);
+        if (loopGuard) {
+            QMetaObject::invokeMethod(loopGuard.data(), &QEventLoop::quit, Qt::QueuedConnection);
+        }
     }, Qt::QueuedConnection);
 
     if (!posted) {
@@ -313,8 +512,14 @@ std::optional<MosMqttWorker::OperationResult> invokeOperation(MosMqttWorker *wor
 
     g_operationInFlight.storeRelease(0);
 
-    if (!state->done)
+    if (!state->done) {
+        // 超时：尝试取消挂起的连接操作，避免底层 QMqttClient 继续尝试连接
+        QMetaObject::invokeMethod(worker, [worker]() {
+            if (worker)
+                worker->cancelPendingConnection();
+        }, Qt::QueuedConnection);
         return std::nullopt;
+    }
 
     return std::move(state->result);
 }
@@ -328,7 +533,7 @@ MosMqttManager::MosMqttManager(QObject *parent)
     d->mqttThread = new QThread(this);
     d->mqttThread->setObjectName(QStringLiteral("MosMqttThread"));
     d->worker = new MosMqttWorker(
-        [this](bool connected, int state) {
+        [this](bool connected, State state) {
             QMetaObject::invokeMethod(this, [this, connected, state]() {
                 Q_D(MosMqttManager);
                 setConnected(this, d, connected);
@@ -429,7 +634,7 @@ bool MosMqttManager::isConnected() const
     return d->isConnected;
 }
 
-int MosMqttManager::state() const
+MosMqttManager::State MosMqttManager::state() const
 {
     Q_D(const MosMqttManager);
     return d->state;
@@ -457,6 +662,54 @@ bool MosMqttManager::autoReconnect() const
 {
     Q_D(const MosMqttManager);
     return d->autoReconnect;
+}
+
+int MosMqttManager::reconnectInterval() const
+{
+    Q_D(const MosMqttManager);
+    return d->reconnectInterval;
+}
+
+bool MosMqttManager::sslEnabled() const
+{
+    Q_D(const MosMqttManager);
+    return d->sslEnabled;
+}
+
+QString MosMqttManager::sslCaCertPath() const
+{
+    Q_D(const MosMqttManager);
+    return d->sslCaCertPath;
+}
+
+bool MosMqttManager::sslPeerVerify() const
+{
+    Q_D(const MosMqttManager);
+    return d->sslPeerVerify;
+}
+
+QString MosMqttManager::willTopic() const
+{
+    Q_D(const MosMqttManager);
+    return d->willTopic;
+}
+
+QString MosMqttManager::willMessage() const
+{
+    Q_D(const MosMqttManager);
+    return d->willMessage;
+}
+
+int MosMqttManager::willQos() const
+{
+    Q_D(const MosMqttManager);
+    return d->willQos;
+}
+
+bool MosMqttManager::willRetain() const
+{
+    Q_D(const MosMqttManager);
+    return d->willRetain;
 }
 
 void MosMqttManager::setHost(const QString &host)
@@ -529,6 +782,87 @@ void MosMqttManager::setAutoReconnect(bool enabled)
     emit autoReconnectChanged();
 }
 
+void MosMqttManager::setReconnectInterval(int ms)
+{
+    Q_D(MosMqttManager);
+    const int clamped = std::max(1000, ms);
+    if (d->reconnectInterval == clamped)
+        return;
+
+    d->reconnectInterval = clamped;
+    emit reconnectIntervalChanged();
+}
+
+void MosMqttManager::setSslEnabled(bool enabled)
+{
+    Q_D(MosMqttManager);
+    if (d->sslEnabled == enabled)
+        return;
+
+    d->sslEnabled = enabled;
+    emit sslEnabledChanged();
+}
+
+void MosMqttManager::setSslCaCertPath(const QString &path)
+{
+    Q_D(MosMqttManager);
+    if (d->sslCaCertPath == path)
+        return;
+
+    d->sslCaCertPath = path;
+    emit sslCaCertPathChanged();
+}
+
+void MosMqttManager::setSslPeerVerify(bool enabled)
+{
+    Q_D(MosMqttManager);
+    if (d->sslPeerVerify == enabled)
+        return;
+
+    d->sslPeerVerify = enabled;
+    emit sslPeerVerifyChanged();
+}
+
+void MosMqttManager::setWillTopic(const QString &topic)
+{
+    Q_D(MosMqttManager);
+    if (d->willTopic == topic)
+        return;
+
+    d->willTopic = topic;
+    emit willTopicChanged();
+}
+
+void MosMqttManager::setWillMessage(const QString &message)
+{
+    Q_D(MosMqttManager);
+    if (d->willMessage == message)
+        return;
+
+    d->willMessage = message;
+    emit willMessageChanged();
+}
+
+void MosMqttManager::setWillQos(int qos)
+{
+    Q_D(MosMqttManager);
+    if (d->willQos == qos)
+        return;
+
+    d->willQos = qos;
+    emit willQosChanged();
+}
+
+void MosMqttManager::setWillRetain(bool retain)
+{
+    Q_D(MosMqttManager);
+    if (d->willRetain == retain)
+        return;
+
+    d->willRetain = retain;
+    emit willRetainChanged();
+}
+
 void MosMqttManager::connectToHost()
 {
     Q_D(MosMqttManager);
@@ -562,8 +896,19 @@ void MosMqttManager::connectToHost(const QString &host, int port)
                                          username = d->username,
                                          password = d->password,
                                          keepAlive = d->keepAlive,
-                                         autoReconnect = d->autoReconnect]() {
-        return worker->connectToHost(cleanHost, port, clientId, username, password, keepAlive, autoReconnect);
+                                         autoReconnect = d->autoReconnect,
+                                         reconnectInterval = d->reconnectInterval,
+                                         sslEnabled = d->sslEnabled,
+                                         sslCaCertPath = d->sslCaCertPath,
+                                         sslPeerVerify = d->sslPeerVerify,
+                                         willTopic = d->willTopic,
+                                         willMessage = d->willMessage,
+                                         willQos = d->willQos,
+                                         willRetain = d->willRetain]() {
+        return worker->connectToHost(cleanHost, port, clientId, username, password,
+                                     keepAlive, autoReconnect, reconnectInterval,
+                                     sslEnabled, sslCaCertPath, sslPeerVerify,
+                                     willTopic, willMessage, willQos, willRetain);
     });
     if (!result) {
         setError(this, d, tr("MQTT operation timed out."));
@@ -598,7 +943,7 @@ void MosMqttManager::disconnectFromHost()
     }
 
     setConnected(this, d, false);
-    setState(this, d, 0);
+    setState(this, d, Disconnected);
     setSubscriptions(this, d, {});
 }
 
@@ -617,11 +962,7 @@ int MosMqttManager::publishBytes(const QString &topic, const QByteArray &data, i
         return -1;
     }
 
-    if (data.isEmpty()) {
-        setError(this, d, tr("MQTT publish data is empty."));
-        return -1;
-    }
-
+    // 允许空消息: 在 MQTT 协议中，向某主题发布空 payload 是清除 retained 消息的标准方式
     const auto result = invokeOperation(d->worker,
                                         MqttOperationTimeoutMs,
                                         [worker = d->worker, cleanTopic, data, qos, retain]() {
@@ -707,3 +1048,5 @@ void MosMqttManager::clearError()
     d->errorString.clear();
     emit errorStringChanged();
 }
+
+#include "MosMqttManager.moc"

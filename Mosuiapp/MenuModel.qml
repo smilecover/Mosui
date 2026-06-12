@@ -95,6 +95,13 @@ QtObject{
                     iconSource: MosIcon.BadgeOutlined,
                     source: './Controls/Universal/ExpBadge.qml',
                     addVersion: '0.0.3'
+                },
+                {
+                    key:'ExpMqttManager',
+                    label:qsTr('MQTT管理器'),
+                    iconSource: MosIcon.MqttOutlined,
+                    source: './Controls/Universal/ExpMqttManager.qml',
+                    addVersion: '0.0.4'
                 }
             ]
         },

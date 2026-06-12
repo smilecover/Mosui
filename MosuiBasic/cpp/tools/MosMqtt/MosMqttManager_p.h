@@ -3,6 +3,7 @@
 
 #include "MosMqttManager.h"
 
+#include <QSslConfiguration>
 #include <QString>
 #include <QStringList>
 #include <QThread>
@@ -27,11 +28,19 @@ public:
     QString username;
     QString password;
     bool isConnected { false };
-    int state { 0 };
+    MosMqttManager::State state { MosMqttManager::Disconnected };
     QString errorString;
     QStringList subscriptions;
     int keepAlive { 60 };
     bool autoReconnect { false };
+    int reconnectInterval { 5000 };
+    bool sslEnabled { false };
+    QString sslCaCertPath;
+    bool sslPeerVerify { true };
+    QString willTopic;
+    QString willMessage;
+    int willQos { 0 };
+    bool willRetain { false };
 };
 
 #endif // MOSMQTT_P_H

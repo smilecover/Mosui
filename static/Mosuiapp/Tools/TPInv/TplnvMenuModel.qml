@@ -21,6 +21,12 @@ QtObject{
             source: './TPinvPage/TPInvSerialport.qml',
         },
         {
+            key:'TPInvmqttconnect',
+            label:qsTr('MQTT连接'),
+            iconSource: MosIcon.MqttOutlined,
+            source: './TPinvPage/TPInvmqttconnect.qml',
+        },
+        {
             key: 'TPInvfault',
             label: qsTr('故障查询'),
             iconSource: MosIcon.FaultOutlined,

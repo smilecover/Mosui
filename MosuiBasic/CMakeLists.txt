@@ -258,3 +258,12 @@ message(STATUS "  Library  → ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "  Headers  → ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
 message(STATUS "  QML      → ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/MosuiBasic/qml/MosuiBasic")
 message(STATUS "  CMake    → ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/cmake/MosuiBasic")
+
+# ====== 修正 .qmlls.ini ======
+# buildDir 故意指向 static/（非 CMake 目录），让 qmlls CMake 模式静默失败
+# 实际通过 VSCode customArgs 的 -b 参数提供真正的构建目录
+# 这样避免了 ninja 文件锁导致 qmlls 初始化崩溃
+cmake_language(DEFER CALL file WRITE
+    "${CMAKE_CURRENT_SOURCE_DIR}/.qmlls.ini"
+    "[General]\nbuildDir=\"${CMAKE_SOURCE_DIR}/static\"\nno-cmake-calls=false\ndocDir=D:/Qt/Docs/Qt-6.8.3\nimportPaths=\"D:/Qt/6.8.3/msvc2022_64/qml;${CMAKE_SOURCE_DIR}/static\"\n"
+)

@@ -558,6 +558,10 @@ Module {
         isCreatable: false
         isSingleton: true
         exportMetaObjectRevisions: [256]
+        Enum {
+            name: "State"
+            values: ["Disconnected", "Connecting", "Connected"]
+        }
         Property {
             name: "host"
             type: "QString"
@@ -614,7 +618,7 @@ Module {
         }
         Property {
             name: "state"
-            type: "int"
+            type: "State"
             read: "state"
             notify: "stateChanged"
             index: 6
@@ -657,6 +661,78 @@ Module {
             index: 10
             isFinal: true
         }
+        Property {
+            name: "reconnectInterval"
+            type: "int"
+            read: "reconnectInterval"
+            write: "setReconnectInterval"
+            notify: "reconnectIntervalChanged"
+            index: 11
+            isFinal: true
+        }
+        Property {
+            name: "sslEnabled"
+            type: "bool"
+            read: "sslEnabled"
+            write: "setSslEnabled"
+            notify: "sslEnabledChanged"
+            index: 12
+            isFinal: true
+        }
+        Property {
+            name: "sslCaCertPath"
+            type: "QString"
+            read: "sslCaCertPath"
+            write: "setSslCaCertPath"
+            notify: "sslCaCertPathChanged"
+            index: 13
+            isFinal: true
+        }
+        Property {
+            name: "sslPeerVerify"
+            type: "bool"
+            read: "sslPeerVerify"
+            write: "setSslPeerVerify"
+            notify: "sslPeerVerifyChanged"
+            index: 14
+            isFinal: true
+        }
+        Property {
+            name: "willTopic"
+            type: "QString"
+            read: "willTopic"
+            write: "setWillTopic"
+            notify: "willTopicChanged"
+            index: 15
+            isFinal: true
+        }
+        Property {
+            name: "willMessage"
+            type: "QString"
+            read: "willMessage"
+            write: "setWillMessage"
+            notify: "willMessageChanged"
+            index: 16
+            isFinal: true
+        }
+        Property {
+            name: "willQos"
+            type: "int"
+            read: "willQos"
+            write: "setWillQos"
+            notify: "willQosChanged"
+            index: 17
+            isFinal: true
+        }
+        Property {
+            name: "willRetain"
+            type: "bool"
+            read: "willRetain"
+            write: "setWillRetain"
+            notify: "willRetainChanged"
+            index: 18
+            isFinal: true
+        }
         Signal { name: "hostChanged" }
         Signal { name: "portChanged" }
         Signal { name: "clientIdChanged" }
@@ -668,6 +744,14 @@ Module {
         Signal { name: "subscriptionsChanged" }
         Signal { name: "keepAliveChanged" }
         Signal { name: "autoReconnectChanged" }
+        Signal { name: "reconnectIntervalChanged" }
+        Signal { name: "sslEnabledChanged" }
+        Signal { name: "sslCaCertPathChanged" }
+        Signal { name: "sslPeerVerifyChanged" }
+        Signal { name: "willTopicChanged" }
+        Signal { name: "willMessageChanged" }
+        Signal { name: "willQosChanged" }
+        Signal { name: "willRetainChanged" }
         Signal { name: "connected" }
         Signal { name: "disconnected" }
         Signal {
