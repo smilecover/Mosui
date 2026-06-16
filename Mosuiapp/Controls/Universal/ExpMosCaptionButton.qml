@@ -58,7 +58,7 @@ noDisabledState | bool | false | 无禁用状态(即被禁用时不会更改颜�
                     MosCaptionButton {
                         iconSource: MosIcon.CloseOutlined
                     }
-
+    ·
                     MosCaptionButton {
                         isError: true
                         iconSource: MosIcon.CloseOutlined

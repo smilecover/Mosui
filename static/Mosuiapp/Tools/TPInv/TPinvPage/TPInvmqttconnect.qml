@@ -1,879 +1,1640 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import QtQuick.Dialogs
+import QtQuick.Layouts
 import MosuiBasic 1.0
 
 MosRectangle {
     id: mqttPage
+
     color: "transparent"
 
-    // ===================== 配置属性 =====================
-    property int commandCount: 10
-    property int commandByteCount: 20
-    property int commandInterval: 500
-    property int autoSendInterval: 100
-    property string host: "127.0.0.1"
-    property int port: 1883
-    property string clientId: ""
-    property string username: ""
-    property string password: ""
-    property int keepAlive: 60
-    property bool autoReconnect: false
+    property bool advancedExpanded: false
     property int publishQos: 0
     property bool publishRetain: false
     property int subscribeQos: 0
-    property string receiveMode: "ASCII"
-    property string sendMode: "ASCII"
-    property bool receiveAutoNewline: false
-    property bool receiveShowTime: false
-    property bool sendAutoEnabled: false
-    property int maxTextLines: 5000
 
-    // ===================== 工具函数 =====================
-    function normalizePositiveInteger(value) {
-        return Math.max(1, Math.floor(Number(value) || 1.0))
-    }
+    readonly property bool compactLayout: mqttPage.width < 940
+    readonly property int pageMargin: compactLayout ? 12 : 20
+    readonly property color accentColor: MosTheme.Primary.colorPrimary
+    readonly property color panelBg: MosTheme.Primary.colorFillQuaternary
+    readonly property color panelBorder: MosTheme.Primary.colorSplit
+    readonly property color textStrong: MosTheme.Primary.colorTextPrimary
+    readonly property color textMuted: MosTheme.Primary.colorTextSecondary
+    readonly property color textSubtle: MosTheme.Primary.colorTextTertiary
+    readonly property var qosOptions: [
+        { value: 0, label: "QoS 0" },
+        { value: 1, label: "QoS 1" },
+        { value: 2, label: "QoS 2" }
+    ]
 
-    function strToHex(str) {
-        let hex = ""
-        for (let i = 0; i < str.length; i++) {
-            if (i > 0) hex += " "
-            const code = str.charCodeAt(i)
-            if (code <= 0xFF) {
-                hex += code.toString(16).padStart(2, '0').toUpperCase()
-            } else {
-                hex += code.toString(16).padStart(4, '0').toUpperCase()
-            }
+    function stateText() {
+        switch (MosMqttManager.state) {
+        case MosMqttManager.Connected:
+            return "已连接"
+        case MosMqttManager.Connecting:
+            return "连接中"
+        default:
+            return "未连接"
         }
-        return hex
     }
 
-    function hexToBytes(hexStr) {
-        let cleaned = hexStr.replace(/[^0-9a-fA-F]/g, "")
-        if (cleaned.length % 2 !== 0) return []
-        let bytes = []
-        for (let i = 0; i < cleaned.length; i += 2) {
-            bytes.push(parseInt(cleaned.substr(i, 2), 16))
+    function stateColor() {
+        switch (MosMqttManager.state) {
+        case MosMqttManager.Connected:
+            return MosTheme.Primary.colorSuccess
+        case MosMqttManager.Connecting:
+            return MosTheme.Primary.colorWarning
+        default:
+            return textSubtle
         }
-        return bytes
     }
 
-    function urlToFilePath(urlString) {
-        if (urlString.startsWith("file:///")) return urlString.substring(8)
-        if (urlString.startsWith("file://")) return urlString.substring(7)
-        return urlString
+    function stateBackground() {
+        switch (MosMqttManager.state) {
+        case MosMqttManager.Connected:
+            return MosTheme.Primary.colorSuccessBg
+        case MosMqttManager.Connecting:
+            return MosTheme.Primary.colorWarningBg
+        default:
+            return MosTheme.Primary.colorFillQuaternary
+        }
     }
 
-    // ===================== MQTT 状态同步 =====================
-    function syncFromMqttManager() {
-        host = MosMqttManager.host
-        port = MosMqttManager.port
-        clientId = MosMqttManager.clientId
-        username = MosMqttManager.username
-        password = MosMqttManager.password
-        keepAlive = MosMqttManager.keepAlive
-        autoReconnect = MosMqttManager.autoReconnect
+    function stateBorderColor() {
+        switch (MosMqttManager.state) {
+        case MosMqttManager.Connected:
+            return MosTheme.Primary.colorSuccessBorder
+        case MosMqttManager.Connecting:
+            return MosTheme.Primary.colorWarningBorder
+        default:
+            return panelBorder
+        }
     }
 
-    function syncToMqttManager() {
-        MosMqttManager.host = host
-        MosMqttManager.port = port
-        MosMqttManager.clientId = clientId
-        MosMqttManager.username = username
-        MosMqttManager.password = password
-        MosMqttManager.keepAlive = keepAlive
-        MosMqttManager.autoReconnect = autoReconnect
+    function logAccent(kind) {
+        switch (kind) {
+        case "success":
+            return MosTheme.Primary.colorSuccess
+        case "error":
+            return MosTheme.Primary.colorError
+        case "receive":
+            return MosTheme.Primary.colorInfo
+        case "publish":
+            return MosTheme.Primary.colorPrimary
+        case "subscribe":
+            return MosTheme.Primary.colorWarning
+        default:
+            return textSubtle
+        }
+    }
+
+    function logLabel(kind) {
+        switch (kind) {
+        case "success":
+            return "状态"
+        case "error":
+            return "错误"
+        case "receive":
+            return "接收"
+        case "publish":
+            return "发布"
+        case "subscribe":
+            return "订阅"
+        default:
+            return "系统"
+        }
+    }
+
+    function appendLog(kind, title, detail) {
+        const now = new Date()
+        eventLogModel.append({
+            kind: kind,
+            timestamp: now.toLocaleTimeString(Qt.locale(), "HH:mm:ss"),
+            title: String(title || ""),
+            detail: String(detail || "")
+        })
+
+        while (eventLogModel.count > 300)
+            eventLogModel.remove(0)
+
+        Qt.callLater(function() {
+            if (logList.count > 0)
+                logList.positionViewAtEnd()
+        })
+    }
+
+    function initializeManagerDefaults() {
+        if (MosMqttManager.host.trim().length === 0)
+            MosMqttManager.host = "127.0.0.1"
+        if (MosMqttManager.port <= 0 || MosMqttManager.port > 65535)
+            MosMqttManager.port = 1883
+        if (MosMqttManager.clientId.trim().length === 0) {
+            const suffix = Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, "0")
+            MosMqttManager.clientId = "mosui-tpinv-" + suffix
+        }
+        appendLog("system", "MQTT 控制台已就绪",
+                  "配置 Broker 后即可订阅主题和发布消息")
     }
 
     function toggleConnection() {
-        syncToMqttManager()
-        if (MosMqttManager.isConnected) {
-            MosMqttManager.disconnectFromHost()
-        } else {
+        if (MosMqttManager.state === MosMqttManager.Disconnected) {
+            let cid = MosMqttManager.clientId
+
+            // 阿里云/华为云 IoT 平台格式（含签名参数），保持原样不修改
+            // 因为密码签名依赖完整 ClientID，修改任何字符都会导致签名失效
+            if (!/\|securemode=/.test(cid)) {
+                // 普通 Broker：附加时间戳防止重复 ClientID
+                cid = cid.replace(/-\d{13}$/, "") + "-" + Date.now()
+                MosMqttManager.clientId = cid
+            }
+
             MosMqttManager.connectToHost()
+        } else {
+            MosMqttManager.disconnectFromHost()
         }
     }
 
-    Component.onCompleted: {
-        syncFromMqttManager()
+    function subscribeCurrentTopic() {
+        const topic = subscribeTopicInput.text.trim()
+        if (!MosMqttManager.isConnected || topic.length === 0)
+            return
+
+        MosMqttManager.subscribe(topic, subscribeQos)
+        if (MosMqttManager.subscriptions.indexOf(topic) >= 0) {
+            appendLog("subscribe", topic, "QoS " + subscribeQos)
+            subscribeTopicInput.clear()
+        }
     }
 
-    onHostChanged: if (MosMqttManager.host !== host) MosMqttManager.host = host
-    onPortChanged: if (MosMqttManager.port !== port) MosMqttManager.port = port
-    onClientIdChanged: if (MosMqttManager.clientId !== clientId) MosMqttManager.clientId = clientId
-    onUsernameChanged: if (MosMqttManager.username !== username) MosMqttManager.username = username
-    onPasswordChanged: if (MosMqttManager.password !== password) MosMqttManager.password = password
-    onKeepAliveChanged: if (MosMqttManager.keepAlive !== keepAlive) MosMqttManager.keepAlive = keepAlive
-    onAutoReconnectChanged: if (MosMqttManager.autoReconnect !== autoReconnect) MosMqttManager.autoReconnect = autoReconnect
+    function removeSubscription(topic) {
+        MosMqttManager.unsubscribe(topic)
+        if (MosMqttManager.subscriptions.indexOf(topic) < 0)
+            appendLog("system", "已取消订阅", topic)
+    }
+
+    function publishCurrentMessage() {
+        const topic = publishTopicInput.text.trim()
+        if (!MosMqttManager.isConnected || topic.length === 0)
+            return
+
+        const messageId = MosMqttManager.publish(
+                    topic,
+                    publishPayloadInput.text,
+                    publishQos,
+                    publishRetain)
+        if (messageId >= 0) {
+            appendLog("publish", topic,
+                      publishPayloadInput.text.length > 0
+                      ? publishPayloadInput.text
+                      : "<空消息>")
+        }
+    }
+
+    function urlToFilePath(urlString) {
+        if (urlString.startsWith("file:///"))
+            return urlString.substring(8)
+        if (urlString.startsWith("file://"))
+            return urlString.substring(7)
+        return urlString
+    }
+
+    Component.onCompleted: initializeManagerDefaults()
 
     Connections {
         target: MosMqttManager
-        function onHostChanged() { mqttPage.syncFromMqttManager() }
-        function onPortChanged() { mqttPage.syncFromMqttManager() }
-        function onClientIdChanged() { mqttPage.syncFromMqttManager() }
-        function onUsernameChanged() { mqttPage.syncFromMqttManager() }
-        function onPasswordChanged() { mqttPage.syncFromMqttManager() }
-        function onKeepAliveChanged() { mqttPage.syncFromMqttManager() }
-        function onAutoReconnectChanged() { mqttPage.syncFromMqttManager() }
+
+        function onConnected() {
+            mqttPage.appendLog(
+                        "success",
+                        "连接成功",
+                        MosMqttManager.host + ":" + MosMqttManager.port)
+        }
+
+        function onDisconnected() {
+            mqttPage.appendLog("system", "连接已断开", "")
+        }
+
+        function onErrorOccurred(message) {
+            mqttPage.appendLog("error", "MQTT 操作失败", message)
+        }
+
+        function onMessageReceived(topic, message) {
+            mqttPage.appendLog("receive", topic,
+                               message.length > 0 ? message : "<空消息>")
+        }
+
+        function onPublished(id) {
+            mqttPage.appendLog("success", "Broker 已确认消息", "消息 ID " + id)
+        }
     }
 
-    // ===================== 主布局 =====================
-    RowLayout {
-        anchors.fill: parent
-        spacing: 12
-        anchors.margins: 12
+    ListModel {
+        id: eventLogModel
+    }
 
-        // 左侧面板
+    Component {
+        id: inputBackground
+
         MosRectangle {
-            Layout.preferredWidth: 280
-            Layout.minimumWidth: 220
-            Layout.fillHeight: true
             color: "transparent"
             border.color: MosTheme.Primary.colorSplit
             border.width: 1
-            radius: 4
+            radius: 10
+        }
+    }
 
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 10
-                anchors.margins: 10
+    Flickable {
+        id: pageFlick
 
-                // ========== MQTT 连接设置 ==========
-                MosGroupBox {
-                    label: Text { text: "MQTT连接设置"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    title: "MQTT连接设置"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
+        anchors.fill: parent
+        boundsBehavior: Flickable.StopAtBounds
+        clip: true
+        contentWidth: width
+        contentHeight: contentLayout.implicitHeight + mqttPage.pageMargin * 2
 
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
+        ScrollBar.vertical: MosScrollBar {
+            anchors.right: parent.right
+        }
+
+        ColumnLayout {
+            id: contentLayout
+
+            x: mqttPage.pageMargin
+            y: mqttPage.pageMargin
+            width: pageFlick.width - mqttPage.pageMargin * 2
+            spacing: 14
+
+            MosRectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: mqttPage.compactLayout ? 92 : 78
+                color: mqttPage.panelBg
+                border.color: mqttPage.panelBorder
+                border.width: 1
+                radius: 22
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    spacing: 14
+
+                    MosRectangle {
+                        Layout.preferredWidth: 44
+                        Layout.preferredHeight: 44
+                        Layout.alignment: Qt.AlignVCenter
+                        color: MosTheme.Primary.colorPrimaryBg
+                        border.color: MosTheme.Primary.colorPrimaryBorder
                         border.width: 1
-                        radius: 4
+                        radius: 14
+
+                        MosIconText {
+                            anchors.centerIn: parent
+                            iconSource: MosIcon.UniversalOutlined
+                            iconSize: 23
+                            color: mqttPage.accentColor
+                        }
                     }
 
-                    Column {
-                        id: colContent1
-                        anchors.fill: parent
-                        anchors.topMargin: 30
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        anchors.bottomMargin: 12
-                        spacing: 8
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: 2
 
-                        // 主机
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "主机"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInput {
-                                Layout.fillWidth: true
-                                text: mqttPage.host
-                                placeholderText: "127.0.0.1"
-                                clearEnabled: true
-                                colorBg: "transparent"
-                                bgDelegate: MosRectangle {
-                                    color: "transparent"
-                                    border.color: MosTheme.Primary.colorSplit
-                                    border.width: 1
-                                    radius: 4
-                                }
-                                onTextChanged: mqttPage.host = text
-                            }
+                        MosText {
+                            Layout.fillWidth: true
+                            text: "MQTT 控制台"
+                            color: mqttPage.textStrong
+                            font.pixelSize: 22
+                            font.bold: true
+                            elide: Text.ElideRight
                         }
 
-                        // 端口
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "端口"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInputInteger {
-                                Layout.fillWidth: true
-                                value: mqttPage.port
-                                min: 1
-                                max: 65535
-                                step: 1
-                                onValueModified: mqttPage.port = value
-                            }
+                        MosText {
+                            Layout.fillWidth: true
+                            text: "设备消息连接、主题订阅与指令发布"
+                            color: mqttPage.textMuted
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    ColumnLayout {
+                        visible: !mqttPage.compactLayout
+                        Layout.alignment: Qt.AlignVCenter
+                        spacing: 1
+
+                        MosText {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                            text: "当前 Broker"
+                            color: mqttPage.textSubtle
+                            font.pixelSize: 11
+                            elide: Text.ElideRight
                         }
 
-                        // Client ID
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "Client ID"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInput {
-                                Layout.fillWidth: true
-                                text: mqttPage.clientId
-                                placeholderText: "可选"
-                                clearEnabled: true
-                                colorBg: "transparent"
-                                bgDelegate: MosRectangle {
-                                    color: "transparent"
-                                    border.color: MosTheme.Primary.colorSplit
-                                    border.width: 1
-                                    radius: 4
-                                }
-                                onTextChanged: mqttPage.clientId = text
-                            }
+                        MosText {
+                            Layout.fillWidth: true
+                            horizontalAlignment: Text.AlignRight
+                            text: MosMqttManager.host + ":" + MosMqttManager.port
+                            color: mqttPage.textMuted
+                            font.family: "Consolas"
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
                         }
+                    }
 
-                        // 用户名
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "用户名"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInput {
-                                Layout.fillWidth: true
-                                text: mqttPage.username
-                                placeholderText: "可选"
-                                clearEnabled: true
-                                colorBg: "transparent"
-                                bgDelegate: MosRectangle {
-                                    color: "transparent"
-                                    border.color: MosTheme.Primary.colorSplit
-                                    border.width: 1
-                                    radius: 4
-                                }
-                                onTextChanged: mqttPage.username = text
-                            }
-                        }
-
-                        // 密码
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "密码"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInput {
-                                Layout.fillWidth: true
-                                text: mqttPage.password
-                                echoMode: TextInput.Password
-                                placeholderText: "可选"
-                                clearEnabled: true
-                                colorBg: "transparent"
-                                bgDelegate: MosRectangle {
-                                    color: "transparent"
-                                    border.color: MosTheme.Primary.colorSplit
-                                    border.width: 1
-                                    radius: 4
-                                }
-                                onTextChanged: mqttPage.password = text
-                            }
-                        }
-
-                        // 心跳
-                        RowLayout {
-                            spacing: 10
-                            width: parent.width
-                            MosText {
-                                text: "心跳(秒)"
-                                Layout.preferredWidth: 60
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosInputInteger {
-                                Layout.fillWidth: true
-                                value: mqttPage.keepAlive
-                                min: 1
-                                max: 65535
-                                step: 10
-                                onValueModified: mqttPage.keepAlive = value
-                            }
-                        }
+                    MosRectangle {
+                        Layout.preferredWidth: 110
+                        Layout.preferredHeight: 34
+                        Layout.alignment: Qt.AlignVCenter
+                        color: mqttPage.stateBackground()
+                        border.color: mqttPage.stateBorderColor()
+                        border.width: 1
+                        radius: 17
 
                         Row {
-                            width: parent.width
-                            spacing: 8
-                            MosCheckBox {
-                                text: "自动重连"
-                                checked: mqttPage.autoReconnect
-                                onToggled: mqttPage.autoReconnect = checked
+                            id: statusRow
+
+                            anchors.centerIn: parent
+                            width: Math.min(implicitWidth, parent.width - 12)
+                            spacing: 7
+                            clip: true
+
+                            MosRectangle {
+                                width: 8
+                                height: 8
+                                anchors.verticalCenter: statusRow.verticalCenter
+                                radius: 4
+                                color: mqttPage.stateColor()
+
+                                SequentialAnimation on opacity {
+                                    running: MosMqttManager.state === MosMqttManager.Connecting
+                                    loops: -1
+                                    NumberAnimation { to: 0.35; duration: 500 }
+                                    NumberAnimation { to: 1; duration: 500 }
+                                }
                             }
-                            MosButton {
-                                text: MosMqttManager.isConnected ? "断开连接" : "连接"
-                                width: 120
-                                type: MosMqttManager.isConnected ? MosButton.Type_Default : MosButton.Type_Primary
-                                enabled: mqttPage.host.length > 0 && mqttPage.port > 0
-                                onClicked: mqttPage.toggleConnection()
+
+                            MosText {
+                                anchors.verticalCenter: statusRow.verticalCenter
+                                text: mqttPage.stateText()
+                                color: MosMqttManager.state === MosMqttManager.Connected
+                                       ? MosTheme.Primary.colorSuccessText
+                                       : MosMqttManager.state === MosMqttManager.Connecting
+                                         ? MosTheme.Primary.colorWarningText
+                                         : mqttPage.textMuted
+                                font.pixelSize: 12
+                                font.bold: true
+                                elide: Text.ElideRight
                             }
                         }
                     }
                 }
+            }
 
-                // ========== 订阅管理 ==========
-                MosGroupBox {
-                    label: Text { text: "订阅管理"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    title: "订阅管理"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: 120
+            MosRectangle {
+                id: errorBanner
 
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
-                        border.width: 1
+                Layout.fillWidth: true
+                Layout.preferredHeight: errorBanner.visible ? 44 : 0
+                visible: MosMqttManager.errorString.length > 0
+                color: MosTheme.Primary.colorErrorBg
+                border.color: MosTheme.Primary.colorErrorBorder
+                border.width: 1
+                radius: 12
+                clip: true
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 14
+                    anchors.rightMargin: 8
+                    spacing: 10
+
+                    MosRectangle {
+                        Layout.preferredWidth: 8
+                        Layout.preferredHeight: 8
+                        Layout.alignment: Qt.AlignVCenter
                         radius: 4
+                        color: MosTheme.Primary.colorError
                     }
+
+                    MosText {
+                        Layout.fillWidth: true
+                        Layout.alignment: Qt.AlignVCenter
+                        text: MosMqttManager.errorString
+                        color: MosTheme.Primary.colorErrorText
+                        font.pixelSize: 12
+                        elide: Text.ElideRight
+                    }
+
+                    MosIconButton {
+                        Layout.preferredWidth: 32
+                        Layout.preferredHeight: 32
+                        Layout.alignment: Qt.AlignVCenter
+                        type: MosButton.Type_Text
+                        shape: MosButton.Shape_Circle
+                        iconSource: MosIcon.CloseOutlined
+                        iconSize: 13
+                        contentDescription: "关闭错误提示"
+                        onClicked: MosMqttManager.clearError()
+                    }
+                }
+            }
+
+            GridLayout {
+                Layout.fillWidth: true
+                columns: mqttPage.compactLayout ? 1 : 3
+                columnSpacing: 14
+                rowSpacing: 14
+
+                MosRectangle {
+                    id: configPanel
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: !mqttPage.compactLayout
+                    Layout.minimumWidth: 0
+                    Layout.preferredHeight: mqttPage.advancedExpanded ? 880 : 460
+                    color: mqttPage.panelBg
+                    border.color: mqttPage.panelBorder
+                    border.width: 1
+                    radius: 22
+                    clip: true
 
                     ColumnLayout {
                         anchors.fill: parent
-                        anchors.topMargin: 25
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        anchors.bottomMargin: 12
-                        spacing: 8
+                        spacing: 0
 
                         RowLayout {
                             Layout.fillWidth: true
-                            spacing: 6
+                            Layout.preferredHeight: 50
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            spacing: 10
 
-                            MosInput {
-                                id: subscribeTopicInput
-                                Layout.fillWidth: true
+                            MosRectangle {
+                                Layout.preferredWidth: 32
                                 Layout.preferredHeight: 32
-                                placeholderText: "输入主题"
-                                colorBg: "transparent"
-                                bgDelegate: MosRectangle {
-                                    color: "transparent"
-                                    border.color: MosTheme.Primary.colorSplit
-                                    border.width: 1
-                                    radius: 4
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: 10
+                                color: MosTheme.Primary.colorPrimaryBg
+
+                                MosIconText {
+                                    anchors.centerIn: parent
+                                    iconSource: MosIcon.SettingsOutlined
+                                    iconSize: 17
+                                    color: mqttPage.accentColor
                                 }
                             }
 
-                            MosSelect {
-                                id: subscribeQosSelect
-                                Layout.preferredWidth: 80
-                                model: [
-                                    { value: 0, label: 'QoS 0' },
-                                    { value: 1, label: 'QoS 1' },
-                                    { value: 2, label: 'QoS 2' }
-                                ]
-                                currentIndex: 0
-                                onActivated: mqttPage.subscribeQos = currentValue
-                            }
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: 0
 
-                            MosButton {
-                                text: "订阅"
-                                width: 60
-                                enabled: MosMqttManager.isConnected && subscribeTopicInput.text.trim().length > 0
-                                onClicked: {
-                                    const topic = subscribeTopicInput.text.trim()
-                                    if (topic.length > 0) {
-                                        MosMqttManager.subscribe(topic, mqttPage.subscribeQos)
-                                        subscribeTopicInput.clear()
-                                    }
+                                MosText {
+                                    text: "连接配置"
+                                    color: mqttPage.textStrong
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+
+                                MosText {
+                                    text: "MQTT TCP Broker"
+                                    color: mqttPage.textSubtle
+                                    font.pixelSize: 11
                                 }
                             }
                         }
 
-                        MosRectangle {
+                        MosDivider {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                        }
+
+                        ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            Layout.minimumHeight: 60
-                            color: "transparent"
-                            border.color: MosTheme.Primary.colorSplit
-                            border.width: 1
-                            radius: 4
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            Layout.topMargin: 12
+                            Layout.bottomMargin: 14
+                            spacing: 8
 
-                            ListView {
-                                id: subscriptionListView
-                                anchors.fill: parent
-                                anchors.margins: 4
-                                clip: true
-                                model: MosMqttManager.subscriptions
-                                spacing: 2
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
 
-                                delegate: RowLayout {
-                                    width: subscriptionListView.width - 8
-                                    spacing: 6
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
 
                                     MosText {
-                                        text: modelData
-                                        Layout.fillWidth: true
-                                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                                        elide: Text.ElideRight
-                                    }
-
-                                    MosButton {
-                                        text: "取消"
-                                        width: 50
-                                        height: 24
+                                        text: "Broker 地址"
+                                        color: mqttPage.textMuted
                                         font.pixelSize: 11
-                                        onClicked: MosMqttManager.unsubscribe(modelData)
+                                    }
+
+                                    MosInput {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 36
+                                        text: MosMqttManager.host
+                                        placeholderText: "127.0.0.1"
+                                        clearEnabled: true
+                                        enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                        colorBg: "transparent"
+                                        bgDelegate: inputBackground
+                                        onTextEdited: MosMqttManager.host = text
                                     }
                                 }
-                            }
-                        }
-                    }
-                }
 
-                // ========== 接收设置 ==========
-                MosGroupBox {
-                    label: Text { text: "接收设置"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    title: "接收设置"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
+                                ColumnLayout {
+                                    Layout.preferredWidth: 88
+                                    spacing: 4
 
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
-                        border.width: 1
-                        radius: 4
-                    }
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.topMargin: 25
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        anchors.bottomMargin: 12
-                        spacing: 10
-                        RowLayout {
-                            Layout.fillWidth: true
-                            ButtonGroup { id: receiveModeGroup }
-                            Repeater {
-                                model: [
-                                    { value: 'ASCII', label: 'ASCII' },
-                                    { value: 'HEX', label: 'HEX' }
-                                ]
-                                delegate: MosRadio {
-                                    Layout.alignment: index === 0 ? (Qt.AlignLeft | Qt.AlignVCenter) : (Qt.AlignRight | Qt.AlignVCenter)
-                                    checked: mqttPage.receiveMode === modelData.value
-                                    text: modelData.label
-                                    ButtonGroup.group: receiveModeGroup
-                                    onToggled: if (checked) mqttPage.receiveMode = modelData.value
-                                }
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: parent.spacing
-                            Repeater{
-                                model: [
-                                    { propertyName: 'receiveAutoNewline', label: '自动换行' },
-                                    { propertyName: 'receiveShowTime', label: '显示时间' }
-                                ]
-                                delegate: MosCheckBox {
-                                    text: modelData.label
-                                    checked: mqttPage[modelData.propertyName]
-                                    onToggled: mqttPage[modelData.propertyName] = checked
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // ========== 发送设置 ==========
-                MosGroupBox {
-                    label: Text { text: "发送设置"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    title: "发送设置"
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
-
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
-                        border.width: 1
-                        radius: 4
-                    }
-                    ColumnLayout {
-                        anchors.fill: parent
-                        anchors.topMargin: 25
-                        anchors.leftMargin: 12
-                        anchors.rightMargin: 12
-                        anchors.bottomMargin: 12
-                        spacing: 10
-                        RowLayout {
-                            Layout.fillWidth: true
-                            ButtonGroup { id: sendModeGroup }
-                            Repeater {
-                                model: [
-                                    { value: 'ASCII', label: 'ASCII' },
-                                    { value: 'HEX', label: 'HEX' }
-                                ]
-                                delegate: MosRadio {
-                                    Layout.alignment: index === 0 ? (Qt.AlignLeft | Qt.AlignVCenter) : (Qt.AlignRight | Qt.AlignVCenter)
-                                    checked: mqttPage.sendMode === modelData.value
-                                    text: modelData.label
-                                    ButtonGroup.group: sendModeGroup
-                                    onToggled: if (checked) mqttPage.sendMode = modelData.value
-                                }
-                            }
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            MosCheckBox {
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                                text: '自动发送'
-                                checked: mqttPage.sendAutoEnabled
-                                onToggled: mqttPage.sendAutoEnabled = checked
-                            }
-                            MosInputInteger {
-                                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-                                value: mqttPage.autoSendInterval
-                                min: 1
-                                step: 10
-                                Layout.minimumWidth: 80
-                                onValueModified: mqttPage.autoSendInterval = mqttPage.normalizePositiveInteger(value)
-                            }
-                        }
-                        ColumnLayout {
-                            Layout.fillWidth: true
-                            spacing: parent.spacing
-                            Repeater{
-                                model: [
-                                    { name: "指令数量", propertyName: "commandCount", step: 1 },
-                                    { name: "指令字节数", propertyName: "commandByteCount", step: 1 },
-                                    { name: "指令间隔", propertyName: "commandInterval", step: 10 }
-                                ]
-                                delegate: RowLayout {
-                                    spacing: 10
                                     MosText {
-                                        text: modelData.name
-                                        Layout.preferredWidth: 60
-                                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+                                        text: "端口"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
                                     }
+
                                     MosInputInteger {
                                         Layout.fillWidth: true
-                                        value: mqttPage[modelData.propertyName]
+                                        Layout.preferredHeight: 36
+                                        value: MosMqttManager.port
                                         min: 1
-                                        step: modelData.step
-                                        onValueModified: mqttPage[modelData.propertyName] = mqttPage.normalizePositiveInteger(value)
+                                        max: 65535
+                                        step: 1
+                                        showHandler: false
+                                        enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                        colorBg: "transparent"
+                                        radiusBg.all: 10
+                                        onValueModified: MosMqttManager.port = value
                                     }
                                 }
                             }
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 10
-                            MosText {
-                                text: "QoS"
-                                Layout.preferredWidth: 30
-                                Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                            }
-                            MosSelect {
-                                id: publishQosSelect
-                                Layout.fillWidth: true
-                                model: [
-                                    { value: 0, label: 'QoS 0' },
-                                    { value: 1, label: 'QoS 1' },
-                                    { value: 2, label: 'QoS 2' }
-                                ]
-                                currentIndex: 0
-                                onActivated: mqttPage.publishQos = currentValue
-                            }
-                        }
-                        RowLayout {
-                            Layout.fillWidth: true
-                            MosCheckBox {
-                                text: "保留消息 (Retain)"
-                                checked: mqttPage.publishRetain
-                                onToggled: mqttPage.publishRetain = checked
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // 右侧面板
-        MosRectangle {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            color: "transparent"
-            border.color: MosTheme.Primary.colorSplit
-            border.width: 1
-            radius: 4
-
-            ColumnLayout{
-                anchors.fill: parent
-                spacing: 10
-                anchors.margins: 10
-
-                // ========== 数据接收区 ==========
-                MosGroupBox {
-                    label: Text { text: "数据接收区"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.verticalStretchFactor: 2
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
-                        border.width: 1
-                        radius: 4
-                    }
-                    MosTextArea {
-                        id: mqttTextArea
-                        anchors.fill: parent
-                        anchors.margins: 10
-                        readOnly: true
-                        colorBg: "transparent"
-                        colorBorder: MosTheme.Primary.colorSplit
-                        placeholderText: '数据接收区'
-                    }
-                }
-
-                // ========== 数据发送编辑区 ==========
-                MosGroupBox {
-                    label: Text { text: "数据发送编辑区"; color: MosTheme.Primary.colorTextPrimary; font.bold: true }
-                    font.pixelSize: 12
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.verticalStretchFactor: 3
-                    background: MosRectangle {
-                        color: "transparent"
-                        border.color: MosTheme.Primary.colorSplit
-                        border.width: 1
-                        radius: 4
-                    }
-                    ColumnLayout {
-                        anchors.fill: parent
-                        spacing: 10
-                        anchors.margins: 10
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 160
-                            Layout.minimumHeight: 130
-                            spacing: 10
-
-                            MosTextArea {
-                                id: sendTextArea
-                                Layout.fillHeight: true
-                                Layout.fillWidth: true
-                                Layout.horizontalStretchFactor : 3
-                                readOnly: false
-                                colorBg: "transparent"
-                                colorBorder: MosTheme.Primary.colorSplit
-                                placeholderText: '数据发送区'
-                            }
 
                             ColumnLayout {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: 90
-                                Layout.minimumWidth: 90
-                                spacing: 6
+                                Layout.fillWidth: true
+                                spacing: 4
 
-                                MosButton {
-                                    id: clearReceiveButton
-                                    text: "清空接收"
-                                    Layout.fillWidth: true
-                                    onClicked: mqttTextArea.clear()
+                                MosText {
+                                    text: "Client ID"
+                                    color: mqttPage.textMuted
+                                    font.pixelSize: 11
                                 }
-                                MosButton {
-                                    id: clearSendButton
-                                    text: "清空发送"
+
+                                MosInput {
                                     Layout.fillWidth: true
-                                    onClicked: sendTextArea.clear()
+                                    Layout.preferredHeight: 36
+                                    text: MosMqttManager.clientId
+                                    placeholderText: "MQTT 客户端标识"
+                                    clearEnabled: true
+                                    enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                    colorBg: "transparent"
+                                    bgDelegate: inputBackground
+                                    onTextEdited: MosMqttManager.clientId = text
                                 }
-                                MosButton {
-                                    id: sendTextButton
-                                    text: "发送"
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                ColumnLayout {
                                     Layout.fillWidth: true
-                                    enabled: MosMqttManager.isConnected && publishTopicInput.text.trim().length > 0
-                                    onClicked: {
-                                        const data = sendTextArea.text
-                                        if (data.length === 0) return
-                                        const topic = publishTopicInput.text.trim()
-                                        if (topic.length === 0) return
-                                        if (mqttPage.sendMode === "HEX") {
-                                            const bytes = hexToBytes(data)
-                                            if (bytes.length === 0) return
-                                            MosMqttManager.publish(topic, String.fromCharCode.apply(null, bytes), mqttPage.publishQos, mqttPage.publishRetain)
-                                        } else {
-                                            MosMqttManager.publish(topic, data, mqttPage.publishQos, mqttPage.publishRetain)
-                                        }
+                                    spacing: 4
+
+                                    MosText {
+                                        text: "用户名"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
+                                    }
+
+                                    MosInput {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 36
+                                        text: MosMqttManager.username
+                                        placeholderText: "可选"
+                                        clearEnabled: true
+                                        enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                        colorBg: "transparent"
+                                        bgDelegate: inputBackground
+                                        onTextEdited: MosMqttManager.username = text
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    MosText {
+                                        text: "密码"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
+                                    }
+
+                                    MosInput {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 36
+                                        text: MosMqttManager.password
+                                        echoMode: TextInput.Password
+                                        placeholderText: "可选"
+                                        clearEnabled: true
+                                        enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                        colorBg: "transparent"
+                                        bgDelegate: inputBackground
+                                        onTextEdited: MosMqttManager.password = text
                                     }
                                 }
                             }
-                            MosDivider {
-                                orientation: Qt.Vertical
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: 1
-                            }
 
-                            ColumnLayout {
-                                Layout.fillHeight: true
-                                Layout.preferredWidth: 340
-                                Layout.minimumWidth: 280
+                            RowLayout {
+                                Layout.fillWidth: true
                                 spacing: 8
 
-                                RowLayout {
+                                MosText {
                                     Layout.fillWidth: true
-                                    MosText {
-                                        text: "主题:"
-                                        Layout.preferredWidth: 40
-                                        Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
-                                    }
-                                    MosInput {
-                                        id: publishTopicInput
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: 32
-                                        placeholderText: "发布主题"
-                                        clearEnabled: true
-                                        colorBg: "transparent"
-                                        bgDelegate: MosRectangle {
-                                            color: "transparent"
-                                            border.color: MosTheme.Primary.colorSplit
-                                            border.width: 1
-                                            radius: 4
-                                        }
-                                    }
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: "自动重连"
+                                    color: mqttPage.textMuted
+                                    font.pixelSize: 12
                                 }
 
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    MosInput {
-                                        id: commandFileInput
-                                        Layout.fillWidth: true
-                                        Layout.preferredHeight: 32
-                                        placeholderText: "指令文件路径"
-                                        clearEnabled: true
-                                        colorBg: "transparent"
-                                        bgDelegate: MosRectangle {
-                                            color: "transparent"
-                                            border.color: MosTheme.Primary.colorSplit
-                                            border.width: 1
-                                            radius: 4
-                                        }
-                                    }
-                                    MosButton {
-                                        id: openCommandFileButton
-                                        text: "打开指令文件..."
-                                        Layout.preferredWidth: 120
-                                        onClicked: commandOpenFileDialog.open()
-                                    }
+                                MosSwitch {
+                                    checked: MosMqttManager.autoReconnect
+                                    enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                    checkedText: "开"
+                                    uncheckedText: "关"
+                                    onToggled: MosMqttManager.autoReconnect = checked
                                 }
+                            }
 
-                                RowLayout {
-                                    Layout.fillWidth: true
-                                    MosButton {
-                                        id: saveCommandDataButton
-                                        text: "保存指令数据"
+                            MosButton {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 30
+                                type: MosButton.Type_Text
+                                text: mqttPage.advancedExpanded ? "收起高级设置" : "展开高级设置"
+                                colorText: mqttPage.accentColor
+                                onClicked: mqttPage.advancedExpanded = !mqttPage.advancedExpanded
+                            }
+
+                            MosRectangle {
+                                id: advancedPanel
+
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: advancedPanel.visible
+                                                        ? advancedContent.implicitHeight + 24
+                                                        : 0
+                                visible: mqttPage.advancedExpanded
+                                color: "transparent"
+                                border.color: mqttPage.panelBorder
+                                border.width: 1
+                                radius: 14
+                                clip: true
+
+                                ColumnLayout {
+                                    id: advancedContent
+
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    anchors.top: parent.top
+                                    anchors.margins: 12
+                                    spacing: 9
+
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        onClicked: {
-                                            if (commandFileInput.text.length > 0) {
-                                                commandSaveFileDialog.selectedFile = commandFileInput.text
+                                        spacing: 10
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 4
+
+                                            MosText {
+                                                text: "心跳（秒）"
+                                                color: mqttPage.textMuted
+                                                font.pixelSize: 11
                                             }
-                                            commandSaveFileDialog.open()
+
+                                            MosInputInteger {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 34
+                                                value: MosMqttManager.keepAlive
+                                                min: 1
+                                                max: 65535
+                                                step: 5
+                                                showHandler: false
+                                                enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                                colorBg: "transparent"
+                                                radiusBg.all: 10
+                                                onValueModified: MosMqttManager.keepAlive = value
+                                            }
+                                        }
+
+                                        ColumnLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 4
+
+                                            MosText {
+                                                text: "重连间隔（ms）"
+                                                color: mqttPage.textMuted
+                                                font.pixelSize: 11
+                                            }
+
+                                            MosInputInteger {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 34
+                                                value: MosMqttManager.reconnectInterval
+                                                min: 1000
+                                                max: 60000
+                                                step: 1000
+                                                showHandler: false
+                                                enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                                colorBg: "transparent"
+                                                radiusBg.all: 10
+                                                onValueModified: MosMqttManager.reconnectInterval = value
+                                            }
                                         }
                                     }
-                                    MosButton {
-                                        id: sendFileButton
-                                        text: "发送文件"
+
+                                    RowLayout {
                                         Layout.fillWidth: true
-                                        type: MosButton.Type_Primary
-                                        enabled: MosMqttManager.isConnected && publishTopicInput.text.trim().length > 0
-                                        onClicked: {
-                                            // 这里可以保留你原来的发送逻辑，我简化了
+
+                                        MosText {
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
+                                            text: "TLS 加密"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 12
+                                        }
+
+                                        MosSwitch {
+                                            checked: MosMqttManager.sslEnabled
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            checkedText: "开"
+                                            uncheckedText: "关"
+                                            onToggled: MosMqttManager.sslEnabled = checked
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        visible: MosMqttManager.sslEnabled
+                                        spacing: 4
+
+                                        MosText {
+                                            text: "CA 证书"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 11
+                                        }
+
+                                        RowLayout {
+                                            Layout.fillWidth: true
+                                            spacing: 6
+
+                                            MosInput {
+                                                Layout.fillWidth: true
+                                                Layout.preferredHeight: 34
+                                                text: MosMqttManager.sslCaCertPath
+                                                placeholderText: "可选，使用系统证书时留空"
+                                                clearEnabled: true
+                                                enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                                colorBg: "transparent"
+                                                bgDelegate: inputBackground
+                                                onTextEdited: MosMqttManager.sslCaCertPath = text
+                                            }
+
+                                            MosButton {
+                                                Layout.preferredWidth: 38
+                                                Layout.preferredHeight: 34
+                                                text: "..."
+                                                enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                                radiusBg.all: 10
+                                                onClicked: sslCertFileDialog.open()
+                                            }
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        visible: MosMqttManager.sslEnabled
+
+                                        MosText {
+                                            Layout.fillWidth: true
+                                            Layout.alignment: Qt.AlignVCenter
+                                            text: "验证服务端证书"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 12
+                                        }
+
+                                        MosSwitch {
+                                            checked: MosMqttManager.sslPeerVerify
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            checkedText: "是"
+                                            uncheckedText: "否"
+                                            onToggled: MosMqttManager.sslPeerVerify = checked
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 4
+
+                                        MosText {
+                                            text: "遗嘱主题"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 11
+                                        }
+
+                                        MosInput {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 34
+                                            text: MosMqttManager.willTopic
+                                            placeholderText: "例如 device/status"
+                                            clearEnabled: true
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            colorBg: "transparent"
+                                            bgDelegate: inputBackground
+                                            onTextEdited: MosMqttManager.willTopic = text
+                                        }
+                                    }
+
+                                    ColumnLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 4
+
+                                        MosText {
+                                            text: "遗嘱消息"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 11
+                                        }
+
+                                        MosInput {
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 34
+                                            text: MosMqttManager.willMessage
+                                            placeholderText: "例如 offline"
+                                            clearEnabled: true
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            colorBg: "transparent"
+                                            bgDelegate: inputBackground
+                                            onTextEdited: MosMqttManager.willMessage = text
+                                        }
+                                    }
+
+                                    RowLayout {
+                                        Layout.fillWidth: true
+                                        spacing: 10
+
+                                        MosSelect {
+                                            Layout.preferredWidth: 100
+                                            Layout.preferredHeight: 34
+                                            model: mqttPage.qosOptions
+                                            currentIndex: MosMqttManager.willQos
+                                            clearEnabled: false
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            colorBg: "transparent"
+                                            radiusBg.all: 10
+                                            onActivated: MosMqttManager.willQos = currentValue
+                                        }
+
+                                        MosText {
+                                            Layout.fillWidth: true
+                                            text: "保留遗嘱消息"
+                                            color: mqttPage.textMuted
+                                            font.pixelSize: 12
+                                        }
+
+                                        MosSwitch {
+                                            checked: MosMqttManager.willRetain
+                                            enabled: MosMqttManager.state === MosMqttManager.Disconnected
+                                            checkedText: "是"
+                                            uncheckedText: "否"
+                                            onToggled: MosMqttManager.willRetain = checked
                                         }
                                     }
                                 }
+                            }
+
+                            Item {
+                                Layout.fillHeight: true
+                            }
+
+                            MosIconButton {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 40
+                                type: MosMqttManager.state === MosMqttManager.Disconnected
+                                      ? MosButton.Type_Primary
+                                      : MosButton.Type_Default
+                                iconSource: MosMqttManager.state === MosMqttManager.Disconnected
+                                            ? MosIcon.PlayCircleOutlined
+                                            : MosIcon.CloseOutlined
+                                iconSize: 15
+                                loading: MosMqttManager.state === MosMqttManager.Connecting
+                                text: MosMqttManager.state === MosMqttManager.Connected
+                                      ? "断开连接"
+                                      : MosMqttManager.state === MosMqttManager.Connecting
+                                        ? "取消连接"
+                                        : "连接 Broker"
+                                enabled: MosMqttManager.state !== MosMqttManager.Disconnected
+                                         || (MosMqttManager.host.trim().length > 0
+                                             && MosMqttManager.port > 0)
+                                radiusBg.all: 12
+                                font.bold: true
+                                onClicked: mqttPage.toggleConnection()
+                            }
+
+                            MosRectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 42
+                                color: "transparent"
+                                border.color: mqttPage.panelBorder
+                                border.width: 1
+                                radius: 12
 
                                 RowLayout {
-                                    Layout.fillWidth: true
-                                    MosCheckBox {
-                                        id: singleSendCheckBox
-                                        text: "单条发送"
-                                        Layout.preferredWidth: 90
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 12
+                                    spacing: 8
+
+                                    MosRectangle {
+                                        Layout.preferredWidth: 7
+                                        Layout.preferredHeight: 7
+                                        radius: 4
+                                        color: mqttPage.stateColor()
                                     }
-                                    Item { Layout.fillWidth: true }
-                                    MosCheckBox {
-                                        id: loopSendCheckBox
-                                        text: "循环发送"
-                                        Layout.preferredWidth: 90
+
+                                    MosText {
+                                        Layout.fillWidth: true
+                                        text: MosMqttManager.sslEnabled
+                                              ? "TLS · " + MosMqttManager.host + ":" + MosMqttManager.port
+                                              : "TCP · " + MosMqttManager.host + ":" + MosMqttManager.port
+                                        color: mqttPage.textSubtle
+                                        font.family: "Consolas"
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
                                     }
                                 }
                             }
                         }
+                    }
+                }
 
-                        // 指令表格
-                        MosRectangle {
+                MosRectangle {
+                    id: subscribePanel
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: !mqttPage.compactLayout
+                    Layout.minimumWidth: 0
+                    Layout.preferredHeight: mqttPage.advancedExpanded ? 880 : 460
+                    color: mqttPage.panelBg
+                    border.color: mqttPage.panelBorder
+                    border.width: 1
+                    radius: 22
+                    clip: true
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 50
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            spacing: 10
+
+                            MosRectangle {
+                                Layout.preferredWidth: 32
+                                Layout.preferredHeight: 32
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: 10
+                                color: MosTheme.Primary.colorInfoBg
+
+                                MosIconText {
+                                    anchors.centerIn: parent
+                                    iconSource: MosIcon.CodeOutlined
+                                    iconSize: 17
+                                    color: MosTheme.Primary.colorInfo
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: 0
+
+                                MosText {
+                                    text: "订阅主题"
+                                    color: mqttPage.textStrong
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+
+                                MosText {
+                                    text: "监听设备上行消息"
+                                    color: mqttPage.textSubtle
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            MosTag {
+                                Layout.alignment: Qt.AlignVCenter
+                                text: String(MosMqttManager.subscriptions.length)
+                                presetColor: "blue"
+                                radiusBg.all: 10
+                            }
+                        }
+
+                        MosDivider {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                        }
+
+                        ColumnLayout {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-                            Layout.verticalStretchFactor : 3
-                            Layout.minimumHeight: 180
-                            color: "transparent"
-                            border.color: MosTheme.Primary.colorSplit
-                            border.width: 1
-                            radius: 4
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            Layout.topMargin: 12
+                            Layout.bottomMargin: 14
+                            spacing: 8
 
-                            Component {
-                                id: lnputcomponent
-                                MosInput{
-                                    text: cellData
-                                    radiusBg.all: 0
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 4
+
+                                MosText {
+                                    text: "主题过滤器"
+                                    color: mqttPage.textMuted
+                                    font.pixelSize: 11
+                                }
+
+                                MosInput {
+                                    id: subscribeTopicInput
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 36
+                                    placeholderText: "例如 inverter/+/telemetry"
+                                    clearEnabled: true
+                                    enabled: MosMqttManager.isConnected
                                     colorBg: "transparent"
-                                    onTextChanged: {
-                                        cellData = text
-                                    }
+                                    bgDelegate: inputBackground
+                                    onAccepted: mqttPage.subscribeCurrentTopic()
                                 }
                             }
 
-                            Component {
-                                id: commandTableComponent
-                                MosTableView {
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 8
+
+                                MosSelect {
+                                    Layout.preferredWidth: 100
+                                    Layout.preferredHeight: 36
+                                    model: mqttPage.qosOptions
+                                    currentIndex: mqttPage.subscribeQos
+                                    clearEnabled: false
+                                    enabled: MosMqttManager.isConnected
+                                    colorBg: "transparent"
+                                    radiusBg.all: 10
+                                    onActivated: mqttPage.subscribeQos = currentValue
+                                }
+
+                                MosIconButton {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 36
+                                    type: MosButton.Type_Primary
+                                    iconSource: MosIcon.PlayCircleOutlined
+                                    iconSize: 14
+                                    text: "订阅"
+                                    enabled: MosMqttManager.isConnected
+                                             && subscribeTopicInput.text.trim().length > 0
+                                    radiusBg.all: 10
+                                    onClicked: mqttPage.subscribeCurrentTopic()
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.topMargin: 2
+
+                                MosText {
+                                    Layout.fillWidth: true
+                                    text: "当前订阅"
+                                    color: mqttPage.textStrong
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                }
+
+                                MosText {
+                                    text: MosMqttManager.isConnected ? "实时同步" : "连接后可管理"
+                                    color: MosMqttManager.isConnected
+                                           ? MosTheme.Primary.colorSuccessText
+                                           : mqttPage.textSubtle
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            MosRectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                color: "transparent"
+                                border.color: mqttPage.panelBorder
+                                border.width: 1
+                                radius: 14
+                                clip: true
+
+                                ListView {
+                                    id: subscriptionList
+
                                     anchors.fill: parent
-                                    anchors.margins: 0
-                                    showColumnGrid: true
-                                    showRowGrid: true
-                                    defaultRowHeaderWidth: 55
-                                    defaultColumnHeaderHeight: 32
-                                    minimumRowHeight: 28
-                                    rowResizable: false
-                                    color : 'transparent'
-                                    colorColumnHeaderBg: 'transparent'
-                                    colorRowHeaderBg: 'transparent'
-                                    colorResizeBlockBg: 'transparent'
-                                    colorCellBg: 'transparent'
-                                    colorCellOddBg: 'transparent'
-                                    colorCellBgHover: 'transparent'
-                                    colorCellBgChecked: 'transparent'
-                                    colorCellBgHoverChecked: 'transparent'
-                                    colorCellBgDisabled: 'transparent'
-                                    rowHeaderDelegate: Item {
-                                        MosText {
+                                    anchors.margins: 6
+                                    boundsBehavior: Flickable.StopAtBounds
+                                    clip: true
+                                    model: MosMqttManager.subscriptions
+                                    spacing: 4
+
+                                    ScrollBar.vertical: MosScrollBar { }
+
+                                    delegate: MosRectangle {
+                                        id: subscriptionRow
+
+                                        required property string modelData
+
+                                        width: ListView.view.width
+                                        height: 40
+                                        color: rowHover.hovered
+                                               ? MosTheme.Primary.colorFillQuaternary
+                                               : "transparent"
+                                        radius: 10
+
+                                        RowLayout {
                                             anchors.fill: parent
-                                            anchors.leftMargin: 6
-                                            anchors.rightMargin: 6
-                                            text: "Cmd" + row
-                                            color: MosTheme.Primary.colorTextPrimary
-                                            verticalAlignment: Text.AlignVCenter
-                                            horizontalAlignment: Text.AlignHCenter
+                                            anchors.leftMargin: 10
+                                            anchors.rightMargin: 4
+                                            spacing: 8
+
+                                            MosRectangle {
+                                                Layout.preferredWidth: 7
+                                                Layout.preferredHeight: 7
+                                                Layout.alignment: Qt.AlignVCenter
+                                                radius: 4
+                                                color: MosTheme.Primary.colorInfo
+                                            }
+
+                                            MosText {
+                                                Layout.fillWidth: true
+                                                Layout.alignment: Qt.AlignVCenter
+                                                text: subscriptionRow.modelData
+                                                color: mqttPage.textMuted
+                                                font.family: "Consolas"
+                                                font.pixelSize: 12
+                                                elide: Text.ElideMiddle
+                                            }
+
+                                            MosButton {
+                                                Layout.preferredWidth: 52
+                                                Layout.preferredHeight: 30
+                                                Layout.alignment: Qt.AlignVCenter
+                                                type: MosButton.Type_Text
+                                                text: "取消"
+                                                colorText: MosTheme.Primary.colorErrorText
+                                                enabled: MosMqttManager.isConnected
+                                                onClicked: mqttPage.removeSubscription(
+                                                               subscriptionRow.modelData)
+                                            }
+                                        }
+
+                                        HoverHandler {
+                                            id: rowHover
                                         }
                                     }
-                                    columns: buildCommandColumns(mqttPage.commandByteCount)
-                                    initModel: buildCommandRows(mqttPage.commandCount, mqttPage.commandByteCount)
+
+                                    MosText {
+                                        anchors.centerIn: parent
+                                        width: parent.width - 32
+                                        visible: subscriptionList.count === 0
+                                        text: MosMqttManager.isConnected
+                                              ? "暂无订阅\n输入主题后开始监听"
+                                              : "连接 Broker 后管理订阅"
+                                        color: mqttPage.textSubtle
+                                        font.pixelSize: 12
+                                        horizontalAlignment: Text.AlignHCenter
+                                        lineHeight: 1.4
+                                    }
                                 }
                             }
 
-                            Loader {
-                                id: commandTableLoader
+                            MosRectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 42
+                                color: "transparent"
+                                border.color: mqttPage.panelBorder
+                                border.width: 1
+                                radius: 12
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 12
+                                    spacing: 8
+
+                                    MosText {
+                                        Layout.fillWidth: true
+                                        text: "支持通配符 + 与 #"
+                                        color: mqttPage.textSubtle
+                                        font.pixelSize: 11
+                                    }
+
+                                    MosText {
+                                        text: MosMqttManager.subscriptions.length + " 个主题"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
+                                        font.bold: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                MosRectangle {
+                    id: publishPanel
+
+                    Layout.fillWidth: true
+                    Layout.fillHeight: !mqttPage.compactLayout
+                    Layout.minimumWidth: 0
+                    Layout.preferredHeight: mqttPage.advancedExpanded ? 880 : 460
+                    color: mqttPage.panelBg
+                    border.color: mqttPage.panelBorder
+                    border.width: 1
+                    radius: 22
+                    clip: true
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        spacing: 0
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 50
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            spacing: 10
+
+                            MosRectangle {
+                                Layout.preferredWidth: 32
+                                Layout.preferredHeight: 32
+                                Layout.alignment: Qt.AlignVCenter
+                                radius: 10
+                                color: MosTheme.Primary.colorPrimaryBg
+
+                                MosIconText {
+                                    anchors.centerIn: parent
+                                    iconSource: MosIcon.PlayCircleOutlined
+                                    iconSize: 17
+                                    color: mqttPage.accentColor
+                                }
+                            }
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                Layout.alignment: Qt.AlignVCenter
+                                spacing: 0
+
+                                MosText {
+                                    text: "发布消息"
+                                    color: mqttPage.textStrong
+                                    font.pixelSize: 15
+                                    font.bold: true
+                                }
+
+                                MosText {
+                                    text: "向设备下发控制指令"
+                                    color: mqttPage.textSubtle
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            MosTag {
+                                Layout.alignment: Qt.AlignVCenter
+                                text: mqttPage.publishRetain ? "Retain" : "普通"
+                                presetColor: mqttPage.publishRetain ? "orange" : "geekblue"
+                                radiusBg.all: 10
+                            }
+                        }
+
+                        MosDivider {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                        }
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            Layout.leftMargin: 18
+                            Layout.rightMargin: 18
+                            Layout.topMargin: 12
+                            Layout.bottomMargin: 14
+                            spacing: 8
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 4
+
+                                MosText {
+                                    text: "发布主题"
+                                    color: mqttPage.textMuted
+                                    font.pixelSize: 11
+                                }
+
+                                MosInput {
+                                    id: publishTopicInput
+
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 36
+                                    text: "inverter/command"
+                                    placeholderText: "例如 inverter/command"
+                                    clearEnabled: true
+                                    colorBg: "transparent"
+                                    bgDelegate: inputBackground
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+                                spacing: 10
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 4
+
+                                    MosText {
+                                        text: "服务质量"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
+                                    }
+
+                                    MosSelect {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 36
+                                        model: mqttPage.qosOptions
+                                        currentIndex: mqttPage.publishQos
+                                        clearEnabled: false
+                                        colorBg: "transparent"
+                                        radiusBg.all: 10
+                                        onActivated: mqttPage.publishQos = currentValue
+                                    }
+                                }
+
+                                ColumnLayout {
+                                    Layout.preferredWidth: 100
+                                    spacing: 4
+
+                                    MosText {
+                                        text: "保留消息"
+                                        color: mqttPage.textMuted
+                                        font.pixelSize: 11
+                                    }
+
+                                    MosRectangle {
+                                        Layout.fillWidth: true
+                                        Layout.preferredHeight: 36
+                                        color: "transparent"
+                                        border.color: mqttPage.panelBorder
+                                        border.width: 1
+                                        radius: 10
+
+                                        MosSwitch {
+                                            anchors.centerIn: parent
+                                            checked: mqttPage.publishRetain
+                                            checkedText: "是"
+                                            uncheckedText: "否"
+                                            onToggled: mqttPage.publishRetain = checked
+                                        }
+                                    }
+                                }
+                            }
+
+                            RowLayout {
+                                Layout.fillWidth: true
+
+                                MosText {
+                                    Layout.fillWidth: true
+                                    text: "消息载荷"
+                                    color: mqttPage.textMuted
+                                    font.pixelSize: 11
+                                }
+
+                                MosText {
+                                    text: publishPayloadInput.length + " 字符"
+                                    color: mqttPage.textSubtle
+                                    font.pixelSize: 11
+                                }
+                            }
+
+                            MosTextArea {
+                                id: publishPayloadInput
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                Layout.minimumHeight: 130
+                                text: "{\n  \"command\": \"start\"\n}"
+                                placeholderText: "输入文本或 JSON 消息"
+                                colorBg: "transparent"
+                                colorBorder: mqttPage.panelBorder
+                                radiusBg.all: 14
+                                font.family: "Consolas"
+                                font.pixelSize: 12
+                            }
+
+                            MosIconButton {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 40
+                                type: MosButton.Type_Primary
+                                iconSource: MosIcon.PlayCircleOutlined
+                                iconSize: 15
+                                text: MosMqttManager.isConnected ? "发布消息" : "连接后可发布"
+                                enabled: MosMqttManager.isConnected
+                                         && publishTopicInput.text.trim().length > 0
+                                radiusBg.all: 12
+                                font.bold: true
+                                onClicked: mqttPage.publishCurrentMessage()
+                            }
+
+                            MosRectangle {
+                                Layout.fillWidth: true
+                                Layout.preferredHeight: 42
+                                color: "transparent"
+                                border.color: mqttPage.panelBorder
+                                border.width: 1
+                                radius: 12
+
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 12
+                                    spacing: 8
+
+                                    MosText {
+                                        Layout.fillWidth: true
+                                        text: "空载荷 + Retain 可清除保留消息"
+                                        color: mqttPage.textSubtle
+                                        font.pixelSize: 11
+                                        elide: Text.ElideRight
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            MosRectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 220
+                color: mqttPage.panelBg
+                border.color: mqttPage.panelBorder
+                border.width: 1
+                radius: 22
+                clip: true
+
+                ColumnLayout {
+                    anchors.fill: parent
+                    spacing: 0
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 52
+                        Layout.leftMargin: 18
+                        Layout.rightMargin: 12
+                        spacing: 10
+
+                        MosIconText {
+                            Layout.alignment: Qt.AlignVCenter
+                            iconSource: MosIcon.CodeOutlined
+                            iconSize: 17
+                            color: mqttPage.accentColor
+                        }
+
+                        MosText {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            text: "消息与事件日志"
+                            color: mqttPage.textStrong
+                            font.pixelSize: 15
+                            font.bold: true
+                        }
+
+                        MosTag {
+                            Layout.alignment: Qt.AlignVCenter
+                            text: eventLogModel.count + " 条"
+                            presetColor: "geekblue"
+                            radiusBg.all: 10
+                        }
+
+                        MosButton {
+                            Layout.preferredWidth: 64
+                            Layout.preferredHeight: 32
+                            Layout.alignment: Qt.AlignVCenter
+                            type: MosButton.Type_Text
+                            text: "清空"
+                            colorText: MosTheme.Primary.colorErrorText
+                            enabled: eventLogModel.count > 0
+                            onClicked: eventLogModel.clear()
+                        }
+                    }
+
+                    MosDivider {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                    }
+
+                    ListView {
+                        id: logList
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        Layout.leftMargin: 10
+                        Layout.rightMargin: 10
+                        Layout.topMargin: 6
+                        Layout.bottomMargin: 8
+                        boundsBehavior: Flickable.StopAtBounds
+                        clip: true
+                        model: eventLogModel
+                        spacing: 3
+
+                        ScrollBar.vertical: MosScrollBar { }
+
+                        delegate: MosRectangle {
+                            id: logRow
+
+                            required property string kind
+                            required property string timestamp
+                            required property string title
+                            required property string detail
+
+                            width: ListView.view.width
+                            height: 34
+                            color: logHover.hovered
+                                   ? MosTheme.Primary.colorFillQuaternary
+                                   : "transparent"
+                            radius: 9
+
+                            RowLayout {
                                 anchors.fill: parent
-                                active: true
-                                sourceComponent: commandTableComponent
+                                anchors.leftMargin: 10
+                                anchors.rightMargin: 10
+                                spacing: 9
+
+                                MosRectangle {
+                                    Layout.preferredWidth: 3
+                                    Layout.preferredHeight: 18
+                                    Layout.alignment: Qt.AlignVCenter
+                                    radius: 2
+                                    color: mqttPage.logAccent(logRow.kind)
+                                }
+
+                                MosText {
+                                    Layout.preferredWidth: 48
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: logRow.timestamp
+                                    color: mqttPage.textSubtle
+                                    font.family: "Consolas"
+                                    font.pixelSize: 10
+                                }
+
+                                MosTag {
+                                    Layout.preferredWidth: 44
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: mqttPage.logLabel(logRow.kind)
+                                    colorBg: "transparent"
+                                    colorBorder: mqttPage.logAccent(logRow.kind)
+                                    colorText: mqttPage.logAccent(logRow.kind)
+                                    radiusBg.all: 9
+                                }
+
+                                MosText {
+                                    Layout.fillWidth: true
+                                    Layout.alignment: Qt.AlignVCenter
+                                    text: logRow.detail.length > 0
+                                          ? logRow.title + "  ·  " + logRow.detail
+                                          : logRow.title
+                                    color: mqttPage.textMuted
+                                    font.family: logRow.kind === "receive"
+                                                 || logRow.kind === "publish"
+                                                 ? "Consolas"
+                                                 : Qt.application.font.family
+                                    font.pixelSize: 11
+                                    elide: Text.ElideRight
+                                }
+                            }
+
+                            HoverHandler {
+                                id: logHover
                             }
                         }
                     }
@@ -882,61 +1643,18 @@ MosRectangle {
         }
     }
 
-    // ===================== 文件对话框 =====================
     FileDialog {
-        id: commandOpenFileDialog
-        title: "打开指令文件"
+        id: sslCertFileDialog
+
+        title: "选择 CA 证书"
         fileMode: FileDialog.OpenFile
-        nameFilters: ["指令文件 (*.txt *.cmd *.hex)", "所有文件 (*)"]
+        nameFilters: [
+            "证书文件 (*.crt *.pem *.cer *.der)",
+            "所有文件 (*)"
+        ]
         onAccepted: {
-            const filePath = urlToFilePath(selectedFile.toString())
-            commandFileInput.text = filePath
-            // 这里可以调用你原来的 loadCommandFromFile 逻辑
+            MosMqttManager.sslCaCertPath = mqttPage.urlToFilePath(
+                        selectedFile.toString())
         }
-    }
-
-    FileDialog {
-        id: commandSaveFileDialog
-        title: "保存指令数据"
-        fileMode: FileDialog.SaveFile
-        nameFilters: ["指令文件 (*.txt *.cmd)", "所有文件 (*)"]
-        defaultSuffix: "txt"
-        onAccepted: {
-            const filePath = urlToFilePath(selectedFile.toString())
-            commandFileInput.text = filePath
-            // 这里可以调用你原来的 saveCommandToFile 逻辑
-        }
-    }
-
-    // ===================== 表格工具函数 =====================
-    function buildCommandColumns(count) {
-        const columnCount = mqttPage.normalizePositiveInteger(count)
-        let result = []
-        for (let i = 0; i < columnCount; i++) {
-            const title = "Byte" + i
-            result.push({
-                dataIndex: title,
-                title: title,
-                width: 80,
-                minimumWidth: 70,
-                maximumWidth: 120,
-                delegate: lnputcomponent
-            })
-        }
-        return result
-    }
-
-    function buildCommandRows(rowCount, columnCount) {
-        const rows = mqttPage.normalizePositiveInteger(rowCount)
-        const columns = mqttPage.normalizePositiveInteger(columnCount)
-        let result = []
-        for (let row = 0; row < rows; row++) {
-            let command = { key: "Cmd" + row }
-            for (let column = 0; column < columns; column++) {
-                command["Byte" + column] = ""
-            }
-            result.push(command)
-        }
-        return result
     }
 }
