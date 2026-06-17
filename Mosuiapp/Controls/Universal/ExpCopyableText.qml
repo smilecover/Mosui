@@ -1,23 +1,24 @@
 import QtQuick
 import QtQuick.Controls
+
 import MosuiBasic
 
 import '../../Controls'
 
 Flickable {
     contentHeight: column.height
-    ScrollBar.vertical: MosScrollBar { anchors.right: parent.right }
+    ScrollBar.vertical: MosScrollBar { }
 
     Column {
         id: column
         width: parent.width - 15
         spacing: 30
 
-        MosDescription {
+        DocDescription {
             desc: qsTr(`
 # MosCopyableText 可复制文本\n
 在需要可复制的文本时使用(替代Text)。\n
-* **模块 { MosuiBasic }**\n
+* **模块 { MosuiBasic.Basic }**\n
 * **继承自 { TextEdit }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -25,14 +26,18 @@ Flickable {
                        `)
         }
 
-        MosDescription {
+        Description {
             title: qsTr('何时使用')
             desc: qsTr(`
 Qml中普通文本(Text)无法复制，因此在需要可复制的文本时建议使用。
                        `)
         }
 
-        MosDescription {
+        ThemeToken {
+            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCopyableText.qml'
+        }
+
+        Description {
             title: qsTr('代码演示')
         }
 

@@ -1,0 +1,15 @@
+{
+    "__init__": {
+        "__import__": ["MosTableView"]
+    },
+    "__style__": {
+        "fontFamilyTitle": "@fontPrimaryFamily",
+        "fontSizeTitle": "@fontPrimarySize",
+        "colorBgDisabled": "transparent",
+        "colorText": "@colorTextBase",
+        "colorTextDisabled": "@colorTextDisabled",
+        "colorBorder": "@colorBorder",
+        "radiusTransferBg": "@radiusPrimary",
+        "radiusItemBg": "@radiusPrimary"
+    }
+}

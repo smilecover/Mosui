@@ -1,6 +1,7 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Controls.Basic
+
 import MosuiBasic
 
 import '../../Controls'
@@ -14,11 +15,11 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        MosDescription {
+        DocDescription {
             desc: qsTr(`
 # MosAvatar 头像 \n
 用来代表用户或事物，支持图片、图标或字符展示。\n
-* **模块 { MosuiBasic}**\n
+* **模块 { MosuiBasic.Basic }**\n
 * **继承自 { Control }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -43,13 +44,18 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        MosDescription {
+        Description {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要头像时使用。
                        `)
         }
-        MosDescription {
+
+        ThemeToken {
+            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosAvatar.qml'
+        }
+
+        Description {
             title: qsTr('代码演示')
         }
 
@@ -266,7 +272,7 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
 
                 MosAvatar {
                     anchors.verticalCenter: parent.verticalCenter
-                    imageSource: 'https://pic.616pic.com/ys_bnew_img/00/49/21/h2kBkdmny0.jpg'
+                    imageSource: 'https://avatars.githubusercontent.com/u/33405710?v=4'
                 }
 
                 MosAvatar {

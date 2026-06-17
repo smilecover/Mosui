@@ -222,6 +222,31 @@ void MosThemePrivate::initializeComponentPropertyHash()
         ADD_COMPONENT_PROPERTY(MosImage);
         ADD_COMPONENT_PROPERTY(MosSwitch);
         ADD_COMPONENT_PROPERTY(MosTour);
+        ADD_COMPONENT_PROPERTY(MosAutoComplete);
+        ADD_COMPONENT_PROPERTY(MosBreadcrumb);
+        ADD_COMPONENT_PROPERTY(MosCarousel);
+        ADD_COMPONENT_PROPERTY(MosCollapse);
+        ADD_COMPONENT_PROPERTY(MosColorPicker);
+        ADD_COMPONENT_PROPERTY(MosDateTimePicker);
+        ADD_COMPONENT_PROPERTY(MosDrawer);
+        ADD_COMPONENT_PROPERTY(MosEmpty);
+        ADD_COMPONENT_PROPERTY(MosLabel);
+        ADD_COMPONENT_PROPERTY(MosModal);
+        ADD_COMPONENT_PROPERTY(MosMultiCheckBox);
+        ADD_COMPONENT_PROPERTY(MosMultiSelect);
+        ADD_COMPONENT_PROPERTY(MosNotification);
+        ADD_COMPONENT_PROPERTY(MosPagination);
+        ADD_COMPONENT_PROPERTY(MosPopconfirm);
+        ADD_COMPONENT_PROPERTY(MosPopover);
+        ADD_COMPONENT_PROPERTY(MosProgress);
+        ADD_COMPONENT_PROPERTY(MosRate);
+        ADD_COMPONENT_PROPERTY(MosSegmented);
+        ADD_COMPONENT_PROPERTY(MosSpin);
+        ADD_COMPONENT_PROPERTY(MosSplitView);
+        ADD_COMPONENT_PROPERTY(MosTabView);
+        ADD_COMPONENT_PROPERTY(MosTimeline);
+        ADD_COMPONENT_PROPERTY(MosTransfer);
+        ADD_COMPONENT_PROPERTY(MosTreeView);
     }
 }
 // @brief 注册默认组件主题

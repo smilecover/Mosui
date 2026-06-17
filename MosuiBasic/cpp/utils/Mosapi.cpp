@@ -146,6 +146,13 @@ int MosApi::getWeekNumber(const QDateTime &dateTime) const
     return dateTime.date().weekNumber();
 }
 
+int MosApi::getWeekYearNumber(const QDateTime &dateTime) const
+{
+    int yearNumber = dateTime.date().year();
+    dateTime.date().weekNumber(&yearNumber);
+    return yearNumber;
+}
+
 QDateTime MosApi::dateFromString(const QString &dateTime, const QString &format) const
 {
     return QDateTime::fromString(dateTime, format);

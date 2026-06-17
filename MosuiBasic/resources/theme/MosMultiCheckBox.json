@@ -1,0 +1,14 @@
+{
+    "__init__": {
+        "__import__": ["MosSelect"]
+    },
+    "__style__": {
+        "colorIconSelect": "@colorPrimary",
+        "colorTagText": "@colorTextBase",
+        "colorTagTextDisabled": "@colorTextDisabled",
+        "colorTagBg": "@colorFillPrimary",
+        "colorTagCloseHover": "@colorTextPrimary",
+        "colorTagClose": "@colorTextTertiary",
+        "radiusTagBg": "@radiusPrimarySM"
+    }
+}

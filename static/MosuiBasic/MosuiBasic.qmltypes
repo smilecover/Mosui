@@ -66,6 +66,11 @@ Module {
             Parameter { name: "dateTime"; type: "QDateTime" }
         }
         Method {
+            name: "getWeekYearNumber"
+            type: "int"
+            Parameter { name: "dateTime"; type: "QDateTime" }
+        }
+        Method {
             name: "dateFromString"
             type: "QDateTime"
             Parameter { name: "dateTime"; type: "QString" }
@@ -533,10 +538,85 @@ Module {
                 "PlayCircleOutlined",
                 "CloseOutlined",
                 "SerialportOutlined",
+                "SerialPortOutlined",
                 "FaultOutlined",
                 "ControlOutlined",
                 "WaveOutlined",
-                "CloseCircleFilled"
+                "CloseCircleFilled",
+                "ArrowLeftOutlined",
+                "CalendarOutlined",
+                "CaretDownOutlined",
+                "CaretLeftOutlined",
+                "CaretRightOutlined",
+                "CaretUpOutlined",
+                "CheckCircleFilled",
+                "CheckOutlined",
+                "ClockCircleOutlined",
+                "DoubleLeftOutlined",
+                "DoubleRightOutlined",
+                "ExclamationCircleFilled",
+                "EyeOutlined",
+                "LoadingOutlined",
+                "MoonOutlined",
+                "PlusOutlined",
+                "PushpinOutlined",
+                "RotateLeftOutlined",
+                "RotateRightOutlined",
+                "SearchOutlined",
+                "StarFilled",
+                "SunOutlined",
+                "SwapOutlined",
+                "ZoomInOutlined",
+                "ZoomOutOutlined",
+                "ChartOutlined",
+                "AnimatedImageOutlined",
+                "AvatarOutlined",
+                "BadgeOutlined",
+                "MqttOutlined",
+                "ToolsOutlined",
+                "RocketOutlined",
+                "FontColorsOutlined",
+                "GroupOutlined",
+                "ExpandOutlined",
+                "MessageOutlined",
+                "NotificationOutlined",
+                "LineOutlined",
+                "ColumnWidthOutlined",
+                "NumberOutlined",
+                "FontSizeOutlined",
+                "QuestionCircleOutlined",
+                "CheckCircleOutlined",
+                "CheckSquareOutlined",
+                "TableOutlined",
+                "DragOutlined",
+                "RadiusOutlined",
+                "BorderOutlined",
+                "BgColorsOutlined",
+                "IdcardOutlined",
+                "PictureOutlined",
+                "AppstoreOutlined",
+                "MenuUnfoldOutlined",
+                "MenuOutlined",
+                "InboxOutlined",
+                "FileImageOutlined",
+                "EditOutlined",
+                "SelectOutlined",
+                "SafetyOutlined",
+                "FileOutlined",
+                "MoreOutlined",
+                "InfoCircleOutlined",
+                "DashboardOutlined",
+                "StarOutlined",
+                "AimOutlined",
+                "SolutionOutlined",
+                "ApartmentOutlined",
+                "TagsOutlined",
+                "WebOutlined",
+                "LinkOutlined",
+                "SearchOutlined2",
+                "DashOutlined",
+                "FieldTimeOutlined",
+                "UserOutlined"
             ]
         }
         Method { name: "allIconNames"; type: "QVariantMap" }
@@ -1747,6 +1827,231 @@ Module {
             isReadonly: true
             isFinal: true
         }
+        Property {
+            name: "MosAutoComplete"
+            type: "QVariantMap"
+            read: "MosAutoComplete"
+            notify: "MosAutoCompleteChanged"
+            index: 33
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosBreadcrumb"
+            type: "QVariantMap"
+            read: "MosBreadcrumb"
+            notify: "MosBreadcrumbChanged"
+            index: 34
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosCarousel"
+            type: "QVariantMap"
+            read: "MosCarousel"
+            notify: "MosCarouselChanged"
+            index: 35
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosCollapse"
+            type: "QVariantMap"
+            read: "MosCollapse"
+            notify: "MosCollapseChanged"
+            index: 36
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosColorPicker"
+            type: "QVariantMap"
+            read: "MosColorPicker"
+            notify: "MosColorPickerChanged"
+            index: 37
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosDateTimePicker"
+            type: "QVariantMap"
+            read: "MosDateTimePicker"
+            notify: "MosDateTimePickerChanged"
+            index: 38
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosDrawer"
+            type: "QVariantMap"
+            read: "MosDrawer"
+            notify: "MosDrawerChanged"
+            index: 39
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosEmpty"
+            type: "QVariantMap"
+            read: "MosEmpty"
+            notify: "MosEmptyChanged"
+            index: 40
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosLabel"
+            type: "QVariantMap"
+            read: "MosLabel"
+            notify: "MosLabelChanged"
+            index: 41
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosModal"
+            type: "QVariantMap"
+            read: "MosModal"
+            notify: "MosModalChanged"
+            index: 42
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosMultiCheckBox"
+            type: "QVariantMap"
+            read: "MosMultiCheckBox"
+            notify: "MosMultiCheckBoxChanged"
+            index: 43
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosMultiSelect"
+            type: "QVariantMap"
+            read: "MosMultiSelect"
+            notify: "MosMultiSelectChanged"
+            index: 44
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosNotification"
+            type: "QVariantMap"
+            read: "MosNotification"
+            notify: "MosNotificationChanged"
+            index: 45
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosPagination"
+            type: "QVariantMap"
+            read: "MosPagination"
+            notify: "MosPaginationChanged"
+            index: 46
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosPopconfirm"
+            type: "QVariantMap"
+            read: "MosPopconfirm"
+            notify: "MosPopconfirmChanged"
+            index: 47
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosPopover"
+            type: "QVariantMap"
+            read: "MosPopover"
+            notify: "MosPopoverChanged"
+            index: 48
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosProgress"
+            type: "QVariantMap"
+            read: "MosProgress"
+            notify: "MosProgressChanged"
+            index: 49
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosRate"
+            type: "QVariantMap"
+            read: "MosRate"
+            notify: "MosRateChanged"
+            index: 50
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosSegmented"
+            type: "QVariantMap"
+            read: "MosSegmented"
+            notify: "MosSegmentedChanged"
+            index: 51
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosSpin"
+            type: "QVariantMap"
+            read: "MosSpin"
+            notify: "MosSpinChanged"
+            index: 52
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosSplitView"
+            type: "QVariantMap"
+            read: "MosSplitView"
+            notify: "MosSplitViewChanged"
+            index: 53
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTabView"
+            type: "QVariantMap"
+            read: "MosTabView"
+            notify: "MosTabViewChanged"
+            index: 54
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTimeline"
+            type: "QVariantMap"
+            read: "MosTimeline"
+            notify: "MosTimelineChanged"
+            index: 55
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTransfer"
+            type: "QVariantMap"
+            read: "MosTransfer"
+            notify: "MosTransferChanged"
+            index: 56
+            isReadonly: true
+            isFinal: true
+        }
+        Property {
+            name: "MosTreeView"
+            type: "QVariantMap"
+            read: "MosTreeView"
+            notify: "MosTreeViewChanged"
+            index: 57
+            isReadonly: true
+            isFinal: true
+        }
         Signal { name: "animationEnabledChanged" }
         Signal { name: "PrimaryChanged" }
         Signal { name: "MosButtonChanged" }
@@ -1776,6 +2081,31 @@ Module {
         Signal { name: "MosImageChanged" }
         Signal { name: "MosSwitchChanged" }
         Signal { name: "MosTourChanged" }
+        Signal { name: "MosAutoCompleteChanged" }
+        Signal { name: "MosBreadcrumbChanged" }
+        Signal { name: "MosCarouselChanged" }
+        Signal { name: "MosCollapseChanged" }
+        Signal { name: "MosColorPickerChanged" }
+        Signal { name: "MosDateTimePickerChanged" }
+        Signal { name: "MosDrawerChanged" }
+        Signal { name: "MosEmptyChanged" }
+        Signal { name: "MosLabelChanged" }
+        Signal { name: "MosModalChanged" }
+        Signal { name: "MosMultiCheckBoxChanged" }
+        Signal { name: "MosMultiSelectChanged" }
+        Signal { name: "MosNotificationChanged" }
+        Signal { name: "MosPaginationChanged" }
+        Signal { name: "MosPopconfirmChanged" }
+        Signal { name: "MosPopoverChanged" }
+        Signal { name: "MosProgressChanged" }
+        Signal { name: "MosRateChanged" }
+        Signal { name: "MosSegmentedChanged" }
+        Signal { name: "MosSpinChanged" }
+        Signal { name: "MosSplitViewChanged" }
+        Signal { name: "MosTabViewChanged" }
+        Signal { name: "MosTimelineChanged" }
+        Signal { name: "MosTransferChanged" }
+        Signal { name: "MosTreeViewChanged" }
         Signal { name: "darkModeChanged" }
         Signal { name: "isDarkChanged" }
         Signal { name: "textRenderTypeChanged" }
@@ -1984,6 +2314,94 @@ Module {
             Parameter { name: "num1"; type: "double" }
             Parameter { name: "num2"; type: "double" }
         }
+    }
+    Component {
+        file: "Moswatermark.h"
+        name: "MosWatermark"
+        accessSemantics: "reference"
+        prototype: "QQuickPaintedItem"
+        exports: ["MosuiBasic/MosWatermark 1.0"]
+        exportMetaObjectRevisions: [256]
+        Property {
+            name: "text"
+            type: "QString"
+            read: "text"
+            write: "setText"
+            notify: "textChanged"
+            index: 0
+            isFinal: true
+        }
+        Property {
+            name: "image"
+            type: "QUrl"
+            read: "image"
+            write: "setImage"
+            notify: "imageChanged"
+            index: 1
+            isFinal: true
+        }
+        Property {
+            name: "markSize"
+            type: "QSize"
+            read: "markSize"
+            write: "setMarkSize"
+            notify: "markSizeChanged"
+            index: 2
+            isFinal: true
+        }
+        Property {
+            name: "gap"
+            type: "QPointF"
+            read: "gap"
+            write: "setGap"
+            notify: "gapChanged"
+            index: 3
+            isFinal: true
+        }
+        Property {
+            name: "offset"
+            type: "QPointF"
+            read: "offset"
+            write: "setOffset"
+            notify: "offsetChanged"
+            index: 4
+            isFinal: true
+        }
+        Property {
+            name: "rotate"
+            type: "double"
+            read: "rotate"
+            write: "setRotate"
+            notify: "rotateChanged"
+            index: 5
+            isFinal: true
+        }
+        Property {
+            name: "font"
+            type: "QFont"
+            read: "font"
+            write: "setFont"
+            notify: "fontChanged"
+            index: 6
+            isFinal: true
+        }
+        Property {
+            name: "colorText"
+            type: "QColor"
+            read: "colorText"
+            write: "setColorText"
+            notify: "colorTextChanged"
+            index: 7
+            isFinal: true
+        }
+        Signal { name: "textChanged" }
+        Signal { name: "imageChanged" }
+        Signal { name: "markSizeChanged" }
+        Signal { name: "gapChanged" }
+        Signal { name: "offsetChanged" }
+        Signal { name: "rotateChanged" }
+        Signal { name: "fontChanged" }
+        Signal { name: "colorTextChanged" }
     }
     Component {
         file: "Moswindowagent.h"

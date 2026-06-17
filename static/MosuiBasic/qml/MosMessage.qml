@@ -136,7 +136,7 @@ Item {
             if (!object.hasOwnProperty('type')) object.type = MosMessage.Type_None;
             if (!object.hasOwnProperty('duration')) object.duration = 3000;
             if (!object.hasOwnProperty('iconSize')) object.iconSize = root.defaultIconSize;
-            if (!object.hasOwnProperty('iconSource')) object.iconSource = 0;
+            if (!object.hasOwnProperty('iconSource') || object.iconSource == null || object.iconSource === undefined) object.iconSource = 0;
 
             if (!object.hasOwnProperty('colorIcon')) object.colorIcon = '';
             else object.colorIcon = String(object.colorIcon);

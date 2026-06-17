@@ -8,7 +8,7 @@
 #include "Mosdefinitions.h"
 
 
-QT_FORWARD_DECLARE_CLASS(MosThemePrivate)
+QT_FORWARD_DECLARE_CLASS(MosThemePrivate);
 class MOSUIBASIC_EXPORT MosTheme : public QObject
 {
     Q_OBJECT
@@ -50,8 +50,33 @@ class MOSUIBASIC_EXPORT MosTheme : public QObject
     MOSUI_PROPERTY_READONLY(QVariantMap, MosTag);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosCanvasChart);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosImage);
-    MOSUI_PROPERTY_READONLY(QVariantMap, MosSwitch); 
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSwitch);
     MOSUI_PROPERTY_READONLY(QVariantMap, MosTour);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosAutoComplete);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosBreadcrumb);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCarousel);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosCollapse);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosColorPicker);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosDateTimePicker);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosDrawer);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosEmpty);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosLabel);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosModal);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosMultiCheckBox);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosMultiSelect);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosNotification);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosPagination);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosPopconfirm);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosPopover);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosProgress);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosRate);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSegmented);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSpin);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosSplitView);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTabView);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTimeline);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTransfer);
+    MOSUI_PROPERTY_READONLY(QVariantMap, MosTreeView);
 
 
 public:

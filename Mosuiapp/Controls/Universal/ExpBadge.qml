@@ -1,5 +1,6 @@
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Controls
+
 import MosuiBasic
 
 import '../../Controls'
@@ -13,11 +14,11 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        MosDescription {
+        DocDescription {
             desc: qsTr(`
 # MosBadge 徽标数\n
 图标右上角的圆形徽标数字。\n
-* **模块 { MosuiBasic }**\n
+* **模块 { MosuiBasic.Basic }**\n
 * **继承自 { Control }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -40,14 +41,18 @@ colorText | color | - | 文本颜色
                        `)
         }
 
-        MosDescription {
+        Description {
             title: qsTr('何时使用')
             desc: qsTr(`
 一般出现在通知图标或头像的右上角，用于显示需要处理的消息条数，通过醒目视觉形式吸引用户处理。\n
                        `)
         }
 
-        MosDescription {
+        ThemeToken {
+            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosBadge.qml'
+        }
+
+        Description {
             title: qsTr('代码演示')
         }
 

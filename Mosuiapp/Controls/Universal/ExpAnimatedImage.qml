@@ -1,5 +1,6 @@
 import QtQuick
-import QtQuick.Controls.Basic
+import QtQuick.Controls
+
 import MosuiBasic
 
 import '../../Controls'
@@ -13,11 +14,11 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        MosDescription {
+        DocDescription {
             desc: qsTr(`
 # MosAnimatedImage 动态图片\n
 可预览的动态图片。\n
-* **模块 { MosuiBasic }**\n
+* **模块 { MosuiBasic.Basic }**\n
 * **继承自 { AnimatedImage }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -41,7 +42,7 @@ url | url | 必选 | 图片源
                        `)
         }
 
-        MosDescription {
+        Description {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要展示动态图片时使用。\n
@@ -49,7 +50,12 @@ url | url | 必选 | 图片源
                        `)
         }
 
-        MosDescription {
+        ThemeToken {
+            source: 'MosImage'
+            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosAnimatedImage.qml'
+        }
+
+        Description {
             title: qsTr('代码演示')
         }
 
@@ -76,7 +82,7 @@ url | url | 必选 | 图片源
                     MosAnimatedImage {
                         width: 200
                         height: width
-                        source: 'https://channelr.photo.store.qq.com/psc?/channel/AvLZLQSYTpQ45ga8*JLzvsHnpOwp3D*IVU*ELSV3g*okIy02cZndTAMWcl6G2SZtrGYR4EJqTexQwbgPLui8uWX0nuGSLC*tmrkJdoonGFw!/o=&bo=fQB9AH0AfQACACQ!'
+                        source: 'https://gw.alipayobjects.com/zos/rmsportal/LyTPSGknLUlxiVdwMWyu.gif'
                         previewEnabled: previewEnabledSwitch.checked
                     }
                 }
@@ -94,7 +100,7 @@ url | url | 必选 | 图片源
                 MosAnimatedImage {
                     width: 200
                     height: width
-                    source: 'https://channelr.photo.store.qq.com/psc?/channel/AvLZLQSYTpQ45ga8*JLzvsHnpOwp3D*IVU*ELSV3g*okIy02cZndTAMWcl6G2SZtrGYR4EJqTexQwbgPLui8uWX0nuGSLC*tmrkJdoonGFw!/o=&bo=fQB9AH0AfQACACQ!'
+                    source: 'https://gw.alipayobjects.com/zos/rmsportal/LyTPSGknLUlxiVdwMWyu.gif'
                     previewEnabled: previewEnabledSwitch.checked
                 }
             }
