@@ -7,6 +7,21 @@ import QtQuick.tooling 1.2
 
 Module {
     Component {
+        file: "datagenerator.h"
+        name: "DataGenerator"
+        accessSemantics: "reference"
+        prototype: "QObject"
+        exports: ["Mosuiapp/DataGenerator 1.0"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [256]
+        Method {
+            name: "genTableData"
+            type: "QVariantList"
+            Parameter { name: "rows"; type: "int" }
+        }
+    }
+    Component {
         file: "TpInv_dataprocessing.h"
         name: "TpInvDataProcessing"
         accessSemantics: "reference"

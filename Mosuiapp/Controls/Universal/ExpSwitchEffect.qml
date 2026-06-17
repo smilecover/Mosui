@@ -174,19 +174,22 @@ maskColorization | real | 0 | 着色强度(0.0~1.0)
                         width: parent.width
                         height: 500
 
-                        Image {
+                        Rectangle {
                             id: item1
                             width: parent.width
                             height: parent.height
-                            source: '""'
+                            color: '#667eea'
                             visible: true
                         }
 
-                        Image {
+                        Rectangle {
                             id: item2
                             width: parent.width
                             height: parent.height
-                            source: '""'
+                            gradient: Gradient {
+                                GradientStop { position: 0.0; color: '#f093fb' }
+                                GradientStop { position: 1.0; color: '#f5576c' }
+                            }
                             visible: false
                         }
 
@@ -267,7 +270,6 @@ maskColorization | real | 0 | 着色强度(0.0~1.0)
                             'label': qsTr('百叶窗特效'),
                             'value': MosSwitchEffect.Type_Blinds,
                             'duration': 1500,
-                            'maskRotationEnabled': true,
                         },
                         {
                             'label': qsTr('3D翻转特效'),
@@ -293,19 +295,22 @@ maskColorization | real | 0 | 着色强度(0.0~1.0)
                     width: parent.width
                     height: 500
 
-                    Image {
+                    Rectangle {
                         id: item1
                         width: parent.width
                         height: parent.height
-                        source: '""'
+                        color: '#667eea'
                         visible: true
                     }
 
-                    Image {
+                    Rectangle {
                         id: item2
                         width: parent.width
                         height: parent.height
-                        source: '""'
+                        gradient: Gradient {
+                            GradientStop { position: 0.0; color: '#f093fb' }
+                            GradientStop { position: 1.0; color: '#f5576c' }
+                        }
                         visible: false
                     }
 

@@ -205,7 +205,7 @@ iconSource | int丨string | 可选 | 本标签的图标源
                         iconDelegate: MosIconText {
                             font: customSegmented.iconFont
                             colorIcon: '#77BEF0'
-                            iconSource: model.iconSource
+                            iconSource: model ? model.iconSource : 0
                         }
                     }
                 }
@@ -238,7 +238,7 @@ iconSource | int丨string | 可选 | 本标签的图标源
                     iconDelegate: MosIconText {
                         font: customSegmented.iconFont
                         colorIcon: '#77BEF0'
-                        iconSource: model.iconSource
+                        iconSource: model ? model.iconSource : 0
                         verticalAlignment: Text.AlignVCenter
                     }
                 }

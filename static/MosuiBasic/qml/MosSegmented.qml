@@ -56,7 +56,7 @@ T.Control {
                 active: __itemDelegate.hasIcon
                 sourceComponent: root.iconDelegate
                 property int index: __itemDelegate.parent.index
-                property var model: __itemDelegate.parent.model
+                property var model: __itemDelegate.parent.model ?? {}
                 property bool hovered: __itemDelegate.parent.hovered
                 property bool pressed: __itemDelegate.parent.pressed
                 property bool isCurrent: __itemDelegate.parent.isCurrent
@@ -132,10 +132,12 @@ T.Control {
     }
 
     onOptionsChanged: {
-        clear();
-        for (let object of options) {
-            append(object);
-        }
+        Qt.callLater(() => {
+            clear();
+            for (let object of options) {
+                append(object);
+            }
+        });
     }
 
     objectName: '__MosSegmented__'

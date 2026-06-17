@@ -101,10 +101,10 @@ MosWindow {
                             height: 400
                             visible: windowLoader.visible
                             title: qsTr('无边框窗口')
-                            captionBar.winIconWidth: 0
-                            captionBar.winIconHeight: 0
-                            captionBar.winIconDelegate: Item { }
-                            captionBar.closeCallback: () => windowLoader.visible = false;
+                            captionbar.winIconWidth: 0
+                            captionbar.winIconHeight: 0
+                            captionbar.winIconDelegate: Item { }
+                            captionbar.closeCallback: () => windowLoader.visible = false;
                         }
                     }
                 }
@@ -126,10 +126,10 @@ MosWindow {
                         height: 400
                         visible: windowLoader.visible
                         title: qsTr('无边框窗口')
-                        captionBar.winIconWidth: 0
-                        captionBar.winIconHeight: 0
-                        captionBar.winIconDelegate: Item { }
-                        captionBar.closeCallback: () => windowLoader.visible = false;
+                        captionbar.winIconWidth: 0
+                        captionbar.winIconHeight: 0
+                        captionbar.winIconDelegate: Item { }
+                        captionbar.closeCallback: () => windowLoader.visible = false;
                     }
                 }
             }

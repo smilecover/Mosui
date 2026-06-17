@@ -58,7 +58,7 @@ set(MOSUI_VERSION ${MOSUI_VERSION_MAJOR}.${MOSUI_VERSION_MINOR}.${MOSUI_VERSION_
 
 # MosuiBasic 库类型选择：OFF=动态库(默认)  ON=静态库
 # 用法: cmake -DMOSUIBASIC_BUILD_STATIC=ON ..
-option(MOSUIBASIC_BUILD_STATIC "Build MosuiBasic as a static library" ON)
+option(MOSUIBASIC_BUILD_STATIC "Build MosuiBasic as a static library" OFF)
 
 add_subdirectory(MosuiBasic)
 

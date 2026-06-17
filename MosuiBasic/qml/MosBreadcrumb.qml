@@ -191,7 +191,7 @@ T.Control {
         return path;
     }
 
-    onInitModelChanged: reset();
+    onInitModelChanged: Qt.callLater(reset);
 
     objectName: '__MosBreadcrumb__'
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,

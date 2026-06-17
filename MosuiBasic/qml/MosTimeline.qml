@@ -167,10 +167,12 @@ T.Control {
     }
 
     onInitModelChanged: {
-        clear();
-        for (const object of initModel) {
-            append(object);
-        }
+        Qt.callLater(() => {
+            clear();
+            for (const object of initModel) {
+                append(object);
+            }
+        });
     }
 
     objectName: '__MosTimeline__'
@@ -192,12 +194,6 @@ T.Control {
             animationEnabled: root.animationEnabled
         }
         onContentHeightChanged: cacheBuffer = contentHeight;
-        add: Transition {
-            NumberAnimation { property: 'opacity'; from: 0; to: 1; duration: root.animationEnabled ? MosTheme.Primary.durationMid : 0 }
-        }
-        remove: Transition {
-            NumberAnimation { property: 'opacity'; from: 1; to: 0; duration: root.animationEnabled ? MosTheme.Primary.durationMid : 0 }
-        }
         delegate: Item {
             id: __rootItem
             width: __listView.width
@@ -216,6 +212,7 @@ T.Control {
             }
 
             Loader {
+                asynchronous: true
                 active: {
                     if (root.reverse)
                         return __rootItem.index != 0;
@@ -233,6 +230,7 @@ T.Control {
 
             Loader {
                 id: __nodeLoader
+                asynchronous: true
                 x: {
                     if (__private.noTime && root.mode != MosTimeline.Mode_Alternate)
                         return root.mode == MosTimeline.Mode_Left ? 0 : parent.width - width;
@@ -246,6 +244,7 @@ T.Control {
             }
 
             Loader {
+                asynchronous: true
                 y: (__nodeLoader.height - __timeFontMetrics.height) * 0.5
                 anchors.left: __rootItem.timeOnLeft ? parent.left : __nodeLoader.right
                 anchors.leftMargin: __rootItem.timeOnLeft ? 0 : 5
@@ -264,6 +263,7 @@ T.Control {
 
             Loader {
                 id: __contentLoader
+                asynchronous: true
                 y: (__nodeLoader.height - __contentFontMetrics.height) * 0.5
                 anchors.left: !__rootItem.timeOnLeft ? parent.left : __nodeLoader.right
                 anchors.leftMargin: !__rootItem.timeOnLeft ? 0 : 5

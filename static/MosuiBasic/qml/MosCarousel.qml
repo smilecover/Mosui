@@ -113,7 +113,7 @@ T.Control {
     }
 
     onInfiniteChanged: __private.updateModel();
-    onInitModelChanged: __private.updateModel();
+    onInitModelChanged: Qt.callLater(() => __private.updateModel());
 
     objectName: '__MosCarousel__'
     implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset,

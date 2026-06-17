@@ -12,10 +12,9 @@ Flickable {
     MosMessage {
         id: message
         z: 999
-        parent: parent.captionBar
         width: parent.width
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.bottom
+        anchors.top: parent.top
     }
 
     Column {

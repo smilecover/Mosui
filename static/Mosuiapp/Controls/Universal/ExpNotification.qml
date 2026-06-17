@@ -126,7 +126,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification1
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopLeft
                     }
 
@@ -134,7 +134,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification2
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopRight
                     }
 
@@ -142,7 +142,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification3
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_BottomLeft
                     }
 
@@ -150,7 +150,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification4
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_BottomRight
                     }
 
@@ -158,7 +158,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification5
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_Top
                     }
 
@@ -166,7 +166,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification6
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_Bottom
                     }
 
@@ -237,7 +237,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification1
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopLeft
                 }
 
@@ -245,7 +245,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification2
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopRight
                 }
 
@@ -253,7 +253,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification3
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_BottomLeft
                 }
 
@@ -261,7 +261,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification4
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_BottomRight
                 }
 
@@ -269,7 +269,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification5
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_Top
                 }
 
@@ -277,7 +277,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification6
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_Bottom
                 }
 
@@ -360,7 +360,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification7
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopRight
                     }
 
@@ -378,7 +378,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification7
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopRight
                 }
 
@@ -411,7 +411,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification8
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopRight
                     }
 
@@ -451,7 +451,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification8
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopRight
                 }
 
@@ -504,7 +504,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification9
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopRight
                         showProgress: true
                     }
@@ -524,7 +524,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification9
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopRight
                     showProgress: true
                 }
@@ -559,7 +559,7 @@ colorIcon | color | 可选 | 通知图标颜色
                         id: notification10
                         parent: Overlay.overlay
                         anchors.fill: parent
-                        anchors.topMargin: __captionBar.height
+                        anchors.topMargin: 0
                         position: MosNotification.Position_TopRight
                         stackMode: stackSwitch.checked
                         stackThreshold: stackThresholdInput.value
@@ -607,7 +607,7 @@ colorIcon | color | 可选 | 通知图标颜色
                     id: notification10
                     parent: Overlay.overlay
                     anchors.fill: parent
-                    anchors.topMargin: __captionBar.height
+                    anchors.topMargin: 0
                     position: MosNotification.Position_TopRight
                     stackMode: stackSwitch.checked
                     stackThreshold: stackThresholdInput.value

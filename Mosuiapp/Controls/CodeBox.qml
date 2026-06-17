@@ -73,7 +73,7 @@ Rectangle {
             Loader{
                 id: descTextLoader
                 width: parent.width
-                asynchronous: true
+                asynchronous: false
                 sourceComponent: MosCopyableText {
                     textFormat: Text.MarkdownText
                     wrapMode: Text.WordWrap

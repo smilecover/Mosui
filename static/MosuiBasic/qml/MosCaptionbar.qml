@@ -140,7 +140,7 @@ Rectangle {
             height: parent.height
             visible: root.showMinimizeButton
             noDisabledState: true
-            iconSource: 0xe624
+            iconSource: MosIcon.WindowMinimizeOutlined
             iconSize: 14
             contentDescription: qsTr('最小化')
             onClicked: root.minimizeCallback();
@@ -152,7 +152,7 @@ Rectangle {
             visible: root.showMaximizeButton
             noDisabledState: true
             iconSize: 14
-            iconSource: targetWindow.visibility === Window.Maximized ? 0xeb49 : 0xe665
+            iconSource: targetWindow.visibility === Window.Maximized ? MosIcon.WindowRestoreOutlined : MosIcon.WindowMaximizeOutlined
 
             contentDescription: qsTr('最大化')
             onClicked: root.maximizeCallback();
@@ -163,7 +163,7 @@ Rectangle {
             height: parent.height
             visible: root.showCloseButton
             noDisabledState: true
-            iconSource: 0xeb1b
+            iconSource: MosIcon.CloseOutlined
             iconSize: 14
             isError: true
             contentDescription: qsTr('关闭')

@@ -3,6 +3,7 @@ pragma ComponentBehavior: Unbound
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Shapes
+import Qt.labs.qmlmodels
 import QtQuick.Templates as T
 import Qt.labs.qmlmodels
 import MosuiBasic
@@ -244,7 +245,7 @@ T.Control {
         T.ScrollBar.horizontal: __hScrollBar
         T.ScrollBar.vertical: __vScrollBar
         selectionModel: ItemSelectionModel { }
-        model: ListModel {
+        model: TableModel {
             id: __treeModel
             onModelReset: root.checkForKeys(root.defaultCheckedKeys);
 

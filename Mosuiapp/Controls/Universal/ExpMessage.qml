@@ -370,6 +370,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     }
                 }
             }
+        }
 
         CodeBox {
             width: parent.width

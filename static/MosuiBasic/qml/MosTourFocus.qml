@@ -9,7 +9,7 @@ T.Popup {
     property bool penetrationEvent: false
     property bool maskClosable: true
     property Item target: null
-    property color colorOverlay: MosTheme.HusTour.colorOverlay
+    property color colorOverlay: MosTheme.MosTour.colorOverlay
     property int focusMargin: 5
     property int focusRadius: 2
 

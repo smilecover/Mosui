@@ -211,19 +211,21 @@ T.Control {
     }
 
     onInitModelChanged: {
-        clear();
-        /**
-         * [Warning]
-         * ListModel 的静态角色类型下, 如果某一条数据了单独的内容代理, 就必须同时为其他数据设置默认代理,
-         * 所以我们这里需要进行两遍遍历, (另一种方式是设置 dynamicRoles, 但会大幅降低性能)
-         */
-        const hasContentDelegate = initModel.some(item => 'contentDelegate' in item);
-        for (const object of initModel) {
-            if (hasContentDelegate && !object.hasOwnProperty('contentDelegate')) {
-                object.contentDelegate = root.contentDelegate;
+        Qt.callLater(() => {
+            clear();
+            /**
+             * [Warning]
+             * ListModel 的静态角色类型下, 如果某一条数据了单独的内容代理, 就必须同时为其他数据设置默认代理,
+             * 所以我们这里需要进行两遍遍历, (另一种方式是设置 dynamicRoles, 但会大幅降低性能)
+             */
+            const hasContentDelegate = initModel.some(item => 'contentDelegate' in item);
+            for (const object of initModel) {
+                if (hasContentDelegate && !object.hasOwnProperty('contentDelegate')) {
+                    object.contentDelegate = root.contentDelegate;
+                }
+                append(object);
             }
-            append(object);
-        }
+        });
     }
 
     objectName: '__MosTabView__'

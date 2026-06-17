@@ -72,6 +72,13 @@ qt_add_resources(${PROJECT_NAME} "image"
     FILES ${RES_FILES}
 )
 
+file(GLOB RES_FILES "resources/images/*")
+qt_add_resources(${PROJECT_NAME} "images"
+    PREFIX "/MosuiBasic/resources/images"
+    BASE "${RES_BASE}/images"
+    FILES ${RES_FILES}
+)
+
 qt_add_shaders(${PROJECT_NAME} "mosuibasic_shaders"
     PREFIX "/"
     FILES

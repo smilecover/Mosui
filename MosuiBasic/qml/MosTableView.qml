@@ -798,7 +798,7 @@ MosRectangleInternal {
             anchors.fill: parent
             syncDirection: Qt.Horizontal
             syncView: __cellView
-            reuseItems: false
+            reuseItems: true
             boundsBehavior: Flickable.StopAtBounds
             clip: true
             model: TableModel {
@@ -993,7 +993,7 @@ MosRectangleInternal {
             T.ScrollBar.horizontal: __hScrollBar
             T.ScrollBar.vertical: __vScrollBar
             clip: true
-            reuseItems: false
+            reuseItems: true
             model: TableModel { id: __cellModel }
             delegate: Rectangle {
                 id: __rootItem

@@ -13,7 +13,7 @@ endif()
 qt_add_executable(${PROJECT_NAME})
 
 file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/*/*.qml" "Tools/*.qml" "Tools/*/*.qml" "Tools/*/*/*.qml")
-file(GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Tools/*/*/*.cpp" "Tools/*/*/*.h")
+file(GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Tools/*/*/*.cpp" "Tools/*/*/*.h" "src/*.cpp" "src/*.h")
 
 
 # 资源文件（GLOB 自动匹配，无需手动维护文件列表）
@@ -47,6 +47,7 @@ qt_add_qml_module(
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/Tools/TPInv/TPinvbackend
 )
 
