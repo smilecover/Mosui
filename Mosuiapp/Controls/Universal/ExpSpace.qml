@@ -587,14 +587,14 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
                     MosSpace {
                         layout: 'Row'
 
-                        MosInput { text: 'https://github.com/mengps/MoskarUI' }
+        
                         MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                     }
 
                     MosSpace {
                         layout: 'Row'
 
-                        MosInput { text: 'https://github.com/mengps/MoskarUI' }
+           
                         MosIconButton { iconSource: MosIcon.CopyOutlined }
                     }
 
@@ -647,28 +647,22 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
 
                 MosSpace {
                     layout: 'Row'
-
-                    MosInput { text: 'https://github.com/mengps/MoskarUI' }
                     MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                 }
 
                 MosSpace {
                     layout: 'Row'
-
-                    MosInput { text: 'https://github.com/mengps/MoskarUI' }
                     MosIconButton { iconSource: MosIcon.CopyOutlined }
                 }
 
                 MosSpace {
                     layout: 'Row'
-
                     MosSelect { model: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
                     MosInput { width: 300; text: 'Pukou District, Nanjing' }
                 }
 
                 MosSpace {
                     layout: 'Row'
-
                     MosMultiSelect { width: 300; options: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
                     MosInput { width: 300; text: 'Pukou District, Nanjing' }
                 }
