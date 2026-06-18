@@ -239,7 +239,7 @@ colorText | color | - | 水印文本颜色
                         anchors.margins: 1
                         offset.x: -50
                         offset.y: -50
-                        image: 'https://avatars.githubusercontent.com/u/33405710?v=4'
+                        image: 'https://images8.alphacoders.com/135/thumb-1920-1354199.jpeg'
                         markSize.width: 100
                         markSize.height: 100
                         rotate: slider2.currentValue

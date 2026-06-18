@@ -1,7 +1,6 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
-
+import QtQuick.Controls.Basic
 import MosuiBasic
 
 import '../../Controls'
@@ -19,7 +18,7 @@ Flickable {
             desc: qsTr(`
 # MosSpace 间距\n
 布局并设置组件之间的间距/圆角。\n
-* **模块 { MosuiBasic.Basic }**\n
+* **模块 { MosuiBasic }**\n
 * **继承自 { Loader }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -44,7 +43,6 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
 - MosSpace 当用户需要简化布局和组合组件时使用，自动为子元素计算间距和圆角，其本身是原生固定布局(Row* Column* Grid*)的容器。\n
                        `)
         }
-
 
         MosDescription {
             title: qsTr('代码演示')
@@ -588,11 +586,15 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
 
                     MosSpace {
                         layout: 'Row'
+
+                        MosInput { text: 'https://github.com/mengps/MoskarUI' }
                         MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                     }
 
                     MosSpace {
                         layout: 'Row'
+
+                        MosInput { text: 'https://github.com/mengps/MoskarUI' }
                         MosIconButton { iconSource: MosIcon.CopyOutlined }
                     }
 
@@ -646,12 +648,14 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
                 MosSpace {
                     layout: 'Row'
 
+                    MosInput { text: 'https://github.com/mengps/MoskarUI' }
                     MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                 }
 
                 MosSpace {
                     layout: 'Row'
 
+                    MosInput { text: 'https://github.com/mengps/MoskarUI' }
                     MosIconButton { iconSource: MosIcon.CopyOutlined }
                 }
 
