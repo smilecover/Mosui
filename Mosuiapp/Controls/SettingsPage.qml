@@ -157,40 +157,5 @@ Flickable {
                 }
             }
         }
-        SettingsItem{
-            title: qsTr('背景')
-            itemDelegate: Column {
-            spacing: 10
-            ButtonGroup { id: backgroundGroup }
-            Repeater {
-                model: [
-                    { 'label': qsTr('无'), 'value': 0 },
-                    { 'label': qsTr('分形土地'), 'value': 1 },
-                    { 'label': qsTr('玻璃雨'), 'value': 2 }
-                ]
-                delegate: MosRadio {
-                    property int bgValue: modelData.value
-                    text: modelData.label
-                    ButtonGroup.group: backgroundGroup
-                    onClicked: {
-                        appData.currentBackground = modelData.value;
-                    }
-                    Component.onCompleted: {
-                        checked = appData.currentBackground === modelData.value;
-                    }
-                }
-
-            }
-            Connections {
-                target: appData
-                function onCurrentBackgroundChanged() {
-                    for (let i = 0; i < backgroundGroup.buttons.length; i++) {
-                        backgroundGroup.buttons[i].checked =
-                            backgroundGroup.buttons[i].bgValue === appData.currentBackground;
-                    }
-                }
-            }
-        }
     }
-}
 }

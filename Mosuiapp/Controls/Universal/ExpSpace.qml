@@ -588,15 +588,11 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
 
                     MosSpace {
                         layout: 'Row'
-
-                        MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                         MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                     }
 
                     MosSpace {
                         layout: 'Row'
-
-                        MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                         MosIconButton { iconSource: MosIcon.CopyOutlined }
                     }
 
@@ -650,14 +646,12 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
                 MosSpace {
                     layout: 'Row'
 
-                    MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                     MosButton { type: MosButton.Type_Primary; text: 'Submit' }
                 }
 
                 MosSpace {
                     layout: 'Row'
 
-                    MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                     MosIconButton { iconSource: MosIcon.CopyOutlined }
                 }
 

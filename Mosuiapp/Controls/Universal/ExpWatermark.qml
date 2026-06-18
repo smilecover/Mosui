@@ -16,7 +16,7 @@ Flickable {
 
         MosDescription {
             desc: qsTr(`
-# HusWatermark 水印 \n
+# MosWatermark 水印 \n
 可给页面的任意项加上水印。\n
 * **模块 { MosuiBasic.Basic }**\n
 * **继承自 { Item }**\n
@@ -84,7 +84,7 @@ colorText | color | - | 水印文本颜色
                         color: 'transparent'
                         border.color: MosTheme.Primary.colorTextBase
 
-                        HusWatermark {
+                        MosWatermark {
                             anchors.fill: parent
                             anchors.margins: 1
                             offset.x: -50
@@ -130,7 +130,7 @@ colorText | color | - | 水印文本颜色
                     color: 'transparent'
                     border.color: MosTheme.Primary.colorTextBase
 
-                    HusWatermark {
+                    MosWatermark {
                         anchors.fill: parent
                         anchors.margins: 1
                         offset.x: -50
@@ -186,7 +186,7 @@ colorText | color | - | 水印文本颜色
                         color: 'transparent'
                         border.color: MosTheme.Primary.colorTextBase
 
-                        HusWatermark {
+                        MosWatermark {
                             anchors.fill: parent
                             anchors.margins: 1
                             offset.x: -50
@@ -234,7 +234,7 @@ colorText | color | - | 水印文本颜色
                     color: 'transparent'
                     border.color: MosTheme.Primary.colorTextBase
 
-                    HusWatermark {
+                    MosWatermark {
                         anchors.fill: parent
                         anchors.margins: 1
                         offset.x: -50
