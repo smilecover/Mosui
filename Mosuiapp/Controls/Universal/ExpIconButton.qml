@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosIconButton 图标按钮\n
 带图标的按钮。\n
@@ -40,19 +40,15 @@ colorIcon | color | - | 图标颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 等同于 [MosButton](internal://MosButton)，但提供一个前/后/上/下的可选图标。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosButton'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosIconButton.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

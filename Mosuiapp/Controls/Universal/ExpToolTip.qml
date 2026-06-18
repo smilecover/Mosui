@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosToolTip 文字提示 \n
 单的文字提示气泡框。\n
@@ -36,7 +36,7 @@ colorBg | color | - | 背景颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 鼠标移入则显示提示，移出消失，气泡浮层不承载复杂文本和操作。\n
@@ -44,12 +44,8 @@ colorBg | color | - | 背景颜色
                        `)
         }
 
-        ThemeToken {
-            source: 'MosToolTip'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosToolTip.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosFrame 框架\n
 逻辑控件组的视觉框架。\n
@@ -35,18 +35,15 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当需要在视觉框架内将一组逻辑控件布局在一起时使用。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosFrame.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 
@@ -94,14 +91,12 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                                 Layout.fillWidth: true
                                 layout: 'RowLayout'
 
-                                MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                                 MosButton { Layout.preferredWidth: 80; type: MosButton.Type_Primary; text: 'Submit' }
                             }
                             MosSpace {
                                 Layout.fillWidth: true
                                 layout: 'RowLayout'
 
-                                MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                                 MosIconButton { Layout.preferredWidth: 80; iconSource: MosIcon.CopyOutlined }
                             }
                         }
@@ -140,14 +135,11 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                             Layout.fillWidth: true
                             layout: 'RowLayout'
 
-                            MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                             MosButton { Layout.preferredWidth: 80; type: MosButton.Type_Primary; text: 'Submit' }
                         }
                         MosSpace {
                             Layout.fillWidth: true
                             layout: 'RowLayout'
-
-                            MosInput { text: 'https://github.com/mengps/MosuiBasic' }
                             MosIconButton { Layout.preferredWidth: 80; iconSource: MosIcon.CopyOutlined }
                         }
                     }

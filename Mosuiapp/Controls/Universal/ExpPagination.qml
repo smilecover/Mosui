@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosPagination 分页\n
 分页器用于分隔长列表，每次只加载一个页面。\n
@@ -53,7 +53,7 @@ sizeHint | string | 'normal' | 尺寸提示
 `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当加载/渲染所有数据将花费很多时间时。
@@ -61,12 +61,8 @@ sizeHint | string | 'normal' | 尺寸提示
                        `)
         }
 
-        ThemeToken {
-            source: 'MosPagination'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosPagination.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

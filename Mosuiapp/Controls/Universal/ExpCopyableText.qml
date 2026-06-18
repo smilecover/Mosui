@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCopyableText 可复制文本\n
 在需要可复制的文本时使用(替代Text)。\n
@@ -26,18 +26,15 @@ Flickable {
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 Qml中普通文本(Text)无法复制，因此在需要可复制的文本时建议使用。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCopyableText.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

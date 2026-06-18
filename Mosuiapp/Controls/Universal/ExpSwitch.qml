@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSwitch 开关\n
 使用开关切换两种状态之间。\n
@@ -45,7 +45,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要表示开关状态/两种状态之间的切换时。\n
@@ -53,12 +53,8 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSwitch'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSwitch.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

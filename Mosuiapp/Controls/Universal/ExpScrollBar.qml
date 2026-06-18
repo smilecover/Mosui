@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosScrollBar 滚动条\n
 滚动条是一个交互式栏，用于滚动某个区域或视图到特定位置。\n
@@ -35,19 +35,15 @@ colorIcon | color | - | 图标颜色(即箭头颜色)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当一个项超出其容器大小时使用，提供比原生[ScrollBar]更好的外观和操作体验。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosScrollBar'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosScrollBar.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

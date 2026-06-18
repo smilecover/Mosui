@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosDateTimePickerPanel 日期选择面板 \n
 可选择的日期时间面板。\n
@@ -94,19 +94,15 @@ sizeHint | string | 'normal' | 尺寸提示
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要一个可以点击的日期面板进行选择时。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosDateTimePicker'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosDateTimePickerPanel.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

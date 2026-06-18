@@ -1,6 +1,5 @@
 import QtQuick
-import QtQuick.Controls
-
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import MosuiBasic
 
@@ -11,7 +10,7 @@ Item {
     MosMessage {
         id: message
         z: 999
-        parent: parent
+        parent: rootWindow.captionbar
         width: parent.width
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.bottom
@@ -31,11 +30,11 @@ Item {
             width: parent.width - 15
             spacing: 30
 
-            DocDescription {
+            MosDescription {
                 desc: qsTr(`
 # MosIconText 图标文本\n
 语义化的图标文本或图标。\n
-* **模块 { MosuiBasic.Basic }**\n
+* **模块 { MosuiBasic}**\n
 * **继承自 { [MosText](internal://MosText) }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -51,12 +50,6 @@ colorIcon | color | - | 图标颜色
 contentDescription | string | '' | 内容描述(提高可用性)
 \n**注意** 双色风格图标使用需要多个<Path{1~N}>图标覆盖使用\n
                            `)
-            }
-
-            ThemeToken {
-                id: themeToken
-                source: 'MosIconText'
-                historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosIconText.qml'
             }
         }
     }
@@ -217,7 +210,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                     if (has) {
                         modelData.iconObject.icons.push({
                                                             iconName: key,
-                                                            iconSource: map[key] ?? 0
+                                                            iconSource: map[key]
                                                         });
                     }
                 }

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosRectangle 圆角矩形\n
 在需要任意方向圆角的矩形时使用。\n
@@ -42,18 +42,15 @@ border.style | int | Qt.SolidLine | 边框线样式(来自 Qt.*)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在用户需要任意方向圆角的矩形时使用。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/cpp/controls/husrectangle.cpp'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

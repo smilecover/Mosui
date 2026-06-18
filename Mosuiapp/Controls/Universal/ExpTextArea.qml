@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTextArea 文本域 \n
 通过鼠标或键盘输入内容，是最基础的表单域的包装。\n
@@ -63,19 +63,15 @@ horScrollBar | [MosScrollBar](internal://MosScrollBar) | - | 访问内部水平�
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要用户输入多行表单域内容时。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTextArea'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTextArea.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosMultiCheckBox 多复选框选择器 \n
 下拉多复选框选择器。\n
@@ -80,19 +80,15 @@ enabled | bool | 可选 | 本选择项是否启用
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 弹出一个多选下拉菜单给用户多选操作，用于扩展单项选择器([MosSelect](internal://MosSelect))，或者需要一个更优雅的多选器时。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosMultiCheckBox'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosMultiCheckBox.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

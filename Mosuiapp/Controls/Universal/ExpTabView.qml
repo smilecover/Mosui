@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTabView 标签页\n
 通过选项卡标签切换内容的组件。\n
@@ -90,7 +90,7 @@ contentDelegate | var | 可选 | 本菜单项内容代理(将覆盖contentDelega
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 提供平级的区域将大块内容进行收纳和展现，保持界面整洁。\n
@@ -101,12 +101,8 @@ contentDelegate | var | 可选 | 本菜单项内容代理(将覆盖contentDelega
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTabView'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTabView.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

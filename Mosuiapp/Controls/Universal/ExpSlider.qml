@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSlider 滑动输入条\n
 滑动型输入器，展示当前值和可选范围。。\n
@@ -64,19 +64,15 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要在数值区间/自定义区间内进行选择时，可为连续或离散值。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSlider'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSlider.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosShadow 阴影 \n
 阴影效果。\n
@@ -26,18 +26,15 @@ Flickable {
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要统一的阴影效果时。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosShadow.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

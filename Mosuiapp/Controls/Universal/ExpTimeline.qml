@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTimeline 时间轴 \n
 垂直展示的时间流信息。\n
@@ -81,7 +81,7 @@ contentFormat | enum | 可选 | 本时间节点内容的文本格式(来自 Text
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当有一系列信息需按时间排列时，可正序和倒序。\n
@@ -89,12 +89,8 @@ contentFormat | enum | 可选 | 本时间节点内容的文本格式(来自 Text
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTimeline'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTimeline.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

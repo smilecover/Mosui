@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosContextMenu 上下文菜单\n
 上下文菜单，通常作为右键单击后显示的菜单。\n
@@ -49,19 +49,15 @@ menu | [MosMenu](internal://MosMenu) | - | 访问内部菜单
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要弹窗式菜单时使用（例如右键菜单），非弹窗式菜单请使用：[MosMenu](internal://MosMenu)。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosMenu'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosContextMenu.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 
@@ -222,9 +218,9 @@ menu | [MosMenu](internal://MosMenu) | - | 访问内部菜单
                             onClickMenu:
                                 (deep, key, keyPath, data) => {
                                     if (key === 'Dark') {
-                                        galleryWindow.captionBar.themeCallback();
+                                        rootWindow.captionBar.themeCallback();
                                     } else if (key === 'Light') {
-                                        galleryWindow.captionBar.themeCallback();
+                                        rootWindow.captionBar.themeCallback();
                                     }
                                 }
                         }
@@ -268,9 +264,9 @@ menu | [MosMenu](internal://MosMenu) | - | 访问内部菜单
                         onClickMenu:
                             (deep, key, keyPath, data) => {
                                 if (key === 'Dark' && !MosTheme.isDark) {
-                                    galleryWindow.captionBar.themeCallback();
+                                    rootWindow.captionBar.themeCallback();
                                 } else if (key === 'Light' && MosTheme.isDark) {
-                                    galleryWindow.captionBar.themeCallback();
+                                    rootWindow.captionBar.themeCallback();
                                 }
                             }
                     }

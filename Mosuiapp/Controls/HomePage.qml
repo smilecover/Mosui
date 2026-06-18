@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MosuiBasic
-import QtWebEngine
 
 MosRectangle{
     id: homePage
@@ -20,7 +19,7 @@ MosRectangle{
 
     property real shaderTime: 0
     Timer {
-        running: true
+        running: homePage.currentBackground === HomePage.FractalLand
         repeat: true
         interval: 16
         onTriggered: homePage.shaderTime += 0.01
@@ -46,17 +45,10 @@ MosRectangle{
         property vector4d iMouse: Qt.vector4d(0, 0, 0, 0)
     }
 
-    property Component glassRain: Item{
+    property Component glassRain: Loader {
         anchors.fill: parent
-        WebEngineView {
-            id: webEngine
-            anchors.fill: parent
-            url: "qrc:/html/rain-on-glass.html"
-        }
-        MouseArea {
-            anchors.fill: parent
-            acceptedButtons: Qt.RightButton                
-        }
+        asynchronous: true
+        source: Qt.resolvedUrl("./GlassRainBg.qml")
     }
     
 

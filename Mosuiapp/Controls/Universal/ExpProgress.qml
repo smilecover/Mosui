@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosProgress 进度条 \n
 展示操作的当前进度。\n
@@ -48,7 +48,7 @@ colorInfo | color | - | 进度条信息文本颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在操作需要较长时间才能完成时，为用户显示该操作的当前进度和状态。\n
@@ -57,12 +57,8 @@ colorInfo | color | - | 进度条信息文本颜色
                        `)
         }
 
-        ThemeToken {
-            source: 'MosProgress'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosProgress.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

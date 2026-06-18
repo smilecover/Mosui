@@ -34,7 +34,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosMenu 菜单\n
 为页面和功能提供导航的菜单列表。\n
@@ -131,7 +131,7 @@ bgDelegate | var | 可选 | 本菜单项背景代理(将覆盖menuBgDelegate)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 菜单是一个应用的灵魂，用户依赖导航在各个页面中进行跳转。\n
@@ -141,12 +141,8 @@ bgDelegate | var | 可选 | 本菜单项背景代理(将覆盖menuBgDelegate)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosMenu'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosMenu.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSpin 加载中\n
 用于页面和区块的加载中状态。\n
@@ -46,19 +46,15 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 页面局部处于等待异步数据或正在渲染过程时，合适的加载动效会有效缓解用户的焦虑。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSpin'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSpin.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

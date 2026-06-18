@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosRadio 单选框 \n
 用于在多个备选项中选中单个状态。\n
@@ -39,7 +39,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 用于在多个备选项中选中单个状态。\n
@@ -47,12 +47,8 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosRadio'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosRadio.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

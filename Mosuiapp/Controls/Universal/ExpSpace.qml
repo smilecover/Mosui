@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSpace 间距\n
 布局并设置组件之间的间距/圆角。\n
@@ -38,18 +38,15 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - MosSpace 当用户需要简化布局和组合组件时使用，自动为子元素计算间距和圆角，其本身是原生固定布局(Row* Column* Grid*)的容器。\n
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSpace.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTag 标签 \n
 进行标记和分类的小标签。\n
@@ -48,7 +48,7 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 用于标记事物的属性和维度。\n
@@ -56,12 +56,8 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTag'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTag.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

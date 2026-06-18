@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosImage 图片\n
 可预览的图片。\n
@@ -42,7 +42,7 @@ url | url | 必选 | 图片源
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要展示图片时使用。\n
@@ -50,12 +50,8 @@ url | url | 必选 | 图片源
                        `)
         }
 
-        ThemeToken {
-            source: 'MosImage'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosImage.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSelect 选择器 \n
 下拉选择器。\n
@@ -63,7 +63,7 @@ enabled | bool | 可选 | 本选择项是否启用
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 弹出一个下拉菜单给用户选择操作，用于代替原生的组合框(ComboBox)。\n
@@ -73,12 +73,8 @@ enabled | bool | 可选 | 本选择项是否启用
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSelect'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSelect.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

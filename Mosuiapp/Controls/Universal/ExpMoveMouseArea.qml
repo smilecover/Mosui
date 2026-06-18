@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosMoveMouseArea 移动鼠标区域\n
 提供对任意 Item 进行鼠标移动操作的区域。\n
@@ -35,18 +35,15 @@ maximumY | real | Number.MAX_VALUE | 可移动的最大y坐标
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要实时移动某一项时使用。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosMoveMouseArea.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

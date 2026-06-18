@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosBreadcrumb 面包屑\n
 显示当前页面在系统层级结构中的位置，并能向上返回。\n
@@ -85,7 +85,7 @@ items | array | 可选 | 菜单模型
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当系统拥有超过两级以上的层级结构时；
@@ -94,12 +94,8 @@ items | array | 可选 | 菜单模型
                        `)
         }
 
-        ThemeToken {
-            source: 'MosBreadcrumb'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosBreadcrumb.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosOTPInput 一次性口令输入框 \n
 用于接收和验证一次性口令的输入框组合，通常用于验证码或密码。\n
@@ -61,19 +61,15 @@ sizeHint | string | 'normal' | 尺寸提示
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要用户输入[密码/验证码/激活码]等一次性口令时。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosInput'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosOTPInput.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

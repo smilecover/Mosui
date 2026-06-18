@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSwitchEffect 切换效果 \n
 两个组件之间的切换/过渡效果。\n
@@ -52,18 +52,15 @@ maskColorization | real | 0 | 着色强度(0.0~1.0)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当需要给一个组件到另一个组件的切换时增加特效时。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSwitchEffect.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosLabel 文本标签\n
 扩展了HusText(文本)的功能, 并自带背景和圆角。\n
@@ -36,19 +36,15 @@ sizeHint | string | 'normal' | 尺寸提示
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要统一字体和颜色的并带自背景和圆角的文本时建议使用。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosLabel'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosLabel.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosImagePreview 图片预览\n
 用于预览的图片的基本工具，提供常用的图片变换(平移/缩放/翻转/旋转)操作。\n
@@ -66,19 +66,15 @@ url | url | 必选 | 图片源
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要预览一系列图片时和用户常用变换时使用。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosImage'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosImagePreview.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -107,7 +107,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTableView 表格\n
 展示行列数据。\n
@@ -234,7 +234,7 @@ filterInput | string | 单元格的过滤输入
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当有大量结构化的数据需要展现时。\n
@@ -242,12 +242,8 @@ filterInput | string | 单元格的过滤输入
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTableView'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTableView.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

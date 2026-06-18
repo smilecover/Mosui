@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTreeView 树视图 \n
 多层次的结构列表。\n
@@ -101,7 +101,7 @@ children | array | 可选 | 子节点列表
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 文件夹、组织架构、生物分类、国家地区等等，世间万物的大多数结构都是树形结构。\n
@@ -109,12 +109,8 @@ children | array | 可选 | 子节点列表
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTreeView'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTreeView.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

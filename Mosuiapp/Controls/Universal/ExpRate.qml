@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosRate 评分 \n
 用于对事物进行评分操作。\n
@@ -65,7 +65,7 @@ halfIcon | int丨string | MosIcon.StarFilled丨'' | 半星图标(来自 MosIcon)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要对评价进行展示。
@@ -73,12 +73,8 @@ halfIcon | int丨string | MosIcon.StarFilled丨'' | 半星图标(来自 MosIcon)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosRate'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosRate.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

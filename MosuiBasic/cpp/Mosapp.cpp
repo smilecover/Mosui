@@ -3,11 +3,6 @@
 #include <QtGui/QFontDatabase>
 #include <QtCore/QCoreApplication>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <unistd.h>
-#endif
 // 在 QGuiApplication 构造完成后、QML 引擎创建前注册字体
 static void loadFonts()
 {
@@ -17,20 +12,15 @@ static void loadFonts()
         qWarning() << "MosUI: failed to load font:" << path;
 }
 
-// 利用静态初始化在 main() 入口前注册回调
 // Q_COREAPP_STARTUP_FUNCTION 会在 Q[Core|Gui]Application 构造后调用
 Q_COREAPP_STARTUP_FUNCTION(loadFonts)
 
-Q_GLOBAL_STATIC_WITH_ARGS(bool, g_initialized, (false));
-
-MosApp::~MosApp()
-{
-
-}
+MosApp::~MosApp() = default;
 
 void MosApp::initialize(QQmlEngine *engine)
 {
-    *g_initialized = true;
+    Q_UNUSED(engine);
+    // 预留：未来可在此处执行 QML 引擎相关的初始化
 }
 
 QString MosApp::libName()
@@ -40,7 +30,7 @@ QString MosApp::libName()
 
 QString MosApp::libVersion()
 {
-    return "0.0.1";
+    return QString::fromLatin1(MOSUI_VERSION);
 }
 
 MosApp *MosApp::instance()
@@ -51,15 +41,11 @@ MosApp *MosApp::instance()
 
 MosApp *MosApp::create(QQmlEngine *qmlEngine, QJSEngine *)
 {
-
-    if (!*g_initialized)
-        initialize(qmlEngine);
-
+    Q_UNUSED(qmlEngine);
     return instance();
 }
 
 MosApp::MosApp(QObject *parent)
     : QObject{parent}
 {
-
 }

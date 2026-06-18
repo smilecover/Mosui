@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosRadius 圆角半径\n
 提供四方向的圆角半径类型。\n
@@ -35,15 +35,12 @@ bottomRight | real | -1 | 右下圆角半径
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在用户需要任意方向圆角半径类型时使用。\n
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/cpp/controls/husrectangle.cpp'
-        }
     }
 }

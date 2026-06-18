@@ -47,12 +47,21 @@ compile_commands.json
 *.log
 *.tmp
 *.temp
-*.ini
+
+# Qt Creator / qmlls 配置（保留 .qmlls.ini 不忽略）
+.qmlc
+.qmlc.*
+.qputc
+.qputc.*
+*.pro.user.*
+*.qbs.user.*
 
 .cache/
 .claude/
 .qtcreator/
 /shared/
+/static/
+/build/
+build-*/
 build-clang/
-*.md
 opencode.json

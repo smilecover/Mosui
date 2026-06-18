@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTourFocus 漫游焦点\n
 聚焦于某个功能的焦点。\n
@@ -37,7 +37,7 @@ focusRadius | int | 2 | 焦点圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 用户需要聚焦于某个功能的焦点时使用。\n
@@ -45,12 +45,8 @@ focusRadius | int | 2 | 焦点圆角
                        `)
         }
 
-        ThemeToken {
-            source: 'HusTour'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTourFocus.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

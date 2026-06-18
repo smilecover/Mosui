@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSplitView 分隔视图 \n
 用于水平或垂直布局项目，并在每个项目之间都有一个可拖动的拆分器。\n
@@ -41,7 +41,7 @@ radiusCollapseBar | [MosRadius](internal://MosRadius) | - | 折叠按钮圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 可以水平或垂直地分隔区域。\n
@@ -50,12 +50,8 @@ radiusCollapseBar | [MosRadius](internal://MosRadius) | - | 折叠按钮圆角
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSplitView'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSplitView.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

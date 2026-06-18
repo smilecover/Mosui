@@ -67,8 +67,9 @@ class MOSUIBASIC_EXPORT MosPen: public QObject
 public:
     MosPen(QObject *parent = nullptr) : QObject{parent} { }
 
-    bool isValid() const {
-        return m_width > 0 && m_color.isValid() && m_color.alpha() > 0;
+    bool isVisible() const {
+        return m_width > 0 && m_style != Qt::NoPen
+            && m_color.isValid() && m_color.alpha() > 0;
     }
 };
 

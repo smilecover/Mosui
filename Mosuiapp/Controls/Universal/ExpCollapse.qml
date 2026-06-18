@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCollapse 折叠面板 \n
 可以折叠/展开的内容区域。\n
@@ -80,7 +80,7 @@ contentDelegate | var | 可选 | 本面板内容代理(将覆盖contentDelegate)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 对复杂区域进行分组和隐藏，保持页面的整洁。\n
@@ -88,12 +88,8 @@ contentDelegate | var | 可选 | 本面板内容代理(将覆盖contentDelegate)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosCollapse'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCollapse.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

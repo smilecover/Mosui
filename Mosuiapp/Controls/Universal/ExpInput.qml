@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosInput 输入框 \n
 通过鼠标或键盘输入内容，是最基础的表单域的包装。\n
@@ -59,7 +59,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要用户输入表单域内容时。\n
@@ -67,12 +67,8 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosInput'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosInput.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

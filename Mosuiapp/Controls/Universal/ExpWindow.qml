@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             id: description
             desc: qsTr(`
 # MosWindow 无边框窗口\n
@@ -42,18 +42,15 @@ specialEffect | enum | MosWindow.None | 特殊效果(来自 MosWindow)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要自定义窗口形态时作为基础无边框窗口使用，默认提供一个 [MosCaptionbar](internal://MosCaptionbar)。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosWindow.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

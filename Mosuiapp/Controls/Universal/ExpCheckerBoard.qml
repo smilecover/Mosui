@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCheckerBoard 棋盘格 \n
 显示一个双色棋盘格。\n
@@ -35,19 +35,15 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在用户需要快速创建双色棋盘格时使用。\n
                        `)
         }
 
-        ThemeToken {
-            source: ''
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCheckerBoard.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             id: description
             desc: qsTr(`
 # MosPopup 弹窗\n
@@ -46,19 +46,15 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角半径
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要一个弹出式窗口时使用。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosPopup'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosPopup.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

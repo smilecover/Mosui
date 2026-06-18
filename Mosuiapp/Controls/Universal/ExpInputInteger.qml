@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosInputInteger 整数输入框 \n
 通过鼠标或键盘，输入范围内的整数。\n
@@ -92,19 +92,15 @@ input | [MosInput](internal://MosInput) | - | 访问内部输入框
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当需要获取标准数值时。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosInput'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosInputInteger.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

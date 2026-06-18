@@ -418,7 +418,7 @@ void MosRectangle::paint(QPainter *painter)
         painter->setRenderHint(QPainter::Antialiasing);
 
     auto rect = boundingRect();
-    if (d->m_pen && d->m_pen->isValid()) {
+    if (d->m_pen && d->m_pen->isVisible()) {
         if (rect.width() > d->m_pen->width() * 2) {
             auto dx = d->m_pen->width() * 0.5;
             rect.adjust(dx, 0, -dx, 0);

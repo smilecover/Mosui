@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCheckBox 多选框 \n
 收集用户的多项选择。\n
@@ -42,7 +42,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 在一组可选项中进行多项选择时。\n
@@ -51,12 +51,8 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosCheckBox'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCheckBox.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

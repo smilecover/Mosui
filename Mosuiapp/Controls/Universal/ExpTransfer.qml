@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTransfer 穿梭框 \n
 双栏穿梭选择框。\n
@@ -74,7 +74,7 @@ enabled | bool | 可选 | 是否启用
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要在多个可选项中进行多选时。\n
@@ -83,12 +83,8 @@ enabled | bool | 可选 | 是否启用
                        `)
         }
 
-        ThemeToken {
-            source: 'MosTransfer'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTransfer.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

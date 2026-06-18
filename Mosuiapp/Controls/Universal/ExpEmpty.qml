@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosEmpty 空状态 \n
 显示一个表示空状态的图像和描述文本。\n
@@ -40,19 +40,15 @@ colorDescription | color | - | 描述文本颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 目标元素为空，如查无数据时，在目标元素占位。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosEmpty'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosEmpty.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCarousel 走马灯\n
 一组轮播的区域。\n
@@ -59,7 +59,7 @@ showArrow | bool | false | 是否显示箭头
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 当有一组平级的内容。\n
@@ -68,12 +68,8 @@ showArrow | bool | false | 是否显示箭头
                        `)
         }
 
-        ThemeToken {
-            source: 'MosCarousel'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCarousel.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosColorPickerPanel 颜色选择器面板 \n
 用于选择颜色。\n
@@ -69,19 +69,15 @@ expanded | bool | 可选 | 默认是否展开
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要非弹出式的自定义颜色选择面板时使用。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosColorPicker'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosColorPickerPanel.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

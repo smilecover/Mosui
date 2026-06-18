@@ -22,7 +22,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosPopover 气泡显示框 \n
 点击元素，弹出气泡式的显示框。\n
@@ -59,19 +59,15 @@ descriptionFont | font | - | 描述文本字体
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 目标元素的操作需要展示更多详细信息时，在目标元素附近弹出浮层提示。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosPopover'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosPopover.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

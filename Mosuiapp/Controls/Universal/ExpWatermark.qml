@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # HusWatermark 水印 \n
 可给页面的任意项加上水印。\n
@@ -38,7 +38,7 @@ colorText | color | - | 水印文本颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 页面需要添加水印标识版权时使用。\n
@@ -46,11 +46,8 @@ colorText | color | - | 水印文本颜色
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/cpp/controls/huswatermark.cpp'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

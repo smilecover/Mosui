@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosLiquidGlass 液态玻璃 \n
 液态玻璃/折射效果，灵感来源于 Apple WWDC 2025 液态玻璃 (Liquid Glass) 设计风格。\n
@@ -39,18 +39,15 @@ radiusBg | [MosRadius](internal://MosRadius) | - | 背景圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要实现类似液态玻璃的折射/磨砂效果时。
                        `)
         }
 
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosLiquidGlass.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

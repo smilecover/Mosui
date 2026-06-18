@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCard 卡片 \n
 通用卡片容器。\n
@@ -59,19 +59,14 @@ colorBodyDescription | color | - | 主体部分描述颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 最基础的卡片容器，可承载文字、列表、图片、段落。
                        `)
         }
 
-        ThemeToken {
-            source: 'MosCard'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCard.qml'
-        }
-
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

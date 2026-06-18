@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosAutoComplete 自动完成 \n
 输入框自动完成功能。\n
@@ -68,7 +68,7 @@ value | string | 可选 | 值
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 需要一个输入框而不是选择器。\n
@@ -79,12 +79,8 @@ value | string | 可选 | 值
                        `)
         }
 
-        ThemeToken {
-            source: 'MosAutoComplete'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosAutoComplete.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

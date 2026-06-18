@@ -1,6 +1,5 @@
 import QtQuick
-import QtQuick.Controls
-
+import QtQuick.Controls.Basic
 import MosuiBasic
 
 import '../../Controls'
@@ -14,11 +13,11 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosMessage 消息提示 \n
 全局/页面内展示操作反馈信息。\n
-* **模块 { MosuiBasic.Basic }**\n
+* **模块 { MosuiBasic }**\n
 * **继承自 { Item }**\n
 \n<br/>
 \n### 支持的代理：\n
@@ -76,7 +75,7 @@ colorIcon | color | 可选 | 消息图标颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 可提供成功、警告和错误等反馈信息。\n
@@ -84,12 +83,7 @@ colorIcon | color | 可选 | 消息图标颜色
                        `)
         }
 
-        ThemeToken {
-            source: 'MosMessage'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosMessage.qml'
-        }
-
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 
@@ -97,11 +91,11 @@ colorIcon | color | 可选 | 消息图标颜色
             width: parent.width
             descTitle: qsTr('基本用法')
             desc: qsTr(`
-一般消息，**注意** 推荐通过将 \`parent\` 设置为窗口标题栏(window.captionBar)从而将其置于顶层。\n
+一般消息，**注意** 推荐通过将 \`parent\` 设置为窗口标题栏(window.captionbar)从而将其置于顶层。\n
                        `)
             code: `
                 import QtQuick
-                import MosuiBasic
+                import MoskarUI.Basic
 
                 Item {
                     width: parent.width
@@ -109,7 +103,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     MosMessage {
                         id: message
                         z: 999
-                        parent: root.captionBar
+                        parent: root.captionbar
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
@@ -119,27 +113,26 @@ colorIcon | color | 可选 | 消息图标颜色
                         type: MosButton.Type_Primary
                         text: 'Display normal message'
                         onClicked: {
-                            message.info('Hello, MosuiBasic!');
+                            message.info('Hello, MoskarUI!');
                         }
                     }
                 }
             `
-            exampleDelegate: Item {
+            exampleDelegate: Row {
                 MosMessage {
                     id: message
                     z: 999
+                    parent: rootWindow.captionbar
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
+                    anchors.top: parent.bottom
                 }
 
-                Row {
-                    MosButton {
-                        type: MosButton.Type_Primary
-                        text: 'Display normal message'
-                        onClicked: {
-                            message.info('Hello, MosuiBasic!');
-                        }
+                MosButton {
+                    type: MosButton.Type_Primary
+                    text: 'Display normal message'
+                    onClicked: {
+                        message.info('Hello, MoskarUI!');
                     }
                 }
             }
@@ -162,7 +155,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     MosMessage {
                         id: message1
                         z: 999
-                        parent: root.captionBar
+                        parent: root.captionbar
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
@@ -190,37 +183,36 @@ colorIcon | color | 可选 | 消息图标颜色
                     }
                 }
             `
-            exampleDelegate: Item {
+            exampleDelegate: Row {
+                spacing: 10
+
                 MosMessage {
                     id: message1
                     z: 999
+                    parent: rootWindow.captionbar
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
+                    anchors.top: parent.bottom
                 }
 
-                Row {
-                    spacing: 10
-
-                    MosButton {
-                        text: 'Success'
-                        onClicked: {
-                            message1.success('This is a success message');
-                        }
+                MosButton {
+                    text: 'Success'
+                    onClicked: {
+                        message1.success('This is a success message');
                     }
+                }
 
-                    MosButton {
-                        text: 'Error'
-                        onClicked: {
-                            message1.error('This is an error message');
-                        }
+                MosButton {
+                    text: 'Error'
+                    onClicked: {
+                        message1.error('This is an error message');
                     }
+                }
 
-                    MosButton {
-                        text: 'Warning'
-                        onClicked: {
-                            message1.warning('This is a warning message');
-                        }
+                MosButton {
+                    text: 'Warning'
+                    onClicked: {
+                        message1.warning('This is a warning message');
                     }
                 }
             }
@@ -244,7 +236,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     MosMessage {
                         id: message2
                         z: 999
-                        parent: root.captionBar
+                        parent: root.captionbar
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
@@ -262,27 +254,26 @@ colorIcon | color | 可选 | 消息图标颜色
                     }
                 }
             `
-            exampleDelegate: Item {
+            exampleDelegate: Row {
+                spacing: 10
+
                 MosMessage {
                     id: message2
                     z: 999
+                    parent: rootWindow.captionbar
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
+                    anchors.top: parent.bottom
                 }
 
-                Row {
-                    spacing: 10
-
-                    MosButton {
-                        text: 'Customized display duration'
-                        onClicked: {
-                            message2.open({
-                                              'type': MosMessage.Type_Success,
-                                              'message': 'This is a prompt message for success, and it will disappear in 10 seconds',
-                                              'duration': 10000
-                                          });
-                        }
+                MosButton {
+                    text: 'Customized display duration'
+                    onClicked: {
+                        message2.open({
+                                          'type': MosMessage.Type_Success,
+                                          'message': 'This is a prompt message for success, and it will disappear in 10 seconds',
+                                          'duration': 10000
+                                      });
                     }
                 }
             }
@@ -306,7 +297,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     MosMessage {
                         id: message3
                         z: 999
-                        parent: root.captionBar
+                        parent: root.captionbar
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
@@ -335,20 +326,20 @@ colorIcon | color | 可选 | 消息图标颜色
                     }
                 }
             `
-            exampleDelegate: Item {
+            exampleDelegate: Row {
+                spacing: 10
+
                 MosMessage {
                     id: message3
                     z: 999
+                    parent: rootWindow.captionbar
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
+                    anchors.top: parent.bottom
                 }
 
-                Row {
-                    spacing: 10
-
-                    MosButton {
-                        property int index: 0
+                MosButton {
+                    property int index: 0
                     text: 'Display a loading indicator'
                     onClicked: {
                         let key = String(++index);
@@ -358,15 +349,15 @@ colorIcon | color | 可选 | 消息图标颜色
                                           'message': 'Action in progress...',
                                           'duration': 60 * 60 * 1000
                                       });
-                        setTimeout(() => message3.close(key), 2500);
+                        let msg = message3;
+                        setTimeout(() => msg.close(key), 2500);
                     }
 
                     function setTimeout(callback, interval) {
-                        let timer = Qt.createQmlObject(`import QtQuick; Timer{}`, Qt.application);
+                        let timer = Qt.createQmlObject(`import QtQuick; Timer{}`, this);
                         timer.interval = interval;
                         timer.triggered.connect(() => { callback(); timer.destroy(); });
                         timer.start();
-                    }
                     }
                 }
             }
@@ -390,7 +381,7 @@ colorIcon | color | 可选 | 消息图标颜色
                     MosMessage {
                         id: message4
                         z: 999
-                        parent: root.captionBar
+                        parent: root.captionbar
                         width: parent.width
                         anchors.horizontalCenter: parent.horizontalCenter
                         anchors.top: parent.bottom
@@ -410,27 +401,26 @@ colorIcon | color | 可选 | 消息图标颜色
                     }
                 }
             `
-            exampleDelegate: Item {
+            exampleDelegate: Row {
                 MosMessage {
                     id: message4
                     z: 999
+                    parent: rootWindow.captionbar
                     width: parent.width
                     anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.top: parent.top
+                    anchors.top: parent.bottom
                     showCloseButton: true
                 }
 
-                Row {
-                    MosButton {
-                        text: 'Display custom message'
-                        type: MosButton.Type_Primary
-                        onClicked: {
-                            message4.open({
-                                              'message': 'This is a custom message',
-                                              'iconSource': MosIcon.AccountBookOutlined,
-                                              'colorIcon': 'red'
-                                          });
-                        }
+                MosButton {
+                    text: 'Display custom message'
+                    type: MosButton.Type_Primary
+                    onClicked: {
+                        message4.open({
+                                          'message': 'This is a custom message',
+                                          'iconSource': MosIcon.AccountBookOutlined,
+                                          'colorIcon': 'red'
+                                      });
                     }
                 }
             }

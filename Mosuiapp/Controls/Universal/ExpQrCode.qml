@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosQrCode 二维码 \n
 能够将文本转换生成二维码的组件，支持自定义配色和 Logo 配置。\n
@@ -39,19 +39,15 @@ colorBg | color | 'transparent' | 背景颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当需要将文本转换成为二维码时使用。\n
                        `)
         }
 
-        ThemeToken {
-            source: ''
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/cpp/controls/husqrcode.cpp'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

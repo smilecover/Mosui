@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosModal 对话框 \n
 展示一个对话框，提供标题、内容区、操作区。\n
@@ -64,19 +64,15 @@ descriptionFont | font | - | 描述文本字体
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 需要用户处理事务，又不希望跳转页面以致打断工作流程时，可以使用 \`MosModal\` 在当前页面打开一个浮层，承载相应的操作。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'MosModal'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosModal.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

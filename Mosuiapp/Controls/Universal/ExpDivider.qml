@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosDivider 分割线\n
 区隔内容的分割线。\n
@@ -43,7 +43,7 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 对不同章节的文本段落进行分割。\n
@@ -51,12 +51,8 @@ contentDescription | string | '' | 内容描述(提高可用性)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosDivider'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosDivider.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

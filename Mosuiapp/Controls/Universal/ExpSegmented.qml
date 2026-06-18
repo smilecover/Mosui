@@ -13,7 +13,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosSegmented 分段控制器 \n
 用于展示多个选项并允许用户选择其中单个选项。\n
@@ -82,7 +82,7 @@ iconSource | int丨string | 可选 | 本标签的图标源
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 用于展示多个选项并允许用户选择其中单个选项。\n
@@ -90,12 +90,8 @@ iconSource | int丨string | 可选 | 本标签的图标源
                        `)
         }
 
-        ThemeToken {
-            source: 'MosSegmented'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosSegmented.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

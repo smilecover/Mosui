@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosCaptionButton 标题按钮\n
 一般用于窗口标题栏的按钮。\n
@@ -32,19 +32,15 @@ noDisabledState | bool | false | 无禁用状态(即被禁用时不会更改颜�
                        `)
         }
 
-        ThemeToken {
-            source: 'MosCaptionButton'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosCaptionButton.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 一般配合无边框窗口使用，用于窗口标题栏的自定义按钮。
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

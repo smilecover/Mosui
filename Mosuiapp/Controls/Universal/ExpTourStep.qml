@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosTourStep 漫游式引导\n
 用于分步引导用户了解产品功能的气泡组件。\n
@@ -74,19 +74,15 @@ cardRadius | int | 可选 | 本步骤卡片圆角
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 常用于引导用户分步了解产品功能。\n
                        `)
         }
 
-        ThemeToken {
-            source: 'HusTour'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosTourStep.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

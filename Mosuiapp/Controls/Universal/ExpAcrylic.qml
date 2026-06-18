@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosAcrylic 亚克力 \n
 亚克力/毛玻璃效果。\n
@@ -38,18 +38,13 @@ luminosity | real | 0.01 | 亮度
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 当用户需要实现[亚克力/毛玻璃]的效果时。
                        `)
         }
-
-        ThemeToken {
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosAcrylic.qml'
-        }
-
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

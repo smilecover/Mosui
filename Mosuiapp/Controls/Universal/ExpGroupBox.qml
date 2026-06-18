@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosGroupBox 分组框 \n
 在一个有标题的视觉框架内将一组逻辑控件布局在一起。\n
@@ -37,19 +37,15 @@ sizeHint | string | 'normal' | 尺寸提示
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在用户把一个有标题的视觉框架内将一组逻辑控件布局在一起时使用。\n
                        `)
         }
 
-        ThemeToken {
-            source: ''
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosGroupBox.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

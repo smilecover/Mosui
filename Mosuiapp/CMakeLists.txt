@@ -64,31 +64,26 @@ qt_add_shaders(${PROJECT_NAME} "shaders"
 # 链接库
 # 静态链接 MosuiBasic 时必须使用 whole-archive，
 # 否则链接器会丢弃静态库中的资源初始化对象文件（shader 资源、QML 缓存等）
+set(MOSUIAPP_QT_LIBS
+    Qt6::Core
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::WebView
+    Qt6::Graphs
+    Qt6::Charts
+    $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:Qt6::WebEngineQuick>
+    Qt6::Core5Compat
+)
 if(MOSUIBASIC_BUILD_STATIC)
     target_link_libraries(${PROJECT_NAME} PRIVATE
         $<LINK_LIBRARY:WHOLE_ARCHIVE,MosuiBasic>
-        Qt6::Core
-        Qt6::Qml
-        Qt6::Quick
-        Qt6::QuickControls2
-        Qt6::WebView
-        Qt6::Graphs
-        Qt6::Charts
-        $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:Qt6::WebEngineQuick>
-        Qt6::Core5Compat
+        ${MOSUIAPP_QT_LIBS}
     )
 else()
     target_link_libraries(${PROJECT_NAME} PRIVATE
         MosuiBasic
-        Qt6::Core
-        Qt6::Qml
-        Qt6::Quick
-        Qt6::QuickControls2
-        Qt6::WebView
-        Qt6::Graphs
-        Qt6::Charts
-        $<$<BOOL:${Qt6WebEngineQuick_FOUND}>:Qt6::WebEngineQuick>
-        Qt6::Core5Compat
+        ${MOSUIAPP_QT_LIBS}
     )
 endif()
  
@@ -106,8 +101,10 @@ if(UNIX AND NOT APPLE)
 endif()
 
 # ====== 修正 .qmlls.ini ======
+# 从 Qt6_DIR 推导 Qt 安装根目录（避免硬编码路径）
+get_filename_component(QT6_PREFIX "${Qt6_DIR}/../../.." ABSOLUTE)
 cmake_language(DEFER CALL file WRITE
     "${CMAKE_CURRENT_SOURCE_DIR}/.qmlls.ini"
-    "[General]\nbuildDir=\"${CMAKE_SOURCE_DIR}/static\"\nno-cmake-calls=false\ndocDir=D:/Qt/Docs/Qt-6.8.3\nimportPaths=\"D:/Qt/6.8.3/msvc2022_64/qml;${CMAKE_SOURCE_DIR}/static\"\n"
+    "[General]\nbuildDir=\"${CMAKE_SOURCE_DIR}/static\"\nno-cmake-calls=false\ndocDir=${QT6_PREFIX}/Docs/Qt-${Qt6_VERSION}\nimportPaths=\"${QT6_PREFIX}/qml;${CMAKE_SOURCE_DIR}/static\"\n"
 )
 

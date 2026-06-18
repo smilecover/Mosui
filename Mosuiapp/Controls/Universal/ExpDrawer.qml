@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosDrawer 抽屉 \n
 屏幕边缘滑出的浮层面板。\n
@@ -42,7 +42,7 @@ colorOverlay | color | - | 覆盖层颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 抽屉从父窗体边缘滑入，覆盖住部分父窗体内容。用户在抽屉内操作时不必离开当前任务，操作完成后，可以平滑地回到原任务。
@@ -51,12 +51,8 @@ colorOverlay | color | - | 覆盖层颜色
                        `)
         }
 
-        ThemeToken {
-            source: 'MosDrawer'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosDrawer.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

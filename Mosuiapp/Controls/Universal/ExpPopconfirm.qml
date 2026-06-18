@@ -22,7 +22,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosPopconfirm 气泡确认框 \n
 点击元素，弹出气泡式的确认框。\n
@@ -47,7 +47,7 @@ cancelText | string | '' | 取消文本
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 目标元素的操作需要用户进一步的确认时，在目标元素附近弹出浮层提示，询问用户。\n
@@ -55,12 +55,8 @@ cancelText | string | '' | 取消文本
                        `)
         }
 
-        ThemeToken {
-            source: 'MosPopconfirm'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosPopconfirm.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

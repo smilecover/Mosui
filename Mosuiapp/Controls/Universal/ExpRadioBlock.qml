@@ -15,7 +15,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosRadioBlock 单选块(HusRadio变种) \n
 用于在多个备选项中选中单个状态。\n
@@ -71,7 +71,7 @@ toolTip.timeout | int | 可选 | 文字提示超时(ms)
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 - 用于在多个备选项中选中单个状态。\n
@@ -81,12 +81,8 @@ toolTip.timeout | int | 可选 | 文字提示超时(ms)
                        `)
         }
 
-        ThemeToken {
-            source: 'MosRadioBlock'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosRadioBlock.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 

@@ -14,7 +14,7 @@ Flickable {
         width: parent.width - 15
         spacing: 30
 
-        DocDescription {
+        MosDescription {
             desc: qsTr(`
 # MosNotification 通知提醒框 \n
 全局/页面内展示通知提醒信息。\n
@@ -89,7 +89,7 @@ colorIcon | color | 可选 | 通知图标颜色
                        `)
         }
 
-        Description {
+        MosDescription {
             title: qsTr('何时使用')
             desc: qsTr(`
 在系统八个方向显示通知提醒信息。经常用于以下情况：\n
@@ -99,12 +99,8 @@ colorIcon | color | 可选 | 通知图标颜色
                        `)
         }
 
-        ThemeToken {
-            source: 'MosNotification'
-            historySource: 'https://github.com/mengps/MosuiBasic/blob/master/src/imports/MosNotification.qml'
-        }
 
-        Description {
+        MosDescription {
             title: qsTr('代码演示')
         }
 
