@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="/">
-    <file alias="/qt/qml/Mosuiapp">E:/qt/Mosui/static/Mosuiapp</file>
-
-  </qresource>
-</RCC>
