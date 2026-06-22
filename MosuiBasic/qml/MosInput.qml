@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.impl
 import QtQuick.Templates as T
 import MosuiBasic
 
@@ -146,6 +147,11 @@ T.TextField {
 
     objectName: '__MosInput__'
     focus: true
+    implicitWidth: implicitBackgroundWidth + leftInset + rightInset
+                   || Math.max(contentWidth, __placeholder.implicitWidth) + leftPadding + rightPadding
+    implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset,
+                             contentHeight + topPadding + bottomPadding,
+                             __placeholder.implicitHeight + topPadding + bottomPadding)
     padding: 6 * sizeRatio
     leftPadding: (__private.leftHasIcons ? 5 : 10) * sizeRatio + leftIconPadding + leftClearIconPadding
     rightPadding: (__private.rightHasIcons ? 5 : 10) * sizeRatio + rightIconPadding + rightClearIconPadding
@@ -187,6 +193,21 @@ T.TextField {
         property bool rightHasIcons: root.rightIconPadding + root.rightClearIconPadding > 0
         property int iconSize: __iconLoader.active ? __iconLoader.width : 0
         property int clearIconSize: __clearIconLoader.active ? __clearIconLoader.width : 0
+    }
+
+    PlaceholderText {
+        id: __placeholder
+        x: root.leftPadding
+        y: root.topPadding
+        width: root.width - (root.leftPadding + root.rightPadding)
+        height: root.height - (root.topPadding + root.bottomPadding)
+        text: root.placeholderText
+        font: root.font
+        color: root.placeholderTextColor
+        verticalAlignment: root.verticalAlignment
+        visible: !root.length && !root.preeditText && (!root.activeFocus || root.horizontalAlignment !== Qt.AlignHCenter)
+        elide: Text.ElideRight
+        renderType: root.renderType
     }
 
     Loader {

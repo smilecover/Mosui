@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     engine.loadFromModule("Mosuiapp", "Main");
-    qDebug() << MosApp::libName() << MosApp::libVersion();
+    // qDebug() << MosApp::libName() << MosApp::libVersion();
 
 
 

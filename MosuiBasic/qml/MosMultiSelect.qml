@@ -418,7 +418,7 @@ MosSelect {
 
         property var selectedKeysMap: new Map
 
-        function contains(key: string) {
+        function contains(key: string): bool {
             return selectedKeysMap.has(key);
         }
 

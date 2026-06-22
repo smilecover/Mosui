@@ -82,7 +82,7 @@ tpinv::RingBuffer *Tpinvcontrolprocess::cmdBuffer() const
 }
 int Tpinvcontrolprocess::Initprocess() const
 {
-    qDebug() << "初始化逆变器控制进程";
+    // qDebug() << "初始化逆变器控制进程";
     return 0;
 }
 Tpinvcontrolprocess::~Tpinvcontrolprocess() = default;

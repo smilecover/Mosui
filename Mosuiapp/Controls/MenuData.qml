@@ -35,9 +35,7 @@ QtObject {
             iconSource: MosIcon.ButtonOutlined,
             menuChildren: [
                 { key:'ExpMosButton', label:qsTr('按钮'), iconSource: MosIcon.ButtonOutlined, source: './Controls/Universal/ExpMosButton.qml' },
-                { key:'ExpButton', label:qsTr('按钮(详)'), iconSource: MosIcon.ButtonOutlined, source: './Controls/Universal/ExpButton.qml' },
                 { key:'ExpMosButtonBlock', label:qsTr('按钮块'), iconSource: MosIcon.ButtonOutlined, source: './Controls/Universal/ExpMosButtonBlock.qml' },
-                { key:'ExpButtonBlock', label:qsTr('按钮块(详)'), iconSource: MosIcon.ButtonOutlined, source: './Controls/Universal/ExpButtonBlock.qml' },
                 { key:'ExpIconButton', label:qsTr('图标按钮'), iconSource: MosIcon.RocketOutlined, source: './Controls/Universal/ExpIconButton.qml' },
             ]
         },
@@ -89,7 +87,6 @@ QtObject {
                 { key:'ExpBreadcrumb', label:qsTr('面包屑'), iconSource: MosIcon.RightOutlined, source: './Controls/Universal/ExpBreadcrumb.qml' },
                 { key:'ExpTransfer', label:qsTr('穿梭框'), iconSource: MosIcon.SwapOutlined, source: './Controls/Universal/ExpTransfer.qml' },
                 { key:'ExpProgress', label:qsTr('进度条'), iconSource: MosIcon.DashboardOutlined, source: './Controls/Universal/ExpProgress.qml' },
-                { key:'ExpQrCode', label:qsTr('二维码'), iconSource: MosIcon.SafetyOutlined, source: './Controls/Universal/ExpQrCode.qml' },
             ]
         },
         // ====== Feedback 反馈 ======
@@ -128,9 +125,7 @@ QtObject {
             iconSource: MosIcon.CaptionbarOutlined,
             menuChildren: [
                 { key:'ExpMosCaptionbar', label:qsTr('标题栏'), iconSource: MosIcon.CaptionbarOutlined, source: './Controls/Universal/ExpMosCaptionbar.qml' },
-                { key:'ExpCaptionBar', label:qsTr('标题栏(详)'), iconSource: MosIcon.CaptionbarOutlined, source: './Controls/Universal/ExpCaptionBar.qml' },
                 { key:'ExpMosCaptionButton', label:qsTr('标题按钮'), iconSource: MosIcon.CaptionbarOutlined, source: './Controls/Universal/ExpMosCaptionButton.qml' },
-                { key:'ExpCaptionButton', label:qsTr('标题按钮(详)'), iconSource: MosIcon.CaptionbarOutlined, source: './Controls/Universal/ExpCaptionButton.qml' },
                 { key:'ExpWindow', label:qsTr('窗口'), iconSource: MosIcon.BorderOutlined, source: './Controls/Universal/ExpWindow.qml' },
             ]
         },

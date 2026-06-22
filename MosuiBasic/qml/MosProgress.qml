@@ -41,7 +41,7 @@ T.Control {
                 case MosProgress.Status_Success:
                 return root.type === MosProgress.Type_Line ? MosIcon.CheckCircleFilled : MosIcon.CheckOutlined;
                 case MosProgress.Status_Exception:
-                return root.type === MosProgress.Type_Line ? MosIcon.CloseCircleFilled : MosIcon.CloseOutlined;
+                return root.type === MosProgress.Type_Line ? (MosIcon.CloseCircleFilled ?? MosIcon.CloseSquareFilled) : MosIcon.CloseOutlined;
                 default: return `${root.percent.toFixed(root.precision)}%`;
             }
         }
@@ -69,7 +69,10 @@ T.Control {
         font.family: isIcon ? 'MOSUI' : root.font.family
         font.pixelSize: type === MosProgress.Type_Line ? parseInt(root.font.pixelSize) + (!isIcon ? 0 : 2) :
                                                          parseInt(root.font.pixelSize) + (!isIcon ? 8 : 16)
-        text: isIcon ? String.fromCharCode(formatText) : formatText
+        text: {
+            const fmt = formatText ?? ''
+            return isIcon ? String.fromCharCode(fmt) : fmt
+        }
         property var formatText: root.formatter()
         property bool isIcon: typeof formatText == 'number'
     }

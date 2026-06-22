@@ -1,6 +1,6 @@
 import QtQuick
 import MosuiBasic
-
+import './Controls'
 QtObject {
     id: root
     objectName: '__MenuModel__'

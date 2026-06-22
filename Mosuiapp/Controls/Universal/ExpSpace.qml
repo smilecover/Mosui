@@ -565,13 +565,14 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
 
         CodeBox {
             width: parent.width
-            descTitle: qsTr('常见组合')
+            descTitle: qsTr('输入框组合')
             desc: qsTr(`
-一些常见的组合例子。\n
+常见的输入框搭配模式。\n
+* 电话输入：区号 + 号码\n
+* 搜索模式：输入框 + 搜索按钮\n
                        `)
             code: `
                 import QtQuick
-                import QtQuick.Layouts
                 import MosuiBasic
 
                 Column {
@@ -587,16 +588,44 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
                     MosSpace {
                         layout: 'Row'
 
-        
-                        MosButton { type: MosButton.Type_Primary; text: 'Submit' }
+                        MosInput { width: 200; text: 'search content' }
+                        MosIconButton { type: MosButton.Type_Outlined; iconSource: MosIcon.SearchOutlined }
                     }
+                }
+            `
+            exampleDelegate: Column {
+                spacing: 10
 
-                    MosSpace {
-                        layout: 'Row'
+                MosSpace {
+                    layout: 'Row'
 
-           
-                        MosIconButton { iconSource: MosIcon.CopyOutlined }
-                    }
+                    MosInput { width: 100; text: '0571' }
+                    MosInput { width: 150; text: '26888888' }
+                }
+
+                MosSpace {
+                    layout: 'Row'
+
+                    MosInput { width: 200; text: 'search content' }
+                    MosIconButton { type: MosButton.Type_Outlined; iconSource: MosIcon.SearchOutlined }
+                }
+            }
+        }
+
+        CodeBox {
+            width: parent.width
+            descTitle: qsTr('选择器组合')
+            desc: qsTr(`
+选择器与输入框联动，常用于省市区联动等场景。\n
+* 单选联动：MosSelect + MosInput\n
+* 多选联动：MosMultiSelect + MosInput\n
+                       `)
+            code: `
+                import QtQuick
+                import MosuiBasic
+
+                Column {
+                    spacing: 10
 
                     MosSpace {
                         layout: 'Row'
@@ -611,6 +640,87 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
                         MosMultiSelect { width: 300; options: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
                         MosInput { width: 300; text: 'Pukou District, Nanjing' }
                     }
+                }
+            `
+            exampleDelegate: Column {
+                spacing: 10
+
+                MosSpace {
+                    layout: 'Row'
+
+                    MosSelect { model: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
+                    MosInput { width: 300; text: 'Pukou District, Nanjing' }
+                }
+
+                MosSpace {
+                    layout: 'Row'
+
+                    MosMultiSelect { width: 300; options: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
+                    MosInput { width: 300; text: 'Pukou District, Nanjing' }
+                }
+            }
+        }
+
+        CodeBox {
+            width: parent.width
+            descTitle: qsTr('按钮组合')
+            desc: qsTr(`
+按钮和图标按钮在 MosSpace 中的使用方式。\n
+* 操作按钮：MosButton\n
+* 图标按钮：MosIconButton\n
+                       `)
+            code: `
+                import QtQuick
+                import MosuiBasic
+
+                Column {
+                    spacing: 10
+
+                    MosSpace {
+                        layout: 'Row'
+
+                        MosButton { type: MosButton.Type_Primary; text: 'Submit' }
+                    }
+
+                    MosSpace {
+                        layout: 'Row'
+
+                        MosIconButton { iconSource: MosIcon.CopyOutlined }
+                    }
+                }
+            `
+            exampleDelegate: Column {
+                spacing: 10
+
+                MosSpace {
+                    layout: 'Row'
+
+                    MosButton { type: MosButton.Type_Primary; text: 'Submit' }
+                }
+
+                MosSpace {
+                    layout: 'Row'
+
+                    MosIconButton { iconSource: MosIcon.CopyOutlined }
+                }
+            }
+        }
+
+        CodeBox {
+            width: parent.width
+            descTitle: qsTr('日期与颜色选择器')
+            desc: qsTr(`
+日期范围和颜色选择器的组合用法。\n
+* 日期范围：开始日期 + 分隔符 + 结束日期\n
+* 颜色搭配：输入框 + 颜色选择器\n
+                       `)
+            code: `
+                import QtQuick
+                import QtQuick.Layouts
+                import MosuiBasic
+
+                Column {
+                    spacing: 10
 
                     MosSpace {
                         layout: 'Row'
@@ -637,35 +747,6 @@ layout === 'Grid/GridLayout' 用法，等同于使用原生 \`Grid/GridLayout\`�
             `
             exampleDelegate: Column {
                 spacing: 10
-
-                MosSpace {
-                    layout: 'Row'
-
-                    MosInput { width: 100; text: '0571' }
-                    MosInput { width: 150; text: '26888888' }
-                }
-
-                MosSpace {
-                    layout: 'Row'
-                    MosButton { type: MosButton.Type_Primary; text: 'Submit' }
-                }
-
-                MosSpace {
-                    layout: 'Row'
-                    MosIconButton { iconSource: MosIcon.CopyOutlined }
-                }
-
-                MosSpace {
-                    layout: 'Row'
-                    MosSelect { model: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
-                    MosInput { width: 300; text: 'Pukou District, Nanjing' }
-                }
-
-                MosSpace {
-                    layout: 'Row'
-                    MosMultiSelect { width: 300; options: [{ label: 'Jiangsu' }, { label: 'Hubei' }] }
-                    MosInput { width: 300; text: 'Pukou District, Nanjing' }
-                }
 
                 MosSpace {
                     layout: 'Row'

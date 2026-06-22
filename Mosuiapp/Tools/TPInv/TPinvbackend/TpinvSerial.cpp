@@ -27,7 +27,7 @@ TpinvSerial *TpinvSerial::instance()
 }
 int TpinvSerial::InitTpinvSerial()
 {
-    qDebug() << "初始化逆变器串口通信";
+    // qDebug() << "初始化逆变器串口通信";
 
     return 0;
 }
