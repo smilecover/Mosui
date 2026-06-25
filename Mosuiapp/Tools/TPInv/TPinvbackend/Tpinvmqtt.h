@@ -17,16 +17,17 @@ class Tpinvmqtt : public QObject
     QML_SINGLETON
     QML_NAMED_ELEMENT(TpinvMqtt)
 
-    // ── MQTT 连接配置 ──
-    MOSUI_PROPERTY_INIT(QString, host, setHost, "127.0.0.1")
-    MOSUI_PROPERTY_INIT(int,     port, setPort, 1883)
-    MOSUI_PROPERTY_INIT(QString, clientId, setClientId, "")
-    MOSUI_PROPERTY_INIT(QString, username, setUsername, "")
-    MOSUI_PROPERTY_INIT(QString, password, setPassword, "")
+    // ── MQTT 连接配置 (委托给 MosMqttManager，实现多页面共享数据) ──
+    Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged FINAL)
+    Q_PROPERTY(int port READ port WRITE setPort NOTIFY portChanged FINAL)
+    Q_PROPERTY(QString clientId READ clientId WRITE setClientId NOTIFY clientIdChanged FINAL)
+    Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged FINAL)
+    Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
 
     // ── 主题配置 ──
-    MOSUI_PROPERTY_INIT(QString, controlTopic, setControlTopic, "tpinv/control")
-    MOSUI_PROPERTY_INIT(QString, dataTopic,    setDataTopic,    "tpinv/data")
+    MOSUI_PROPERTY_INIT(QString, controlTopic,  setControlTopic,  "tpinv/control")
+    MOSUI_PROPERTY_INIT(QString, dataTopic,     setDataTopic,     "tpinv/data")
+    MOSUI_PROPERTY_INIT(QString, waveDataTopic, setWaveDataTopic, "tpinv/wave/data")
 
     // ── 连接状态 (只读) ──
     Q_PROPERTY(bool isConnected READ isConnected NOTIFY isConnectedChanged FINAL)
@@ -38,6 +39,23 @@ public:
     static Tpinvmqtt *create(QQmlEngine *, QJSEngine *);
 
     bool isConnected() const;
+
+    // ── 委托属性 (读写 MosMqttManager，实现多页面共享) ──
+    QString host() const;
+    int port() const;
+    QString clientId() const;
+    QString username() const;
+    QString password() const;
+
+    void setHost(const QString &v);
+    void setPort(int v);
+    void setClientId(const QString &v);
+    void setUsername(const QString &v);
+    void setPassword(const QString &v);
+
+    // ── 持久化 ──
+    Q_INVOKABLE void loadSettings();
+    Q_INVOKABLE void saveSettings();
 
     // ── 初始化 ──
     Q_INVOKABLE int InitMqtt();
@@ -65,6 +83,13 @@ Q_SIGNALS:
     void mqttMessageReceived(const QString &topic, const QByteArray &data);
     void errorOccurred(const QString &message);
 
+    // ── 委托属性变更信号 ──
+    void hostChanged();
+    void portChanged();
+    void clientIdChanged();
+    void usernameChanged();
+    void passwordChanged();
+
 private:
     explicit Tpinvmqtt(QObject *parent = nullptr);
 
@@ -73,8 +98,10 @@ private:
     TpInvcontroldata    *controlData()     const;
 
     void bindMqttSignals();
+    void connectSettingsPersistence();
 
     bool isConnected_ = false;
+    bool m_loadingSettings = false;
 };
 
 #endif // TPINVMQTT_H

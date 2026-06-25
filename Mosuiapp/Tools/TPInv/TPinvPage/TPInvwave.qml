@@ -20,6 +20,293 @@ MosRectangle {
     readonly property color gridColor: MosTheme.Primary.colorSplit
     readonly property color axisColor: MosTheme.Primary.colorTextTertiary
 
+    MosMessage {
+        id: pageMessage
+        anchors.top: parent.top
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.topMargin: 8
+        z: 999
+        width: Math.min(480, parent.width - 40)
+    }
+
+    // ── MQTT 初始化 ──
+    readonly property int _tpInvMqttInit: TpinvMqtt.InitMqtt()
+
+    // ── 通信模式: 0=串口, 1=MQTT，绑定到 C++ ConnectMode 属性 ──
+    readonly property var commModeOptions: [
+        { label: "串口", value: 0 },
+        { label: "MQTT", value: 1 }
+    ]
+
+    function commModeIndex() {
+        return TpInvcontroldata.ConnectMode
+    }
+
+    // ── 串口连接内容组件 ──
+    property Component serialWaveConnectionContent: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        spacing: 8
+
+        MosRectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 38
+            radius: 7
+            color: wavePage.isConnected() ? "#1b2d2e" : "#2a2130"
+            border.width: 1
+            border.color: wavePage.isConnected() ? "#2ce0a0" : "#ce3f5b"
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 14
+                anchors.rightMargin: 14
+                spacing: 9
+
+                MosRectangle {
+                    Layout.preferredWidth: 11
+                    Layout.preferredHeight: 11
+                    Layout.alignment: Qt.AlignVCenter
+                    radius: 6
+                    color: wavePage.isConnected() ? "#2cff9a" : "#ff5660"
+                }
+
+                MosText {
+                    Layout.fillWidth: true
+                    text: wavePage.isConnected() && wavePage.selectedPortName.length > 0
+                          ? "已连接 · " + wavePage.selectedPortName
+                          : wavePage.isConnected() ? "已连接" : "未连接"
+                    color: wavePage.isConnected() ? "#62ffc4" : "#ff5e73"
+                    font.bold: true
+                }
+            }
+        }
+
+        MosText {
+            Layout.fillWidth: true
+            text: "串口号"
+            color: wavePage.textMuted
+            font.pixelSize: 12
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            MosSelect {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 38
+                model: wavePage.portOptions
+                enabled: !wavePage.isConnected()
+                colorBg: wavePage.controlBg
+                colorBorder: MosTheme.Primary.colorBorder
+                colorText: wavePage.textStrong
+                placeholderText: "请选择串口"
+                radiusBg.all: 7
+                currentIndex: {
+                    for (let i = 0; i < wavePage.portOptions.length; ++i) {
+                        if (wavePage.portOptions[i].value === wavePage.selectedPortName)
+                            return i
+                    }
+                    return wavePage.portOptions.length > 0 ? 0 : -1
+                }
+                onActivated: TpInvDataProcessing.selectedPortName = currentValue
+            }
+
+            MosButton {
+                Layout.preferredWidth: 66
+                Layout.preferredHeight: 38
+                text: "刷新"
+                enabled: !wavePage.isConnected()
+                radiusBg.all: 7
+                colorBg: wavePage.controlBg
+                colorBorder: MosTheme.Primary.colorBorder
+                colorText: wavePage.textStrong
+                onClicked: wavePage.refreshSerialPorts()
+            }
+        }
+
+        MosText {
+            Layout.fillWidth: true
+            text: "波特率"
+            color: wavePage.textMuted
+            font.pixelSize: 12
+        }
+
+        MosSelect {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 38
+            model: wavePage.baudRateOptions
+            enabled: !wavePage.isConnected()
+            colorBg: wavePage.controlBg
+            colorBorder: MosTheme.Primary.colorBorder
+            colorText: wavePage.textStrong
+            radiusBg.all: 7
+            currentIndex: {
+                for (let i = 0; i < wavePage.baudRateOptions.length; ++i) {
+                    if (wavePage.baudRateOptions[i].value === wavePage.selectedBaudRate)
+                        return i
+                }
+                return wavePage.baudRateOptions.length - 1
+            }
+            onActivated: TpInvDataProcessing.selectedBaudRate = currentValue
+        }
+
+        MosButton {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            text: wavePage.isConnected() ? "断开串口" : "连接串口"
+            enabled: wavePage.isConnected() || wavePage.selectedPortName.length > 0
+            type: MosButton.Type_Primary
+            radiusBg.all: 8
+            colorBg: hovered ? "#62b5ff" : "#4ba7ff"
+            colorBorder: colorBg
+            font.bold: true
+            onClicked: wavePage.toggleSerialPort()
+        }
+    }
+
+    // ── MQTT 连接内容组件 ──
+    property Component mqttWaveConnectionContent: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        spacing: 8
+
+        MosRectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 38
+            radius: 7
+            color: TpinvMqtt.isConnected ? "#1b2d2e" : "#2a2130"
+            border.width: 1
+            border.color: TpinvMqtt.isConnected ? "#2ce0a0" : "#ce3f5b"
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 14
+                anchors.rightMargin: 14
+                spacing: 9
+
+                MosRectangle {
+                    Layout.preferredWidth: 11
+                    Layout.preferredHeight: 11
+                    Layout.alignment: Qt.AlignVCenter
+                    radius: 6
+                    color: TpinvMqtt.isConnected ? "#2cff9a" : "#ff5660"
+                }
+
+                MosText {
+                    Layout.fillWidth: true
+                    text: TpinvMqtt.isConnected
+                          ? "已连接 · " + TpinvMqtt.host + ":" + TpinvMqtt.port
+                          : "未连接"
+                    color: TpinvMqtt.isConnected ? "#62ffc4" : "#ff5e73"
+                    font.bold: true
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            MosInput {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                placeholderText: "MQTT 主机地址"
+                text: TpinvMqtt.host
+                colorBg: wavePage.controlBg
+                colorBorder: MosTheme.Primary.colorBorder
+                radiusBg.all: 7
+                font.pixelSize: 12
+                enabled: !TpinvMqtt.isConnected
+                onTextChanged: {
+                    if (text !== TpinvMqtt.host)
+                        TpinvMqtt.host = text
+                }
+            }
+
+            MosInput {
+                Layout.preferredWidth: 80
+                Layout.preferredHeight: 34
+                placeholderText: "端口"
+                text: String(TpinvMqtt.port)
+                colorBg: wavePage.controlBg
+                colorBorder: MosTheme.Primary.colorBorder
+                radiusBg.all: 7
+                font.pixelSize: 12
+                enabled: !TpinvMqtt.isConnected
+                validator: IntValidator { bottom: 1; top: 65535 }
+                onTextChanged: {
+                    const p = parseInt(text)
+                    if (!isNaN(p) && p !== TpinvMqtt.port)
+                        TpinvMqtt.port = p
+                }
+            }
+        }
+
+        MosText {
+            Layout.fillWidth: true
+            text: "波形数据主题"
+            color: wavePage.textMuted
+            font.pixelSize: 12
+        }
+
+        MosInput {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 34
+            placeholderText: "波形数据订阅主题"
+            text: TpinvMqtt.waveDataTopic
+            colorBg: wavePage.controlBg
+            colorBorder: MosTheme.Primary.colorBorder
+            radiusBg.all: 7
+            font.pixelSize: 12
+            enabled: !TpinvMqtt.isConnected
+            onTextChanged: {
+                if (text !== TpinvMqtt.waveDataTopic)
+                    TpinvMqtt.waveDataTopic = text
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "连接"
+                type: MosButton.Type_Primary
+                enabled: !TpinvMqtt.isConnected
+                radiusBg.all: 8
+                colorBg: hovered ? "#62b5ff" : "#4ba7ff"
+                colorBorder: colorBg
+                font.bold: true
+                onClicked: {
+                    TpinvMqtt.connectToHost()
+                    pageMessage.info("正在连接 MQTT " + TpinvMqtt.host + ":" + TpinvMqtt.port + "…")
+                }
+            }
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "断开"
+                type: MosButton.Type_Outlined
+                enabled: TpinvMqtt.isConnected
+                radiusBg.all: 8
+                colorBg: wavePage.controlBg
+                colorBorder: MosTheme.Primary.colorBorder
+                colorText: wavePage.textStrong
+                font.bold: true
+                onClicked: {
+                    TpinvMqtt.disconnectFromHost()
+                    pageMessage.info("已断开 MQTT 连接")
+                }
+            }
+        }
+    }
+
     property bool chartModified: false
     property bool waveformPaused: TpInvDataProcessing.waveformPaused
     property var portOptions: TpInvDataProcessing.portOptions
@@ -61,6 +348,11 @@ MosRectangle {
     ]
 
     function isConnected() {
+        return TpInvDataProcessing.wavePortOpen
+    }
+
+    function isAnyConnected() {
+        if (TpInvcontroldata.ConnectMode === 1) return TpinvMqtt.isConnected
         return TpInvDataProcessing.wavePortOpen
     }
 
@@ -168,161 +460,83 @@ MosRectangle {
                 Layout.alignment: Qt.AlignTop
                 spacing: 14
 
+                // ── 通信连接面板 (串口 / MQTT) ──
                 MosRectangle {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: serialConnectionColumn.implicitHeight + 36
-                    Layout.minimumHeight: serialConnectionColumn.implicitHeight + 36
+                    implicitHeight: commInnerLayout.implicitHeight + 36
+                    Layout.preferredHeight: implicitHeight
                     radius: 10
                     color: wavePage.panelBg
                     border.width: 1
                     border.color: wavePage.panelBorder
 
                     ColumnLayout {
-                        id: serialConnectionColumn
+                        id: commInnerLayout
                         anchors.fill: parent
                         anchors.margins: 18
-                        spacing: 10
-
-                    RowLayout {
-                        Layout.fillWidth: true
                         spacing: 8
 
-                        MosRectangle {
-                            Layout.preferredWidth: 5
-                            Layout.preferredHeight: 5
-                            Layout.alignment: Qt.AlignVCenter
-                            radius: 3
-                            color: "#56a8ff"
-                        }
-
-                        MosText {
-                            Layout.fillWidth: true
-                            text: "串口连接"
-                            color: wavePage.textMuted
-                            font.pixelSize: 12
-                        }
-                    }
-
-                    MosRectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 40
-                        Layout.topMargin: 8
-                        radius: 7
-                        color: wavePage.isConnected() ? "#1b2d2e" : "#2a2130"
-                        border.width: 1
-                        border.color: wavePage.isConnected() ? "#2ce0a0" : "#ce3f5b"
-
+                        // ── 标题栏 + 模式选择 ──
                         RowLayout {
-                            anchors.fill: parent
-                            anchors.leftMargin: 14
-                            anchors.rightMargin: 14
-                            spacing: 9
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 30
+                            spacing: 8
 
                             MosRectangle {
-                                Layout.preferredWidth: 11
-                                Layout.preferredHeight: 11
+                                Layout.preferredWidth: 5
+                                Layout.preferredHeight: 5
                                 Layout.alignment: Qt.AlignVCenter
-                                radius: 6
-                                color: wavePage.isConnected() ? "#2cff9a" : "#ff5660"
+                                radius: 3
+                                color: "#56a8ff"
                             }
 
                             MosText {
                                 Layout.fillWidth: true
-                                text: wavePage.isConnected() && wavePage.selectedPortName.length > 0
-                                      ? "已连接 · " + wavePage.selectedPortName
-                                      : wavePage.isConnected() ? "已连接" : "未连接"
-                                color: wavePage.isConnected() ? "#62ffc4" : "#ff5e73"
-                                font.bold: true
+                                text: "通信连接"
+                                color: wavePage.textMuted
+                                font.pixelSize: 12
                             }
-                        }
-                    }
 
-                    MosText {
-                        Layout.fillWidth: true
-                        Layout.topMargin: 3
-                        text: "串口号"
-                        color: wavePage.textMuted
-                        font.pixelSize: 12
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-                        spacing: 8
-
-                        MosSelect {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 38
-                            model: wavePage.portOptions
-                            enabled: !wavePage.isConnected()
-                            colorBg: wavePage.controlBg
-                            colorBorder: MosTheme.Primary.colorBorder
-                            colorText: wavePage.textStrong
-                            placeholderText: "请选择串口"
-                            radiusBg.all: 7
-                            currentIndex: {
-                                for (let i = 0; i < wavePage.portOptions.length; ++i) {
-                                    if (wavePage.portOptions[i].value === wavePage.selectedPortName)
-                                        return i
+                            MosSelect {
+                                Layout.preferredWidth: 100
+                                Layout.preferredHeight: 30
+                                Layout.alignment: Qt.AlignRight
+                                model: wavePage.commModeOptions
+                                currentIndex: wavePage.commModeIndex()
+                                colorBg: wavePage.controlBg
+                                colorBorder: MosTheme.Primary.colorBorder
+                                colorText: wavePage.textStrong
+                                radiusBg.all: 7
+                                font.pixelSize: 12
+                                enabled: !(TpInvcontroldata.ConnectMode === 0 ? wavePage.wavePortOpen : TpinvMqtt.isConnected)
+                                onActivated: {
+                                    if (currentValue === 1 && wavePage.wavePortOpen) {
+                                        wavePage.toggleSerialPort()
+                                    }
+                                    TpInvcontroldata.ConnectMode = currentValue
+                                    pageMessage.info(currentValue === 1
+                                        ? "已切换至 MQTT 模式"
+                                        : "已切换至串口模式")
                                 }
-                                return wavePage.portOptions.length > 0 ? 0 : -1
                             }
-                            onActivated: TpInvDataProcessing.selectedPortName = currentValue
                         }
 
-                        MosButton {
-                            Layout.preferredWidth: 66
-                            Layout.preferredHeight: 38
-                            text: "刷新"
-                            enabled: !wavePage.isConnected()
-                            radiusBg.all: 7
-                            colorBg: wavePage.controlBg
-                        colorBorder: MosTheme.Primary.colorBorder
-                            colorText: wavePage.textStrong
-                            onClicked: wavePage.refreshSerialPorts()
+                        MosDivider {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            colorSplit: MosTheme.Primary.colorSplit
+                        }
+
+                        // ── 内容区域 ──
+                        Loader {
+                            id: commLoader
+                            Layout.fillWidth: true
+                            sourceComponent: TpInvcontroldata.ConnectMode === 1
+                                ? wavePage.mqttWaveConnectionContent
+                                : wavePage.serialWaveConnectionContent
                         }
                     }
-
-                    MosText {
-                        Layout.fillWidth: true
-                        text: "波特率"
-                        color: wavePage.textMuted
-                        font.pixelSize: 12
-                    }
-
-                    MosSelect {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 38
-                        model: wavePage.baudRateOptions
-                        enabled: !wavePage.isConnected()
-                        colorBg: wavePage.controlBg
-                        colorBorder: MosTheme.Primary.colorBorder
-                        colorText: wavePage.textStrong
-                        radiusBg.all: 7
-                        currentIndex: {
-                            for (let i = 0; i < wavePage.baudRateOptions.length; ++i) {
-                                if (wavePage.baudRateOptions[i].value === wavePage.selectedBaudRate)
-                                    return i
-                            }
-                            return wavePage.baudRateOptions.length - 1
-                        }
-                        onActivated: TpInvDataProcessing.selectedBaudRate = currentValue
-                    }
-
-                    MosButton {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 40
-                        text: wavePage.isConnected() ? "断开串口" : "连接串口"
-                        enabled: wavePage.isConnected() || wavePage.selectedPortName.length > 0
-                        type: MosButton.Type_Primary
-                        radiusBg.all: 8
-                        colorBg: hovered ? "#62b5ff" : "#4ba7ff"
-                        colorBorder: colorBg
-                        font.bold: true
-                        onClicked: wavePage.toggleSerialPort()
-                    }
-
                 }
-            }
 
             MosRectangle {
                 Layout.fillWidth: true
@@ -501,9 +715,9 @@ MosRectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 36
                         radius: 7
-                        color: wavePage.isConnected() ? "#1a2e2d" : "#2a2130"
+                        color: wavePage.isAnyConnected() ? "#1a2e2d" : "#2a2130"
                         border.width: 1
-                        border.color: wavePage.isConnected() ? "#2ce0a0" : "#ce3f5b"
+                        border.color: wavePage.isAnyConnected() ? "#2ce0a0" : "#ce3f5b"
 
                         RowLayout {
                             anchors.fill: parent
@@ -516,17 +730,17 @@ MosRectangle {
                                 Layout.preferredHeight: 8
                                 Layout.alignment: Qt.AlignVCenter
                                 radius: 4
-                                color: wavePage.isConnected() && TpInvDataProcessing.parsedFrameCount > 0 ? "#2cff9a" : "#ff5660"
+                                color: wavePage.isAnyConnected() && TpInvDataProcessing.parsedFrameCount > 0 ? "#2cff9a" : "#ff5660"
                             }
 
                             MosText {
                                 Layout.fillWidth: true
-                                text: wavePage.isConnected()
+                                text: wavePage.isAnyConnected()
                                       ? (TpInvDataProcessing.parsedFrameCount > 0
                                          ? "自动接收中"
                                          : "等待数据推送...")
                                       : "未连接"
-                                color: wavePage.isConnected() ? "#62ffc4" : "#ff5e73"
+                                color: wavePage.isAnyConnected() ? "#62ffc4" : "#ff5e73"
                                 font.bold: true
                             }
                         }
@@ -911,6 +1125,29 @@ MosRectangle {
                 }
             }
         }
+        }
+    }
+
+    // ── MQTT 事件连接 ──
+    Connections {
+        target: TpinvMqtt
+
+        function onIsConnectedChanged() {
+            if (TpInvcontroldata.ConnectMode === 1) {
+                if (TpinvMqtt.isConnected) {
+                    pageMessage.success("MQTT 已连接 " + TpinvMqtt.host + ":" + TpinvMqtt.port)
+                } else {
+                    pageMessage.info("MQTT 已断开")
+                }
+            }
+        }
+
+        function onErrorOccurred(message) {
+            pageMessage.error("MQTT 错误: " + message)
+        }
+
+        function onMqttMessageReceived(topic, data) {
+            console.log("[TPInv-Wave] MQTT 收到数据 topic=" + topic + " len=" + data.length)
         }
     }
 

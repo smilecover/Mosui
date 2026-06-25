@@ -34,6 +34,17 @@ MosRectangle {
 
     readonly property int _tpInvProcessInit: TpinvControlProcess.Initprocess()
     readonly property int _tpInvSerialInit: TpinvSerial.InitTpinvSerial()
+    readonly property int _tpInvMqttInit: TpinvMqtt.InitMqtt()
+
+    // 通信模式: 0=串口, 1=MQTT，绑定到 C++ ConnectMode 属性
+    readonly property var commModeOptions: [
+        { label: "串口", value: 0 },
+        { label: "MQTT", value: 1 }
+    ]
+
+    function commModeIndex() {
+        return TpInvcontroldata.ConnectMode
+    }
 
     // 逆变器状态信息映射
     // 0=INV_STOP 1=INV_INIT 2=INV_SELF_CHECK 3=INV_SOFT_START 4=INV_RUNNING 5=INV_FAULT
@@ -102,6 +113,291 @@ MosRectangle {
 
     function stopDataTimer() {
         dataTimer.stop()
+    }
+
+    // ── 通信 Tab 内容组件 ──
+
+    property Component serialTabContent: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        spacing: 10
+
+        MosRectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 46
+            radius: height / 2
+            color: "transparent"
+            border.width: 1
+            border.color: tpinvControl.panelBorder
+            clip: true
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                spacing: 8
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: "🔗"
+                    color: tpinvControl.textStrong
+                    font.pixelSize: 18
+                }
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    text: "连接状态:"
+                    color: tpinvControl.textStrong
+                    font.pixelSize: 15
+                    font.bold: true
+                }
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: appTplnvData.controlSerialOpen
+                          ? "● 已连接 · " + appTplnvData.controlSerialPortName
+                          : "● 未连接"
+                    color: appTplnvData.controlSerialOpen
+                           ? MosTheme.Primary.colorSuccessText
+                           : MosTheme.Primary.colorWarningText
+                    font.pixelSize: 15
+                    font.bold: true
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+
+            MosSelect {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                model: appTplnvData.serialPortOptions
+                currentIndex: tpinvControl.optionIndex(appTplnvData.serialPortOptions,
+                                                        appTplnvData.controlSerialPortName)
+                clearEnabled: false
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                colorText: tpinvControl.textStrong
+                radiusBg.all: 17
+                font.family: "Consolas"
+                font.pixelSize: 13
+                onActivated: {
+                    appTplnvData.controlSerialPortName = currentValue
+                    TpinvSerial.controlPortName = currentValue
+                    appTplnvData.updateSerialConnectionStates()
+                }
+            }
+
+            MosSelect {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                model: tpinvControl.baudRateOptions
+                currentIndex: tpinvControl.optionIndex(tpinvControl.baudRateOptions,
+                                                        appTplnvData.controlSerialBaudRate)
+                clearEnabled: false
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                colorText: tpinvControl.textStrong
+                radiusBg.all: 17
+                font.family: "Consolas"
+                font.pixelSize: 13
+                onActivated: appTplnvData.controlSerialBaudRate = currentValue
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 20
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "连接"
+                type: MosButton.Type_Primary
+                enabled: !appTplnvData.controlSerialOpen
+                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
+                font.bold: true
+                onClicked: {
+                    appTplnvData.openControlSerialPort()
+                    pageMessage.info("正在连接 " + appTplnvData.controlSerialPortName + "…")
+                }
+            }
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "断开"
+                type: MosButton.Type_Outlined
+                enabled: appTplnvData.controlSerialOpen
+                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
+                font.bold: true
+                onClicked: {
+                    appTplnvData.closeControlSerialPort()
+                    pageMessage.info("已断开串口连接")
+                }
+            }
+        }
+    }
+
+    property Component mqttTabContent: ColumnLayout {
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        spacing: 10
+
+        MosRectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 46
+            radius: height / 2
+            color: "transparent"
+            border.width: 1
+            border.color: tpinvControl.panelBorder
+            clip: true
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 12
+                anchors.rightMargin: 12
+                spacing: 8
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: "📡"
+                    color: tpinvControl.textStrong
+                    font.pixelSize: 18
+                }
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    text: "MQTT 状态:"
+                    color: tpinvControl.textStrong
+                    font.pixelSize: 15
+                    font.bold: true
+                }
+
+                MosText {
+                    Layout.alignment: Qt.AlignVCenter
+                    text: TpinvMqtt.isConnected
+                          ? "● 已连接 · " + TpinvMqtt.host + ":" + TpinvMqtt.port
+                          : "● 未连接"
+                    color: TpinvMqtt.isConnected
+                           ? MosTheme.Primary.colorSuccessText
+                           : MosTheme.Primary.colorWarningText
+                    font.pixelSize: 15
+                    font.bold: true
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+
+            MosInput {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                placeholderText: "MQTT 主机地址"
+                text: TpinvMqtt.host
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                radiusBg.all: 17
+                font.pixelSize: 13
+                onTextChanged: {
+                    if (text !== TpinvMqtt.host)
+                        TpinvMqtt.host = text
+                }
+            }
+
+            MosInput {
+                Layout.preferredWidth: 90
+                Layout.preferredHeight: 34
+                placeholderText: "端口"
+                text: String(TpinvMqtt.port)
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                radiusBg.all: 17
+                font.pixelSize: 13
+                validator: IntValidator { bottom: 1; top: 65535 }
+                onTextChanged: {
+                    const p = parseInt(text)
+                    if (!isNaN(p) && p !== TpinvMqtt.port)
+                        TpinvMqtt.port = p
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 12
+
+            MosInput {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                placeholderText: "数据主题 (订阅)"
+                text: TpinvMqtt.dataTopic
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                radiusBg.all: 17
+                font.pixelSize: 13
+                onTextChanged: {
+                    if (text !== TpinvMqtt.dataTopic)
+                        TpinvMqtt.dataTopic = text
+                }
+            }
+
+            MosInput {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 34
+                placeholderText: "控制主题 (发布)"
+                text: TpinvMqtt.controlTopic
+                colorBg: "transparent"
+                colorBorder: tpinvControl.panelBorder
+                radiusBg.all: 17
+                font.pixelSize: 13
+                onTextChanged: {
+                    if (text !== TpinvMqtt.controlTopic)
+                        TpinvMqtt.controlTopic = text
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 20
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "连接"
+                type: MosButton.Type_Primary
+                enabled: !TpinvMqtt.isConnected
+                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
+                font.bold: true
+                onClicked: {
+                    TpinvMqtt.connectToHost()
+                    pageMessage.info("正在连接 MQTT " + TpinvMqtt.host + ":" + TpinvMqtt.port + "…")
+                }
+            }
+
+            MosButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                text: "断开"
+                type: MosButton.Type_Outlined
+                enabled: TpinvMqtt.isConnected
+                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
+                font.bold: true
+                onClicked: {
+                    TpinvMqtt.disconnectFromHost()
+                    pageMessage.info("已断开 MQTT 连接")
+                }
+            }
+        }
     }
 
     property Component leftloaderComponent: Item {
@@ -287,12 +583,13 @@ MosRectangle {
                         RowLayout {
                             Layout.fillWidth: true
                             Layout.topMargin: 8
-                            spacing: 12
+                            spacing: 20
 
                             MosButton {
                                 id: confirmButton
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
+                                Layout.minimumWidth: 90
                                 text: parametersWriting ? "✓  已写入" : "✓  确认"
                                 type: parametersWriting ? MosButton.Type_Filled : MosButton.Type_Primary
                                 sizeHint: "normal"
@@ -323,17 +620,31 @@ MosRectangle {
                                 id: applyButton
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 42
-                                text: appTplnvData.controlSerialOpen ? "↻  立即设置" : "↻  立即设置（未连接）"
+                                Layout.minimumWidth: 90
+                                text: {
+                                    if (TpInvcontroldata.ConnectMode === 1)
+                                        return TpinvMqtt.isConnected ? "↻  下发" : "↻  下发（MQTT 未连）"
+                                    return appTplnvData.controlSerialOpen ? "↻  下发" : "↻  下发（未连接）"
+                                }
                                 type: MosButton.Type_Outlined
                                 sizeHint: "normal"
                                 radiusBg.all: MosTheme.Primary.radiusPrimaryLG
                                 font.bold: true
-                                enabled: appTplnvData.controlSerialOpen && !applyingNow
+                                enabled: {
+                                    if (TpInvcontroldata.ConnectMode === 1)
+                                        return TpinvMqtt.isConnected && !applyingNow
+                                    return appTplnvData.controlSerialOpen && !applyingNow
+                                }
                                 onClicked: {
                                     applyingNow = true
                                     applyCooldownTimer.restart()
-                                    TpInvcontroldata.sendCommand(appTplnvData.controlSerialPortName, TpinvControlProcess.txBuffer[0]);
-                                    pageMessage.success("指令已下发至串口 " + appTplnvData.controlSerialPortName)
+                                    if (TpInvcontroldata.ConnectMode === 1) {
+                                        TpinvMqtt.publishCommand(TpinvControlProcess.txBuffer[0])
+                                        pageMessage.success("指令已下发至 MQTT " + TpinvMqtt.controlTopic)
+                                    } else {
+                                        TpInvcontroldata.sendCommand(appTplnvData.controlSerialPortName, TpinvControlProcess.txBuffer[0])
+                                        pageMessage.success("指令已下发至串口 " + appTplnvData.controlSerialPortName)
+                                    }
                                 }
                             }
 
@@ -343,10 +654,11 @@ MosRectangle {
             }
             
             MosRectangle {
+                id: commPanel
                 Layout.leftMargin: 20
                 Layout.rightMargin: 20
                 Layout.fillWidth: true
-                Layout.minimumHeight: 200
+                implicitHeight: commInnerLayout.implicitHeight+10
                 color: "transparent"
                 border.width: 1
                 border.color: tpinvControl.panelBorder
@@ -354,21 +666,23 @@ MosRectangle {
                 clip: true
 
                 ColumnLayout {
-                    anchors.fill: parent
-                    Layout.topMargin: 5
-                    anchors.bottomMargin: 10
-                    spacing: 0
+                    id: commInnerLayout
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.leftMargin: 0
+                    anchors.rightMargin: 20
+                    anchors.topMargin:10
+                    spacing: 8
 
+                    // ── 标题栏 + 模式选择 ──
                     RowLayout {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 54
-                        Layout.bottomMargin: 5
-                        Layout.leftMargin: 24
-                        Layout.rightMargin: 24
+                        Layout.preferredHeight: 30
                         spacing: 12
 
                         MosText {
-                            Layout.alignment: Qt.AlignVCenter
+                            Layout.alignment: Qt.AlignLeft
                             text: "▣"
                             color: tpinvControl.accent
                             font.pixelSize: 21
@@ -376,145 +690,55 @@ MosRectangle {
                         }
 
                         MosText {
-                            Layout.alignment: Qt.AlignVCenter
-                            text: "串口通信 · 高级调试"
+                            Layout.alignment: Qt.AlignLeft
+                            Layout.fillWidth: true
+                            text: "通信连接"
                             color: tpinvControl.textStrong
                             font.pixelSize: 20
                             font.bold: true
                             elide: Text.ElideRight
                         }
+
+
+                        MosSelect {
+                            Layout.preferredWidth: 110
+                            Layout.preferredHeight: 34
+                            Layout.alignment: Qt.AlignRight
+                            model: tpinvControl.commModeOptions
+                            currentIndex: tpinvControl.commModeIndex()
+                            colorBg: "transparent"
+                            colorBorder: tpinvControl.panelBorder
+                            colorText: tpinvControl.textStrong
+                            radiusBg.all: 17
+                            font.pixelSize: 13
+                            onActivated: {
+                                TpInvcontroldata.switchConnectMode(
+                                    currentValue,
+                                    appTplnvData.controlSerialPortName)
+                                pageMessage.success(currentValue === 1
+                                    ? "已切换至 MQTT 模式"
+                                    : "已切换至串口模式")
+                            }
+                        }
                     }
 
                     MosDivider {
                         Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        colorSplit: MosTheme.Primary.colorSplit
                     }
 
-                    ColumnLayout {
+                    // ── 内容区域 ──
+                    Loader {
+                        id: commLoader
                         Layout.fillWidth: true
-                        Layout.leftMargin: 24
-                        Layout.rightMargin: 24
-                        Layout.topMargin: 10
-                        Layout.bottomMargin: 10
-                        spacing: 12
-
-                        MosRectangle {
-                            Layout.fillWidth: true
-                            Layout.preferredHeight: 46
-                            radius: height / 2
-                            color: "transparent"
-                            border.width: 1
-                            border.color: tpinvControl.panelBorder
-                            clip: true
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 12
-                                anchors.rightMargin: 12
-                                spacing: 8
-
-                                MosText {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    text: "🔗"
-                                    color: tpinvControl.textStrong
-                                    font.pixelSize: 18
-                                }
-
-                                MosText {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    Layout.fillWidth: true
-                                    text: "连接状态:"
-                                    color: tpinvControl.textStrong
-                                    font.pixelSize: 15
-                                    font.bold: true
-                                }
-
-                                MosText {
-                                    Layout.alignment: Qt.AlignVCenter
-                                    text: appTplnvData.controlSerialOpen
-                                          ? "● 已连接 · " + appTplnvData.controlSerialPortName
-                                          : "● 未连接"
-                                    color: appTplnvData.controlSerialOpen
-                                           ? MosTheme.Primary.colorSuccessText
-                                           : MosTheme.Primary.colorWarningText
-                                    font.pixelSize: 15
-                                    font.bold: true
-                                }
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 12
-
-                            MosSelect {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 34
-                                model: appTplnvData.serialPortOptions
-                                currentIndex: tpinvControl.optionIndex(appTplnvData.serialPortOptions,
-                                                                        appTplnvData.controlSerialPortName)
-                                clearEnabled: false
-                                colorBg: "transparent"
-                                colorBorder: tpinvControl.panelBorder
-                                colorText: tpinvControl.textStrong
-                                radiusBg.all: 17
-                                font.family: "Consolas"
-                                font.pixelSize: 13
-                                onActivated: {
-                                    appTplnvData.controlSerialPortName = currentValue
-                                    TpinvSerial.controlPortName = currentValue
-                                    appTplnvData.updateSerialConnectionStates()
-                                }
-                            }
-
-                            MosSelect {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 34
-                                model: tpinvControl.baudRateOptions
-                                currentIndex: tpinvControl.optionIndex(tpinvControl.baudRateOptions,
-                                                                        appTplnvData.controlSerialBaudRate)
-                                clearEnabled: false
-                                colorBg: "transparent"
-                                colorBorder: tpinvControl.panelBorder
-                                colorText: tpinvControl.textStrong
-                                radiusBg.all: 17
-                                font.family: "Consolas"
-                                font.pixelSize: 13
-                                onActivated: appTplnvData.controlSerialBaudRate = currentValue
-                            }
-                        }
-
-                        RowLayout {
-                            Layout.fillWidth: true
-                            spacing: 20
-
-                            MosButton {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                text: "连接"
-                                type: MosButton.Type_Primary
-                                enabled: !appTplnvData.controlSerialOpen
-                                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
-                                font.bold: true
-                                onClicked: {
-                                    appTplnvData.openControlSerialPort()
-                                    pageMessage.info("正在连接 " + appTplnvData.controlSerialPortName + "…")
-                                }
-                            }
-
-                            MosButton {
-                                Layout.fillWidth: true
-                                Layout.preferredHeight: 40
-                                text: "断开"
-                                type: MosButton.Type_Outlined
-                                enabled: appTplnvData.controlSerialOpen
-                                radiusBg.all: MosTheme.Primary.radiusPrimaryLG
-                                font.bold: true
-                                onClicked: {
-                                    appTplnvData.closeControlSerialPort()
-                                    pageMessage.info("已断开串口连接")
-                                }
-                            }
-                        }
+                        Layout.leftMargin: 12
+                        Layout.rightMargin: 12  
+                        Layout.topMargin: 12
+                        Layout.bottomMargin: 20
+                        sourceComponent: TpInvcontroldata.ConnectMode === 1
+                            ? tpinvControl.mqttTabContent
+                            : tpinvControl.serialTabContent
                     }
                 }
             }
@@ -646,8 +870,13 @@ MosRectangle {
                                 onClicked:
                                 {
                                      tpinvControl.startDataTimer();
-                                     TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
-                                     pageMessage.info("启动指令已发送，等待逆变器响应…")
+                                     if (TpInvcontroldata.ConnectMode === 1) {
+                                         TpinvMqtt.startInverter()
+                                         pageMessage.info("MQTT 启动指令已发送，等待逆变器响应…")
+                                     } else {
+                                         TpInvcontroldata.startInverter(appTplnvData.controlSerialPortName)
+                                         pageMessage.info("启动指令已发送，等待逆变器响应…")
+                                     }
                                 }
                             }
 
@@ -662,8 +891,13 @@ MosRectangle {
                                 onClicked:
                                 {
                                      tpinvControl.stopDataTimer();
-                                     TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
-                                     pageMessage.warning("停机指令已发送")
+                                     if (TpInvcontroldata.ConnectMode === 1) {
+                                         TpinvMqtt.stopInverter()
+                                         pageMessage.warning("MQTT 停机指令已发送")
+                                     } else {
+                                         TpInvcontroldata.stopInverter(appTplnvData.controlSerialPortName)
+                                         pageMessage.warning("停机指令已发送")
+                                     }
                                 }
                             }
                         }
@@ -672,13 +906,6 @@ MosRectangle {
             }
         }
     }
-
-
-
-
-
-
-
 
 
     property Component rightloaderComponent: Item {
@@ -1265,6 +1492,31 @@ MosRectangle {
         }
     }
 
+    // ── MQTT 事件连接 ──
+    Connections {
+        target: TpinvMqtt
+
+        function onIsConnectedChanged() {
+            // MQTT 连接状态变更时刷新通信就绪状态
+            if (TpInvcontroldata.ConnectMode === 1) {
+                if (TpinvMqtt.isConnected) {
+                    pageMessage.success("MQTT 已连接 " + TpinvMqtt.host + ":" + TpinvMqtt.port)
+                } else {
+                    pageMessage.info("MQTT 已断开")
+                }
+            }
+        }
+
+        function onErrorOccurred(message) {
+            pageMessage.error("MQTT 错误: " + message)
+        }
+
+        function onMqttMessageReceived(topic, data) {
+            // 数据到达日志 (调试用，可根据需要注释)
+            console.log("[TPInv] MQTT 收到数据 topic=" + topic + " len=" + data.length)
+        }
+    }
+
     Flickable {
         id: flickable
         anchors.fill: parent
@@ -1274,6 +1526,7 @@ MosRectangle {
 
         ScrollBar.vertical: MosScrollBar {
             anchors.right: parent.right
+            policy: ScrollBar.AlwaysOn
         }
         ColumnLayout {
             id: contentColumn
@@ -1427,6 +1680,7 @@ MosRectangle {
                     Layout.alignment: Qt.AlignTop
                     Layout.minimumWidth: controlGrid.columns === 1 ? 200 : 400
                     Layout.fillWidth: true
+                    Layout.fillHeight: true
                     Layout.preferredHeight: item && item.implicitHeight > 0 ? item.implicitHeight : 240
                     active: true
                     sourceComponent: tpinvControl.rightloaderComponent

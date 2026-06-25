@@ -201,7 +201,11 @@ MosRectangle {
         return urlString
     }
 
-    Component.onCompleted: initializeManagerDefaults()
+    Component.onCompleted: {
+        // 确保 TpinvMqtt 单例已创建，持久化连接和 saveSettings 信号绑定已就绪
+        TpinvMqtt.InitMqtt()
+        initializeManagerDefaults()
+    }
 
     Connections {
         target: MosMqttManager

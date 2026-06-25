@@ -274,6 +274,18 @@ void TpInvcontroldata::sendCommand(const QString &SerialPort, const QByteArray &
     emit cmdTx(SerialPort, data);
 }
 
+void TpInvcontroldata::switchConnectMode(int mode, const QString &SerialPort)
+{
+    setConnectMode(mode);
+    // setConnectMode 内部 emit ConnectModeChanged → Tpinvcontrolprocess::buildControlMode() 重建 txBuffer[1]
+    const QByteArray data = Tpinvcontrolprocess::instance()->txBuffer().value(1);
+    if (mode) {
+        emit modeSwitchCmdTx(data);   
+    } else {
+        emit cmdTx(SerialPort, data);   
+    }
+}
+
 void TpInvcontroldata::applyMonitorSnapshot(const QVariantMap &values)
 {
     if (values.isEmpty())

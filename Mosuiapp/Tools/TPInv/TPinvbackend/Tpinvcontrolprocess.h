@@ -12,13 +12,16 @@
 #include <qtmetamacros.h>
 #include "Mosdefinitions.h"
 #include "ring_buffer.h"
-
 class Tpinvcontrolprocess : public QObject
 {
     Q_OBJECT
     QML_SINGLETON
     QML_NAMED_ELEMENT(TpinvControlProcess)
     MOSUI_PROPERTY_READONLY(QList<QByteArray>, txBuffer)
+    /*
+    txBuffer 0 逆变器控制参数改变
+    txBuffer 1 逆变器连接模式改变 
+    */
     
 
 public:
@@ -50,6 +53,8 @@ private:
     void bandTpInvcontroldata();
     // 构建逆变器参数
     void buildTpInvParamet();
+    // 连接arm板模式切换参数构建串口/mqtt
+    void buildControlMode();
 
     
     QByteArray rxBuffer_;

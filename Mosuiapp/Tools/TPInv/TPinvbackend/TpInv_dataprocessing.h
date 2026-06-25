@@ -106,6 +106,7 @@ public:
     QVariantList currentCValues() const;
 
     Q_INVOKABLE void appendSerialData(const QByteArray &data);
+    Q_INVOKABLE void handleMqttWaveData(const QByteArray &data);
     Q_INVOKABLE void clear();
     Q_INVOKABLE QVariantList channelValues(int channel) const;
     Q_INVOKABLE void initializeWavePage(int capacity);

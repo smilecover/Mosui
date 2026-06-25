@@ -29,6 +29,7 @@ class TpInvcontroldata : public QObject
     Q_PROPERTY(double acVoltageStep READ acVoltageStep NOTIFY acVoltageStepChanged FINAL)
     Q_PROPERTY(QVariantMap calibrationData READ calibrationData NOTIFY calibrationDataChanged FINAL)
     MOSUI_PROPERTY_INIT(QVariant,parameterSelectIndex,setParameterSelectIndex,1);
+    MOSUI_PROPERTY_INIT(QVariant,ConnectMode,setConnectMode,0);/*0: 串口，1： mqtt*/
 
 public:
     ~TpInvcontroldata() override;
@@ -55,6 +56,7 @@ public:
     Q_INVOKABLE void startInverter(const QString &SerialPort);
     Q_INVOKABLE void stopInverter(const QString &SerialPort);
     Q_INVOKABLE void sendCommand(const QString &SerialPort, const QByteArray &data);
+    Q_INVOKABLE void switchConnectMode(int mode, const QString &SerialPort);
 
     void applyMonitorSnapshot(const QVariantMap &values);
 
@@ -69,6 +71,7 @@ Q_SIGNALS:
     void calibrationDataChanged();
 
     void cmdTx(const QString &SerialPort,const QByteArray &data);
+    void modeSwitchCmdTx(const QByteArray &data);
 
 private:
     explicit TpInvcontroldata(QObject *parent = nullptr);

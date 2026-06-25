@@ -32,6 +32,17 @@ float decodeUnsigned16LE(quint8 low, quint8 high)
     return static_cast<float>((static_cast<quint16>(high) << 8) | static_cast<quint16>(low));
 }
 
+// ── MQTT 批量波形帧常量 ──
+// 帧格式: AA 55 MODE CNT_H CNT_L [12字节×CNT] CHK_L CHK_H
+// MODE=0x01: 实时ADC采样  每采样12字节: 6×int16 (VA,VB,VC×10; CA,CB,CC×100)
+constexpr int MqttFrameHeader0   = 0xAA;
+constexpr int MqttFrameHeader1   = 0x55;
+constexpr int MqttModeAdcSample  = 0x01;
+constexpr int MqttSampleSize     = 12;   // 每个采样12字节
+constexpr int MqttBatchMax       = 255;  // 单帧最大采样数
+constexpr int MqttFrameHeadLen   = 7;    // 帧头2 + 模式1 + 计数2 + 校验2
+constexpr int MqttFrameMinLen    = MqttFrameHeadLen;  // 最小帧长（0个采样）
+
 } // namespace
 
 class TpInvDataProcessingWorker : public QObject
@@ -81,6 +92,85 @@ public:
         }
 
         if (parsedFrameCount_ != initialParsedFrameCount || droppedFrameCount_ != initialDroppedFrameCount)
+            emitSnapshot();
+    }
+
+    // ── MQTT 批量波形帧解析 ──
+    // 帧格式: AA 55 MODE CNT_H CNT_L [12字节×CNT] CHK_L CHK_H
+    // MODE=0x01: ADC采样, 每采样6×int16(VA,VB,VC×10; CA,CB,CC×100), 校验小端
+    void appendMqttWaveData(const QByteArray &data)
+    {
+        if (data.isEmpty())
+            return;
+
+        const int len = data.size();
+        int offset = 0;
+        int newSamples = 0;
+        int newDropped = 0;
+
+        while (offset + MqttFrameMinLen <= len) {
+            // 查找帧头 AA 55
+            if (static_cast<quint8>(data[offset]) != MqttFrameHeader0
+                || static_cast<quint8>(data[offset + 1]) != MqttFrameHeader1) {
+                ++offset;
+                ++newDropped;
+                continue;
+            }
+
+            const quint8 mode = static_cast<quint8>(data[offset + 2]);
+            const quint16 cnt = (static_cast<quint16>(static_cast<quint8>(data[offset + 3])) << 8)
+                              | static_cast<quint16>(static_cast<quint8>(data[offset + 4]));
+
+            if (cnt == 0 || cnt > MqttBatchMax) {
+                offset += 2;  // 跳过 AA，继续搜索
+                ++newDropped;
+                continue;
+            }
+
+            const int frameLen = MqttFrameHeadLen + static_cast<int>(cnt) * MqttSampleSize;
+            if (offset + frameLen > len) {
+                // 帧不完整，等待更多数据
+                break;
+            }
+
+            // 校验: 小端序 (CHK_L 在前, CHK_H 在后)
+            quint16 sum = 0;
+            for (int i = 0; i < frameLen - 2; ++i)
+                sum = static_cast<quint16>(sum + static_cast<quint8>(data[offset + i]));
+
+            const quint16 rxSum = static_cast<quint16>(static_cast<quint8>(data[offset + frameLen - 2]))
+                                | (static_cast<quint16>(static_cast<quint8>(data[offset + frameLen - 1])) << 8);
+
+            if (sum != rxSum) {
+                offset += 2;
+                ++newDropped;
+                continue;
+            }
+
+            // 仅处理 ADC 采样模式
+            if (mode == MqttModeAdcSample) {
+                const int dataStart = offset + 5;  // 跳过 AA 55 MODE CNT_H CNT_L
+                for (quint16 i = 0; i < cnt; ++i) {
+                    const int sampleOff = dataStart + static_cast<int>(i) * MqttSampleSize;
+                    Sample sample;
+                    sample.values[VoltageA] = decodeSigned16(data[sampleOff + 0], data[sampleOff + 1])  / 10.0f;
+                    sample.values[VoltageB] = decodeSigned16(data[sampleOff + 2], data[sampleOff + 3])  / 10.0f;
+                    sample.values[VoltageC] = decodeSigned16(data[sampleOff + 4], data[sampleOff + 5])  / 10.0f;
+                    sample.values[CurrentA] = decodeSigned16(data[sampleOff + 6], data[sampleOff + 7])  / 100.0f;
+                    sample.values[CurrentB] = decodeSigned16(data[sampleOff + 8], data[sampleOff + 9])  / 100.0f;
+                    sample.values[CurrentC] = decodeSigned16(data[sampleOff + 10], data[sampleOff + 11]) / 100.0f;
+                    appendSample(sample);
+                }
+                newSamples += static_cast<int>(cnt);
+            }
+
+            offset += frameLen;
+        }
+
+        parsedFrameCount_ += newSamples;
+        droppedFrameCount_ += newDropped;
+
+        if (newSamples > 0 || newDropped > 0)
             emitSnapshot();
     }
 
@@ -649,6 +739,26 @@ void TpInvDataProcessing::appendSerialData(const QByteArray &data)
 
     QMetaObject::invokeMethod(worker_, [worker = worker_, data]() {
         worker->appendSerialData(data);
+    }, Qt::QueuedConnection);
+}
+
+void TpInvDataProcessing::handleMqttWaveData(const QByteArray &data)
+{
+    if (data.isEmpty())
+        return;
+
+    // 主线程更新接收统计
+    receivedByteCount_ += data.size();
+    lastWaveHex_ = data.toHex(' ').toUpper();
+    lastWaveText_.clear();  // MQTT 为二进制数据，无文本
+    lastWaveRxTime_ = QTime::currentTime().toString(QStringLiteral("hh:mm:ss.zzz"));
+    emit receiveInfoChanged();
+
+    setWaveStatusText(QStringLiteral("收到MQTT波形数据，等待解析"));
+
+    // 派发到工作线程解析
+    QMetaObject::invokeMethod(worker_, [worker = worker_, data]() {
+        worker->appendMqttWaveData(data);
     }, Qt::QueuedConnection);
 }
 

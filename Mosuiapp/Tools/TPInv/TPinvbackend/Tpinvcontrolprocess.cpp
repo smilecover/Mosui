@@ -122,6 +122,14 @@ void Tpinvcontrolprocess::bandTpInvcontroldata()
             this->controntroldataProcess();
         }
     );
+    connect(
+        tpInvcontroldata,
+        &TpInvcontroldata::ConnectModeChanged,
+        this,
+        [this](){
+            this->buildControlMode();
+        }
+    );
 }
 
 void Tpinvcontrolprocess::buildTpInvParamet()
@@ -172,6 +180,29 @@ void Tpinvcontrolprocess::buildTpInvParamet()
     uint16_t checksum = calculateChecksum(reinterpret_cast<const uint8_t *>(txbuf.constData()));
     txbuf[18] = lowByte(checksum); // 校验位低字节
     txbuf[19] = highByte(checksum); // 校验位高字节
+}
+/*
+模式切换
+*/
+void Tpinvcontrolprocess::buildControlMode()
+{
+    auto controlData = TpInvcontroldata::instance();
+    if (m_txBuffer.size() < 2) {
+        m_txBuffer.resize(2);
+    }
+    QByteArray &txbuf = m_txBuffer[1];
+
+    if (txbuf.size() < 5) {
+        txbuf.resize(5);
+    }
+    txbuf[0] = 0xA0;
+    txbuf[1] = 0xF0;
+    txbuf[2] = static_cast<char>(controlData->ConnectMode().toInt());
+    // 校验和 = 前3字节累加，低字节在前
+    const uint8_t *data = reinterpret_cast<const uint8_t *>(txbuf.constData());
+    uint16_t checksum = static_cast<uint16_t>(data[0]) + data[1] + data[2];
+    txbuf[3] = static_cast<char>(lowByte(checksum));
+    txbuf[4] = static_cast<char>(highByte(checksum));
 }
 void Tpinvcontrolprocess::controntroldataProcess()
 {
