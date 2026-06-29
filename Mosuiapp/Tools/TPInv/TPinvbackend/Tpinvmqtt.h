@@ -25,12 +25,21 @@ class Tpinvmqtt : public QObject
     Q_PROPERTY(QString password READ password WRITE setPassword NOTIFY passwordChanged FINAL)
 
     // ── 主题配置 ──
-    MOSUI_PROPERTY_INIT(QString, controlTopic,  setControlTopic,  "tpinv/control")
-    MOSUI_PROPERTY_INIT(QString, dataTopic,     setDataTopic,     "tpinv/data")
-    MOSUI_PROPERTY_INIT(QString, waveDataTopic, setWaveDataTopic, "tpinv/wave/data")
+    MOSUI_PROPERTY_INIT(QString, controlTopic,  setControlTopic,  "/device/cmd")
+    MOSUI_PROPERTY_INIT(QString, dataTopic,     setDataTopic,     "/device/data")
+    MOSUI_PROPERTY_INIT(QString, waveDataTopic, setWaveDataTopic, "/wave/data")
 
     // ── 连接状态 (只读) ──
     Q_PROPERTY(bool isConnected READ isConnected NOTIFY isConnectedChanged FINAL)
+
+    // ── 波形数据桥接 (从 TpInvDataProcessing 读取，通过 TpinvMqtt 暴露给 QML) ──
+    Q_PROPERTY(int waveSampleCount READ waveSampleCount NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveVoltageAValues READ waveVoltageAValues NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveVoltageBValues READ waveVoltageBValues NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveVoltageCValues READ waveVoltageCValues NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveCurrentAValues READ waveCurrentAValues NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveCurrentBValues READ waveCurrentBValues NOTIFY waveDataChanged FINAL)
+    Q_PROPERTY(QVariantList waveCurrentCValues READ waveCurrentCValues NOTIFY waveDataChanged FINAL)
 
 public:
     ~Tpinvmqtt() override;
@@ -53,10 +62,6 @@ public:
     void setUsername(const QString &v);
     void setPassword(const QString &v);
 
-    // ── 持久化 ──
-    Q_INVOKABLE void loadSettings();
-    Q_INVOKABLE void saveSettings();
-
     // ── 初始化 ──
     Q_INVOKABLE int InitMqtt();
 
@@ -68,6 +73,15 @@ public:
     // ── 逆变器控制 (通过 MQTT) ──
     Q_INVOKABLE void startInverter();
     Q_INVOKABLE void stopInverter();
+
+    // ── 波形数据桥接 ──
+    int waveSampleCount() const;
+    QVariantList waveVoltageAValues() const;
+    QVariantList waveVoltageBValues() const;
+    QVariantList waveVoltageCValues() const;
+    QVariantList waveCurrentAValues() const;
+    QVariantList waveCurrentBValues() const;
+    QVariantList waveCurrentCValues() const;
 
     // ── 消息收发 ──
     Q_INVOKABLE int publishCommand(const QByteArray &data);
@@ -82,6 +96,7 @@ Q_SIGNALS:
     void isConnectedChanged();
     void mqttMessageReceived(const QString &topic, const QByteArray &data);
     void errorOccurred(const QString &message);
+    void waveDataChanged();
 
     // ── 委托属性变更信号 ──
     void hostChanged();
@@ -98,10 +113,8 @@ private:
     TpInvcontroldata    *controlData()     const;
 
     void bindMqttSignals();
-    void connectSettingsPersistence();
 
     bool isConnected_ = false;
-    bool m_loadingSettings = false;
 };
 
 #endif // TPINVMQTT_H

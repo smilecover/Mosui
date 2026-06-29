@@ -32,7 +32,6 @@ MosRectangle {
     // ── MQTT 初始化 ──
     readonly property int _tpInvMqttInit: TpinvMqtt.InitMqtt()
 
-    // ── 通信模式: 0=串口, 1=MQTT，绑定到 C++ ConnectMode 属性 ──
     readonly property var commModeOptions: [
         { label: "串口", value: 0 },
         { label: "MQTT", value: 1 }
@@ -313,7 +312,10 @@ MosRectangle {
     property string selectedPortName: TpInvDataProcessing.selectedPortName
     property bool wavePortOpen: TpInvDataProcessing.wavePortOpen
     property int selectedBaudRate: TpInvDataProcessing.selectedBaudRate
-    property int sampleCount: 400
+    readonly property int sampleCount: TpInvDataProcessing.sampleCount > 0
+        ? TpInvDataProcessing.sampleCount : 400
+    readonly property int chartXMax: TpInvcontroldata.ConnectMode === 1
+        ? 199 : Math.max(1, wavePage.sampleCount - 1)  // MQTT: 固定200点 / 串口: 动态
     property int maxAdaptiveRenderPoints: 1600
     property int receivedByteCount: TpInvDataProcessing.receivedByteCount
     property string lastWaveHex: TpInvDataProcessing.lastWaveHex
@@ -328,8 +330,64 @@ MosRectangle {
     property bool currentBEnabled: TpInvDataProcessing.currentBEnabled
     property bool currentCEnabled: TpInvDataProcessing.currentCEnabled
 
-    property var voltageSeries: TpInvDataProcessing.voltageSeries
-    property var currentSeries: TpInvDataProcessing.currentSeries
+    // ── 统一的波形数据构建接口（串口和 MQTT 共用）──
+    // 数据通过 TpinvMqtt 桥接读取（TpInvDataProcessing 作为 QML_SINGLETON 属性访问不可靠）
+    // MQTT 模式只取最新 200 个采样点，串口模式取全部
+    function buildVoltageSeries() {
+        const isMqtt = TpInvcontroldata.ConnectMode === 1
+        const series = []
+        if (wavePage.voltageAEnabled) {
+            let va = TpinvMqtt.waveVoltageAValues
+            if (va && va.length > 0) {
+                if (isMqtt && va.length > 200) va = va.slice(va.length - 200)
+                series.push({ name: "A相电压", color: "#FFCC00", values: va })
+            }
+        }
+        if (wavePage.voltageBEnabled) {
+            let vb = TpinvMqtt.waveVoltageBValues
+            if (vb && vb.length > 0) {
+                if (isMqtt && vb.length > 200) vb = vb.slice(vb.length - 200)
+                series.push({ name: "B相电压", color: "#01ff45", values: vb })
+            }
+        }
+        if (wavePage.voltageCEnabled) {
+            let vc = TpinvMqtt.waveVoltageCValues
+            if (vc && vc.length > 0) {
+                if (isMqtt && vc.length > 200) vc = vc.slice(vc.length - 200)
+                series.push({ name: "C相电压", color: "#ff4f63", values: vc })
+            }
+        }
+        return series
+    }
+    function buildCurrentSeries() {
+        const isMqtt = TpInvcontroldata.ConnectMode === 1
+        const series = []
+        if (wavePage.currentAEnabled) {
+            let ca = TpinvMqtt.waveCurrentAValues
+            if (ca && ca.length > 0) {
+                if (isMqtt && ca.length > 200) ca = ca.slice(ca.length - 200)
+                series.push({ name: "A相电流", color: "#FFCC00", values: ca })
+            }
+        }
+        if (wavePage.currentBEnabled) {
+            let cb = TpinvMqtt.waveCurrentBValues
+            if (cb && cb.length > 0) {
+                if (isMqtt && cb.length > 200) cb = cb.slice(cb.length - 200)
+                series.push({ name: "B相电流", color: "#01ff45", values: cb })
+            }
+        }
+        if (wavePage.currentCEnabled) {
+            let cc = TpinvMqtt.waveCurrentCValues
+            if (cc && cc.length > 0) {
+                if (isMqtt && cc.length > 200) cc = cc.slice(cc.length - 200)
+                series.push({ name: "C相电流", color: "#ff4f63", values: cc })
+            }
+        }
+        return series
+    }
+
+    property var voltageSeries: buildVoltageSeries()
+    property var currentSeries: buildCurrentSeries()
 
     readonly property var baudRateOptions: [
         { value: 9600, label: "9600" },
@@ -935,10 +993,10 @@ MosRectangle {
                                 TpInvDataProcessing.sampleCapacity = 400
                                 voltageChart.autoXRange = false
                                 voltageChart.xMin = 0
-                                voltageChart.xMax = wavePage.sampleCount - 1
+                                voltageChart.xMax = wavePage.chartXMax
                                 currentChart.autoXRange = false
                                 currentChart.xMin = 0
-                                currentChart.xMax = wavePage.sampleCount - 1
+                                currentChart.xMax = wavePage.chartXMax
                                 wavePage.chartModified = false
                                 wavePage.updateAdaptiveRenderPoints()
                             }
@@ -967,7 +1025,7 @@ MosRectangle {
                         autoXRange: false
                         autoYRange: true
                         xMin: 0
-                        xMax: wavePage.sampleCount - 1
+                        xMax: wavePage.chartXMax
                         xBlockCount: 8
                         yBlockCount: 4
                         unit: "V"
@@ -1058,10 +1116,10 @@ MosRectangle {
                                 TpInvDataProcessing.sampleCapacity = 400
                                 voltageChart.autoXRange = false
                                 voltageChart.xMin = 0
-                                voltageChart.xMax = wavePage.sampleCount - 1
+                                voltageChart.xMax = wavePage.chartXMax
                                 currentChart.autoXRange = false
                                 currentChart.xMin = 0
-                                currentChart.xMax = wavePage.sampleCount - 1
+                                currentChart.xMax = wavePage.chartXMax
                                 wavePage.chartModified = false
                                 wavePage.updateAdaptiveRenderPoints()
                             }
@@ -1091,7 +1149,7 @@ MosRectangle {
                         autoYRange: true
 
                         xMin: 0
-                        xMax: wavePage.sampleCount - 1
+                        xMax: wavePage.chartXMax
                         xBlockCount: 8
                         yBlockCount: 4
                         unit: "A"
@@ -1127,6 +1185,36 @@ MosRectangle {
         }
         }
     }
+    Connections {
+        target: TpinvMqtt
+
+        function onWaveDataChanged() {
+            wavePage.voltageSeries = wavePage.buildVoltageSeries()
+            wavePage.currentSeries = wavePage.buildCurrentSeries()
+            refreshTimer.restart()
+        }
+    }
+
+    // ── 串口数据驱动：不依赖 TpinvMqtt 单例创建时机 ──
+    Connections {
+        target: TpInvDataProcessing
+
+        function onSamplesChanged() {
+            wavePage.voltageSeries = wavePage.buildVoltageSeries()
+            wavePage.currentSeries = wavePage.buildCurrentSeries()
+            refreshTimer.restart()
+        }
+    }
+
+    Timer {
+        id: refreshTimer
+        interval: 60
+        repeat: false
+        onTriggered: {
+            voltageChart.refresh()
+            currentChart.refresh()
+        }
+    }
 
     // ── MQTT 事件连接 ──
     Connections {
@@ -1144,10 +1232,6 @@ MosRectangle {
 
         function onErrorOccurred(message) {
             pageMessage.error("MQTT 错误: " + message)
-        }
-
-        function onMqttMessageReceived(topic, data) {
-            console.log("[TPInv-Wave] MQTT 收到数据 topic=" + topic + " len=" + data.length)
         }
     }
 

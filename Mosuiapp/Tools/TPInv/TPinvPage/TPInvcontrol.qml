@@ -699,7 +699,6 @@ MosRectangle {
                             elide: Text.ElideRight
                         }
 
-
                         MosSelect {
                             Layout.preferredWidth: 110
                             Layout.preferredHeight: 34
@@ -1509,11 +1508,6 @@ MosRectangle {
 
         function onErrorOccurred(message) {
             pageMessage.error("MQTT 错误: " + message)
-        }
-
-        function onMqttMessageReceived(topic, data) {
-            // 数据到达日志 (调试用，可根据需要注释)
-            console.log("[TPInv] MQTT 收到数据 topic=" + topic + " len=" + data.length)
         }
     }
 

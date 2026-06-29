@@ -128,7 +128,7 @@ MosRectangle {
 
     function initializeManagerDefaults() {
         if (MosMqttManager.host.trim().length === 0)
-            MosMqttManager.host = "127.0.0.1"
+            MosMqttManager.host = "broker.emqx.io"
         if (MosMqttManager.port <= 0 || MosMqttManager.port > 65535)
             MosMqttManager.port = 1883
         if (MosMqttManager.clientId.trim().length === 0) {
@@ -545,7 +545,7 @@ MosRectangle {
                                         Layout.fillWidth: true
                                         Layout.preferredHeight: 36
                                         text: MosMqttManager.host
-                                        placeholderText: "127.0.0.1"
+                                        placeholderText: "请输入 Broker 地址"
                                         clearEnabled: true
                                         enabled: MosMqttManager.state === MosMqttManager.Disconnected
                                         colorBg: "transparent"

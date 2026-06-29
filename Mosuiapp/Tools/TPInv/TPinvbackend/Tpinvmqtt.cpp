@@ -7,18 +7,52 @@
 
 #include <QDebug>
 #include <QQmlEngine>
-#include <QSettings>
 #include <qdebug.h>
 
 Tpinvmqtt::Tpinvmqtt(QObject *parent)
     : QObject(parent)
 {
     bindMqttSignals();
-    connectSettingsPersistence();
-    loadSettings();  // 构造时立即加载持久化配置，确保 saveSettings 连接在用户操作前已就绪
 }
 
 Tpinvmqtt::~Tpinvmqtt() = default;
+
+// ── 波形数据桥接 (从 TpInvDataProcessing 读取) ──
+
+int Tpinvmqtt::waveSampleCount() const
+{
+    return TpInvDataProcessing::instance()->sampleCount();
+}
+
+QVariantList Tpinvmqtt::waveVoltageAValues() const
+{
+    return TpInvDataProcessing::instance()->voltageAValues();
+}
+
+QVariantList Tpinvmqtt::waveVoltageBValues() const
+{
+    return TpInvDataProcessing::instance()->voltageBValues();
+}
+
+QVariantList Tpinvmqtt::waveVoltageCValues() const
+{
+    return TpInvDataProcessing::instance()->voltageCValues();
+}
+
+QVariantList Tpinvmqtt::waveCurrentAValues() const
+{
+    return TpInvDataProcessing::instance()->currentAValues();
+}
+
+QVariantList Tpinvmqtt::waveCurrentBValues() const
+{
+    return TpInvDataProcessing::instance()->currentBValues();
+}
+
+QVariantList Tpinvmqtt::waveCurrentCValues() const
+{
+    return TpInvDataProcessing::instance()->currentCValues();
+}
 
 // ── 单例 ──
 
@@ -68,8 +102,6 @@ void Tpinvmqtt::bindMqttSignals()
     connect(manager, &MosMqttManager::connected, this, [this]() {
         isConnected_ = true;
         emit isConnectedChanged();
-        qDebug() << "[TpinvMqtt] 已连接到 MQTT Broker";
-
         // 连接成功后自动订阅数据主题
         if (!m_dataTopic.isEmpty()) {
             subscribeTopic(m_dataTopic);
@@ -83,15 +115,18 @@ void Tpinvmqtt::bindMqttSignals()
     connect(manager, &MosMqttManager::disconnected, this, [this]() {
         isConnected_ = false;
         emit isConnectedChanged();
-        qDebug() << "[TpinvMqtt] 已断开 MQTT 连接";
     });
 
     connect(manager, &MosMqttManager::errorOccurred, this, [this](const QString &message) {
-        qWarning() << "[TpinvMqtt] 错误:" << message;
         emit errorOccurred(message);
     });
 
-    // 数据主题消息 → 推入控制处理流水线 / 波形处理流水线
+    // 桥接 TpInvDataProcessing 的数据变化信号 → TpinvMqtt::waveDataChanged
+    auto *dataProc = TpInvDataProcessing::instance();
+    connect(dataProc, &TpInvDataProcessing::samplesChanged,
+            this, &Tpinvmqtt::waveDataChanged);
+    connect(dataProc, &TpInvDataProcessing::voltageSeriesChanged,
+            this, &Tpinvmqtt::waveDataChanged);
     connect(manager, &MosMqttManager::bytesReceived, this,
             [this](const QString &topic, const QByteArray &data) {
         emit mqttMessageReceived(topic, data);
@@ -103,10 +138,9 @@ void Tpinvmqtt::bindMqttSignals()
                 static_cast<tpinv::RingBuffer::size_type>(data.size()));
             proc->controntroldataProcess();
         }
-
-        // 波形数据主题 → 推入 MQTT 批量波形处理流水线
         if (topic == m_waveDataTopic && !data.isEmpty()) {
             TpInvDataProcessing::instance()->handleMqttWaveData(data);
+            qDebug() << "接收到 MQTT 波形数据";
         }
     });
 
@@ -138,106 +172,6 @@ void Tpinvmqtt::setPort(int v) { mqttManager()->setPort(v); }
 void Tpinvmqtt::setClientId(const QString &v) { mqttManager()->setClientId(v); }
 void Tpinvmqtt::setUsername(const QString &v) { mqttManager()->setUsername(v); }
 void Tpinvmqtt::setPassword(const QString &v) { mqttManager()->setPassword(v); }
-
-// ── 设置持久化 ──
-
-void Tpinvmqtt::connectSettingsPersistence()
-{
-    auto *m = mqttManager();
-
-    // MosMqttManager 属性变化 → 转发信号 + 保存设置
-    connect(m, &MosMqttManager::hostChanged, this, &Tpinvmqtt::hostChanged);
-    connect(m, &MosMqttManager::portChanged, this, &Tpinvmqtt::portChanged);
-    connect(m, &MosMqttManager::clientIdChanged, this, &Tpinvmqtt::clientIdChanged);
-    connect(m, &MosMqttManager::usernameChanged, this, &Tpinvmqtt::usernameChanged);
-    connect(m, &MosMqttManager::passwordChanged, this, &Tpinvmqtt::passwordChanged);
-
-    // 属性变化时自动保存
-    connect(m, &MosMqttManager::hostChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::portChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::clientIdChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::usernameChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::passwordChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::keepAliveChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::autoReconnectChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::reconnectIntervalChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::sslEnabledChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::sslCaCertPathChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::sslPeerVerifyChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::willTopicChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::willMessageChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::willQosChanged, this, &Tpinvmqtt::saveSettings);
-    connect(m, &MosMqttManager::willRetainChanged, this, &Tpinvmqtt::saveSettings);
-
-    // TpinvMqtt 独有主题属性变化时也保存
-    connect(this, &Tpinvmqtt::controlTopicChanged, this, &Tpinvmqtt::saveSettings);
-    connect(this, &Tpinvmqtt::dataTopicChanged, this, &Tpinvmqtt::saveSettings);
-    connect(this, &Tpinvmqtt::waveDataTopicChanged, this, &Tpinvmqtt::saveSettings);
-}
-
-void Tpinvmqtt::loadSettings()
-{
-    m_loadingSettings = true;
-
-    QSettings s;
-    auto *m = mqttManager();
-
-    // 以 MosMqttManager 当前值作为默认值
-    m->setHost(s.value(QStringLiteral("tpinv/mqtt/host"), m->host()).toString());
-    m->setPort(s.value(QStringLiteral("tpinv/mqtt/port"), m->port()).toInt());
-    m->setClientId(s.value(QStringLiteral("tpinv/mqtt/clientId"), m->clientId()).toString());
-    m->setUsername(s.value(QStringLiteral("tpinv/mqtt/username"), m->username()).toString());
-    m->setPassword(s.value(QStringLiteral("tpinv/mqtt/password"), m->password()).toString());
-    m->setKeepAlive(s.value(QStringLiteral("tpinv/mqtt/keepAlive"), m->keepAlive()).toInt());
-    m->setAutoReconnect(s.value(QStringLiteral("tpinv/mqtt/autoReconnect"), m->autoReconnect()).toBool());
-    m->setReconnectInterval(s.value(QStringLiteral("tpinv/mqtt/reconnectInterval"), m->reconnectInterval()).toInt());
-    m->setSslEnabled(s.value(QStringLiteral("tpinv/mqtt/sslEnabled"), m->sslEnabled()).toBool());
-    m->setSslCaCertPath(s.value(QStringLiteral("tpinv/mqtt/sslCaCertPath"), m->sslCaCertPath()).toString());
-    m->setSslPeerVerify(s.value(QStringLiteral("tpinv/mqtt/sslPeerVerify"), m->sslPeerVerify()).toBool());
-    m->setWillTopic(s.value(QStringLiteral("tpinv/mqtt/willTopic"), m->willTopic()).toString());
-    m->setWillMessage(s.value(QStringLiteral("tpinv/mqtt/willMessage"), m->willMessage()).toString());
-    m->setWillQos(s.value(QStringLiteral("tpinv/mqtt/willQos"), m->willQos()).toInt());
-    m->setWillRetain(s.value(QStringLiteral("tpinv/mqtt/willRetain"), m->willRetain()).toBool());
-
-    // TpinvMqtt 独有主题
-    setControlTopic(s.value(QStringLiteral("tpinv/mqtt/controlTopic"), controlTopic()).toString());
-    setDataTopic(s.value(QStringLiteral("tpinv/mqtt/dataTopic"), dataTopic()).toString());
-    setWaveDataTopic(s.value(QStringLiteral("tpinv/mqtt/waveDataTopic"), waveDataTopic()).toString());
-
-    m_loadingSettings = false;
-
-    qDebug() << "[TpinvMqtt] 已加载持久化 MQTT 配置"
-             << "host:" << m->host() << "port:" << m->port();
-}
-
-void Tpinvmqtt::saveSettings()
-{
-    if (m_loadingSettings)
-        return;
-
-    QSettings s;
-    auto *m = mqttManager();
-
-    s.setValue(QStringLiteral("tpinv/mqtt/host"), m->host());
-    s.setValue(QStringLiteral("tpinv/mqtt/port"), m->port());
-    s.setValue(QStringLiteral("tpinv/mqtt/clientId"), m->clientId());
-    s.setValue(QStringLiteral("tpinv/mqtt/username"), m->username());
-    s.setValue(QStringLiteral("tpinv/mqtt/password"), m->password());
-    s.setValue(QStringLiteral("tpinv/mqtt/keepAlive"), m->keepAlive());
-    s.setValue(QStringLiteral("tpinv/mqtt/autoReconnect"), m->autoReconnect());
-    s.setValue(QStringLiteral("tpinv/mqtt/reconnectInterval"), m->reconnectInterval());
-    s.setValue(QStringLiteral("tpinv/mqtt/sslEnabled"), m->sslEnabled());
-    s.setValue(QStringLiteral("tpinv/mqtt/sslCaCertPath"), m->sslCaCertPath());
-    s.setValue(QStringLiteral("tpinv/mqtt/sslPeerVerify"), m->sslPeerVerify());
-    s.setValue(QStringLiteral("tpinv/mqtt/willTopic"), m->willTopic());
-    s.setValue(QStringLiteral("tpinv/mqtt/willMessage"), m->willMessage());
-    s.setValue(QStringLiteral("tpinv/mqtt/willQos"), m->willQos());
-    s.setValue(QStringLiteral("tpinv/mqtt/willRetain"), m->willRetain());
-
-    s.setValue(QStringLiteral("tpinv/mqtt/controlTopic"), controlTopic());
-    s.setValue(QStringLiteral("tpinv/mqtt/dataTopic"), dataTopic());
-    s.setValue(QStringLiteral("tpinv/mqtt/waveDataTopic"), waveDataTopic());
-}
 
 // ── 连接管理 ──
 
