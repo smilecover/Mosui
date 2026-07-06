@@ -123,6 +123,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
     Qt6::WebView
     Qt6::SerialPort
     Qt6::Mqtt
+    Qt6::Network
 )
 
 # 将 QWindowKit 动态库复制到输出目录，确保运行时能找到（仅动态库需要）
@@ -181,6 +182,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosSerialPort>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosMqtt>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosCharts>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cpp/tools/MosNetTcp>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/MosuiBasic>
 )
 

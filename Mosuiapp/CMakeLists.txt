@@ -12,14 +12,14 @@ else()
 endif()
 qt_add_executable(${PROJECT_NAME})
 
-file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/*/*.qml" "Tools/*.qml" "Tools/*/*.qml" "Tools/*/*/*.qml")
+file(GLOB QML_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Controls/*.qml" "Controls/*/*.qml" "Tools/*.qml" "Tools/*/*.qml" "Tools/*/*/*.qml" "Tools/*/*/*/*.qml")
 file(GLOB SRC_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Tools/*/*/*.cpp" "Tools/*/*/*.h" "src/*.cpp" "src/*.h")
 
 
 # 资源文件（GLOB 自动匹配，无需手动维护文件列表）
 set(RES_BASE "${CMAKE_CURRENT_SOURCE_DIR}/resources")
 
-file(GLOB RES_FILES "resources/logo.png")
+file(GLOB RES_FILES "resources/*.png")
 qt_add_resources(${PROJECT_NAME} "res"
     PREFIX "/"
     BASE "${RES_BASE}"
@@ -49,6 +49,7 @@ qt_add_qml_module(
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/Tools/TPInv/TPinvbackend
+    ${CMAKE_CURRENT_SOURCE_DIR}/Tools/PLC_APP/PLCbackend
 )
 
 qt_add_shaders(${PROJECT_NAME} "shaders"

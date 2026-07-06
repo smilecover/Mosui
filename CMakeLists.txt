@@ -25,7 +25,7 @@ set(LIBRARY_STATIC_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/static CACHE PATH "静�
 set(QT_NO_PRIVATE_MODULE_WARNING ON CACHE BOOL "" FORCE)
 
 # 基础 Qt 组件（所有平台通用）
-set(QT_REQUIRED_COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat Mqtt)
+set(QT_REQUIRED_COMPONENTS Core Qml Quick QuickTemplates2 LabsQmlModels ShaderTools QuickControls2 WebView Graphs Charts SerialPort Core5Compat Mqtt Network)
 
 # Linux/macOS 下私有模块有独立的 CMake 包，需要显式声明
 if(UNIX)

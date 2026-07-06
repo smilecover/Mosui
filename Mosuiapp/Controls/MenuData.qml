@@ -192,6 +192,7 @@ QtObject {
             menuChildren: [
                 { key:'ExpSerialPortManager', label:qsTr('串口管理器'), iconSource: MosIcon.SerialportOutlined, source: './Controls/Universal/ExpSerialPortManager.qml' },
                 { key:'ExpMqttManager', label:qsTr('MQTT管理器'), iconSource: MosIcon.MqttOutlined, source: './Controls/Universal/ExpMqttManager.qml' },
+                { key:'ExpNetTcpManager', label:qsTr('TCP网络管理器'), iconSource: MosIcon.CloudOutlined, source: './Controls/Universal/ExpNetTcpManager.qml' },
                 {
                     key: 'TPInv',
                     label: qsTr('逆变器工具'),

@@ -12,6 +12,12 @@ class MOSUIBASIC_EXPORT MosIcon : public QObject
     QML_SINGLETON
     QML_NAMED_ELEMENT(MosIcon)
 public:
+/*
+线框风格图标 Outlined
+填充风格图标 Filled
+双色风格图标 Path1,Path2,Path3,Path4
+IcoMoon图标 IcoMoon
+*/
     enum class Type : uint16_t {
         HomeOutlined = 0xe000, // 首页
         WaveOutlined = 0xe001, // 波形
@@ -103,7 +109,7 @@ public:
         SearchOutlined2 = 0xe057, // 搜索2
         DashOutlined = 0xe058, // 短横线
         FieldTimeOutlined = 0xe059, // 时间
-        UserOutlined = 0xe05a, // 用户
+        BilibiliFilled = 0xe05a, // 用户
         AccountBookOutlined = 0xe05b, // 账本
         BarChartOutlined = 0xe05c, // 柱状图
         BarsOutlined = 0xe05d, // 条形图
@@ -809,7 +815,7 @@ public:
         Icon_e319 = 0xe319,
         Icon_e31a = 0xe31a,
         Icon_e31b = 0xe31b,
-        Icon_e31c = 0xe31c,
+        PowerswitchOutlined = 0xe31c,
         Icon_e31d = 0xe31d,
         Icon_e31e = 0xe31e,
         Icon_e31f = 0xe31f,
@@ -1100,7 +1106,7 @@ public:
         Icon_e43c = 0xe43c,
         Icon_e43d = 0xe43d,
         Icon_e43e = 0xe43e,
-        Icon_e43f = 0xe43f,
+        UserOutlined = 0xe43f,
         Icon_e440 = 0xe440,
         Icon_e441 = 0xe441,
         Icon_e442 = 0xe442,

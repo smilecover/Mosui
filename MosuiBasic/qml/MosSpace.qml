@@ -275,12 +275,19 @@ Loader {
     Component {
         id: __rowLayout
 
+        Item {
         RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: root.leftPadding
+            anchors.rightMargin: root.rightPadding
+            anchors.topMargin: root.topPadding
+            anchors.bottomMargin: root.bottomPadding
             spacing: root.spacing
             layoutDirection: root.layoutDirection
             uniformCellSizes: root.uniformCellSizes
             data: root.layoutData
             Component.onCompleted: root.__createBindings(children);
+        }
         }
     }
 
@@ -305,12 +312,19 @@ Loader {
     Component {
         id: __columnLayout
 
+        Item {
         ColumnLayout {
+            anchors.fill: parent
+            anchors.leftMargin: root.leftPadding
+            anchors.rightMargin: root.rightPadding
+            anchors.topMargin: root.topPadding
+            anchors.bottomMargin: root.bottomPadding
             spacing: root.spacing
             layoutDirection: root.layoutDirection
             uniformCellSizes: root.uniformCellSizes
             data: root.layoutData
             Component.onCompleted: root.__createBindings(children);
+        }
         }
     }
 
@@ -342,7 +356,13 @@ Loader {
     Component {
         id: __gridLayout
 
+        Item {
         GridLayout {
+            anchors.fill: parent
+            anchors.leftMargin: root.leftPadding
+            anchors.rightMargin: root.rightPadding
+            anchors.topMargin: root.topPadding
+            anchors.bottomMargin: root.bottomPadding
             flow: root.flow
             rows: root.rows
             columns: root.columns
@@ -353,6 +373,7 @@ Loader {
             uniformCellHeights: root.uniformCellHeights
             data: root.layoutData
             Component.onCompleted: root.__createBindings(children);
+        }
         }
     }
 }

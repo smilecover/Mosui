@@ -21,7 +21,9 @@
                 "MOSUIBASIC_BUILD_STATIC": "ON"
             },
             "environment": {
-                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin"
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin",
+                "INCLUDE": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\include;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\shared;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\winrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\cppwinrt",
+                "LIB": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64"
             }
         },
         {
@@ -39,13 +41,15 @@
                 "MOSUIBASIC_BUILD_STATIC": "ON"
             },
             "environment": {
-                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin"
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin",
+                "INCLUDE": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\include;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\shared;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\winrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\cppwinrt",
+                "LIB": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64"
             }
         },
         {
             "name": "clang-release",
             "displayName": "Clang Release",
-            "description": "使用 clang-cl 编译器，Release 模式",
+            "description": "使用 clang-cl + lld-link，Release + ThinLTO",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-clang/Release",
             "cacheVariables": {
@@ -54,18 +58,26 @@
                 "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
                 "CMAKE_C_COMPILER": "D:/LLVM/bin/clang-cl.exe",
                 "CMAKE_CXX_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_LINKER": "D:/LLVM/bin/lld-link.exe",
+                "CMAKE_RC_COMPILER": "D:/LLVM/bin/llvm-rc.exe",
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_FLAGS_INIT": "-flto=thin",
+                "CMAKE_CXX_FLAGS_INIT": "-flto=thin",
+                "CMAKE_EXE_LINKER_FLAGS_INIT": "-flto=thin",
+                "CMAKE_SHARED_LINKER_FLAGS_INIT": "-flto=thin",
                 "MOSUIBASIC_BUILD_STATIC": "ON"
             },
             "environment": {
-                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin"
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin",
+                "INCLUDE": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\include;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\shared;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\winrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\cppwinrt",
+                "LIB": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64"
             }
         },
         {
             "name": "clang-debug",
             "displayName": "Clang Debug",
-            "description": "使用 clang-cl 编译器，Debug 模式",
+            "description": "使用 clang-cl + lld-link，Debug 模式",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-clang/Debug",
             "cacheVariables": {
@@ -74,12 +86,16 @@
                 "CMAKE_MAKE_PROGRAM": "D:/VisualStudio/IDE/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe",
                 "CMAKE_C_COMPILER": "D:/LLVM/bin/clang-cl.exe",
                 "CMAKE_CXX_COMPILER": "D:/LLVM/bin/clang-cl.exe",
+                "CMAKE_LINKER": "D:/LLVM/bin/lld-link.exe",
+                "CMAKE_RC_COMPILER": "D:/LLVM/bin/llvm-rc.exe",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "MOSUIBASIC_BUILD_STATIC": "OFF"
+                "MOSUIBASIC_BUILD_STATIC": "ON"
             },
             "environment": {
-                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin"
+                "PATH": "$penv{PATH};D:/Qt/6.8.3/msvc2022_64/bin;D:/LLVM/bin",
+                "INCLUDE": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\include;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\include;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\um;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\shared;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\winrt;C:\\Program Files (x86)\\Windows Kits\\10\\include\\10.0.26100.0\\cppwinrt",
+                "LIB": "D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;D:\\VisualStudio\\IDE\\VC\\Tools\\MSVC\\14.51.36231\\ATLMFC\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\ucrt\\x64;C:\\Program Files (x86)\\Windows Kits\\10\\Lib\\10.0.26100.0\\um\\x64"
             }
         }
     ],
