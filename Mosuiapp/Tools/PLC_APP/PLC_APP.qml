@@ -32,9 +32,10 @@ MosWindow{
     // 尺寸由 Loader 锚点决定，自动填充剩余空间
     property Component centerDelegate : CenterDelegateWin {}
 
-    // ══════════════════════════════════════════════════
-    // 布局：所有 Loader 尺寸由 delegate 内容自动驱动
-    // ══════════════════════════════════════════════════
+    Component.onCompleted: {
+        K3data.InitK3data()
+        K3dataprocess.InitK3dataprocess()
+    }
 
     Loader {
         id: __up
@@ -77,7 +78,7 @@ MosWindow{
         anchors.top: __up.bottom
         anchors.bottom: __down.top
         anchors.left: __left.right
-        anchors.right: __right.left        
+        anchors.right: __right.left
         sourceComponent: plcappwindow.centerDelegate
     }
 

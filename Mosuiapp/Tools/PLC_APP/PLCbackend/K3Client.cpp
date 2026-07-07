@@ -1,6 +1,7 @@
 #include "K3Client.h"
 
 #include <QQmlEngine>
+#include <QTimer>
 #include <QtEndian>
 
 #include "MosNetTcpManager.h"
@@ -48,7 +49,7 @@ constexpr char s_hex[256][3] = {
 K3Client::K3Client(QObject *parent)
     : QObject(parent)
 {
-    m_tcp = MosNetTcpManager::instance();
+    auto* m_tcp = MosNetTcpManager::instance();
 
     m_tcp->setHost(m_host);
     m_tcp->setPort(m_port);
@@ -98,6 +99,7 @@ int K3Client::secondaryPort() const     { return m_secondaryPort; }
 
 void K3Client::setHost(const QString &h)
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     if (m_host == h) return;
     m_host = h;
     m_tcp->setHost(h);
@@ -105,6 +107,7 @@ void K3Client::setHost(const QString &h)
 }
 void K3Client::setPort(int p)
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     if (m_port == p) return;
     m_port = p;
     m_tcp->setPort(p);
@@ -129,18 +132,40 @@ void K3Client::setSecondaryPort(int p)
 
 void K3Client::connectToHost()
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     if (m_tcp->isConnected())
         m_tcp->disconnectFromHost();
 
     m_queue.clear();
     m_commandInFlight = false;
     m_readBuffer.clear();
+    m_reconnecting = false;
 
     tryConnectPrimary();
 }
 
+// ★ QML 安全入口：MosNetTcpManager::connectToHost() 内部使用
+//    QEventLoop::exec() 阻塞等待，从 QML 事件直接调用会崩溃。
+//    此方法用 QTimer::singleShot 推迟到下一事件循环执行。
+void K3Client::safeConnectToHost()
+{
+    auto* m_tcp = MosNetTcpManager::instance();
+    if (m_tcp->isConnected())
+        m_tcp->disconnectFromHost();
+
+    m_queue.clear();
+    m_commandInFlight = false;
+    m_readBuffer.clear();
+    m_reconnecting = false;
+
+    QTimer::singleShot(0, this, [this]() {
+        tryConnectPrimary();
+    });
+}
+
 void K3Client::tryConnectPrimary()
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     m_tcp->setHost(m_host);
     m_tcp->setPort(m_port);
     m_tcp->connectToHost();
@@ -148,6 +173,7 @@ void K3Client::tryConnectPrimary()
 
 void K3Client::tryConnectSecondary()
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     m_tcp->setHost(m_secondaryHost);
     m_tcp->setPort(m_secondaryPort);
     m_tcp->connectToHost();
@@ -155,6 +181,7 @@ void K3Client::tryConnectSecondary()
 
 void K3Client::disconnectFromHost()
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     m_queue.clear();
     m_commandInFlight = false;
     m_tcp->disconnectFromHost();
@@ -168,6 +195,7 @@ void K3Client::onTcpConnected()
 {
     if (!m_connected) {
         m_connected = true;
+        m_reconnecting = false;
         emit isConnectedChanged();
     }
     m_readBuffer.clear();
@@ -207,8 +235,16 @@ void K3Client::onTcpDataReceived(const QByteArray &data,
 
 void K3Client::onTcpError(const QString &msg)
 {
-    if (!m_connected && m_tcp->host() == m_host) {
-        tryConnectSecondary();
+    auto* m_tcp = MosNetTcpManager::instance();
+    // ★ 修复：当主通道失败且尚未尝试过备用通道时，用 QTimer::singleShot 推迟
+    //    备用连接，避免在 invokeOperation 的 QEventLoop::exec() 内部触发
+    //    新的 connectToHost() 导致无限递归和栈溢出崩溃。
+    //    同时用 m_reconnecting 标志防止主备地址相同时的无限重连循环。
+    if (!m_connected && !m_reconnecting && m_tcp->host() == m_host) {
+        m_reconnecting = true;
+        QTimer::singleShot(0, this, [this]() {
+            tryConnectSecondary();
+        });
         return;
     }
     emit errorOccurred(msg);
@@ -250,7 +286,7 @@ QByteArray K3Client::buildFrame(const QByteArray &command) const
 
     return frame;
 }
-    
+
 // ═══════════════════════════════════════════════════════════════
 // ★ 优化 3: extractFrame — fromRawData 避免 mid() 拷贝
 // ═══════════════════════════════════════════════════════════════
@@ -327,6 +363,7 @@ void K3Client::enqueueCommand(quint8 cmdId, QByteArray &&cmd,
 
 void K3Client::sendNextCommand()
 {
+    auto* m_tcp = MosNetTcpManager::instance();
     if (m_queue.empty() || !m_connected) {
         m_commandInFlight = false;
         return;

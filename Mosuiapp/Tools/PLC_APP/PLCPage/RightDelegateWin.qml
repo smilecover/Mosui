@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import MosuiBasic
+import "./Controls"
 
 Item {
     id: root
@@ -10,6 +11,41 @@ Item {
     property real yali_pressure: 6.5
     property real wendu_temperature: 46.9
     property int heatStatus: 0  // 0=停止(灰), 1=加热(绿), 2=故障(红)
+
+    // ── 连接弹窗 ──
+    ConnectDialog {
+        id: connectDialog
+        onConnectRequested: function(host, secondaryHost) {
+            K3Client.host = host
+            if (secondaryHost !== "") {
+                K3Client.secondaryHost = secondaryHost
+            }
+            connectDeferTimer.start()
+        }
+    }
+
+    Timer {
+        id: connectDeferTimer
+        interval: 1
+        repeat: false
+        onTriggered: K3Client.safeConnectToHost()
+    }
+
+    // ── 监听 K3Client 事件，反馈给弹窗 ──
+    Connections {
+        target: K3Client
+
+        function onIsConnectedChanged() {
+            if (K3Client.isConnected && connectDialog.opened) {
+                connectDialog.showSuccess()
+            }
+        }
+        function onErrorOccurred(message) {
+            if (connectDialog.opened) {
+                connectDialog.showError("连接失败: " + message)
+            }
+        }
+    }
 
     MosRectangle {
         anchors.fill: parent
@@ -47,6 +83,7 @@ Item {
                         iconSource: MosIcon.UserOutlined
                         text: "启动"
                         radiusBg: MosRadius { all: 0 }
+                        onClicked: connectDialog.open()
                     }
                     MosIconButton {
                         Layout.fillWidth: true

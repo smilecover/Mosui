@@ -41,6 +41,7 @@ public:
     void setSecondaryPort(int p);
 
     Q_INVOKABLE void connectToHost();
+    Q_INVOKABLE void safeConnectToHost();  
     Q_INVOKABLE void disconnectFromHost();
 
     // ── 读取 ──
@@ -95,15 +96,12 @@ private:
 
     void tryConnectPrimary();
     void tryConnectSecondary();
-
-    // ── 数据 ──
-    MosNetTcpManager *m_tcp = nullptr;
-
-    QString m_host          = QStringLiteral("192.168.100.18");
+    QString m_host          = QStringLiteral("192.168.0.108");
     int     m_port          = 50002;
-    QString m_secondaryHost = QStringLiteral("192.168.100.18");
+    QString m_secondaryHost = QStringLiteral("192.168.0.108");
     int     m_secondaryPort = 50000;
-    bool    m_connected     = false;
+    bool    m_connected        = false;
+    bool    m_reconnecting     = false;  // 防重入：防止主备切换时的无限递归
 
     QByteArray m_readBuffer;
     std::deque<PendingCommand> m_queue;  // ★ std::deque 对头删更友好
