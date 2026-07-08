@@ -41,6 +41,7 @@ public:
     QString willMessage;
     int willQos { 0 };
     bool willRetain { false };
+    bool m_shutdownStarted { false };
 };
 
 #endif // MOSMQTT_P_H

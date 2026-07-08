@@ -25,6 +25,7 @@ public:
     bool isOpen { false };
     QString currentPortName;
     QString errorString;
+    bool m_shutdownStarted { false };
 };
 
 #endif // MOSSERIALPORTMANAGER_P_H

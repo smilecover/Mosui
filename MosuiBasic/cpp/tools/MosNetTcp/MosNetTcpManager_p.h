@@ -55,6 +55,7 @@ public:
 
     // 解码控制 (P1)
     bool lazyDecode { false };
+    bool m_shutdownStarted { false };
 };
 
 #endif // MOSNETTCPMANAGER_P_H

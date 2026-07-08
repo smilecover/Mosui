@@ -1365,7 +1365,16 @@ MosNetTcpManager::MosNetTcpManager(QObject *parent)
 // P0: 析构流程改进 — 用 requestStop + BlockingQueuedConnection，避免 terminate()
 MosNetTcpManager::~MosNetTcpManager()
 {
+    shutdown();
+}
+
+void MosNetTcpManager::shutdown()
+{
     Q_D(MosNetTcpManager);
+
+    if (d->m_shutdownStarted)
+        return;
+    d->m_shutdownStarted = true;
 
     if (d->worker && d->tcpThread && d->tcpThread->isRunning()) {
         QMetaObject::invokeMethod(d->worker, &MosNetTcpWorker::requestStop,

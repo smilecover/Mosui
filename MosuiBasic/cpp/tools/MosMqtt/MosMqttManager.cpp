@@ -569,7 +569,16 @@ MosMqttManager::MosMqttManager(QObject *parent)
 
 MosMqttManager::~MosMqttManager()
 {
+    shutdown();
+}
+
+void MosMqttManager::shutdown()
+{
     Q_D(MosMqttManager);
+
+    if (d->m_shutdownStarted)
+        return;
+    d->m_shutdownStarted = true;
 
     if (d->worker)
         invokeOperation(d->worker, MqttShutdownTimeoutMs, [worker = d->worker]() {

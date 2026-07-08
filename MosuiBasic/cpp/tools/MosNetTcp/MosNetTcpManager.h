@@ -133,6 +133,7 @@ public:
 
     // 工具方法
     Q_INVOKABLE void clearError();
+    Q_INVOKABLE void shutdown();
     Q_INVOKABLE QString bytesToHex(const QByteArray &data) const;
     Q_INVOKABLE QString bytesToText(const QByteArray &data) const;
 

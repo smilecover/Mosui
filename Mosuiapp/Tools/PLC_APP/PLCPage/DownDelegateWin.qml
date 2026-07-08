@@ -36,11 +36,7 @@ Item {
                 spacing: 10
                 anchors.fill: parent
                 Repeater{
-                    model: [
-                        {name: "节流阀A", value: "45.0"},
-                        {name: "节流阀B", value: "45.0"},
-                        {name: "节流阀C", value: "45.0"}
-                    ]
+                    model: K3data.k3data_down
                     delegate: MosLabel{
                         Layout.fillWidth: true
                         Layout.fillHeight: true

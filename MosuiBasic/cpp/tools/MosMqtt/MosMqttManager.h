@@ -96,6 +96,7 @@ public:
     Q_INVOKABLE void subscribe(const QString &topic, int qos = 0);
     Q_INVOKABLE void unsubscribe(const QString &topic);
     Q_INVOKABLE void clearError();
+    Q_INVOKABLE void shutdown();
 
 Q_SIGNALS:
     void hostChanged();

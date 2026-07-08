@@ -9,6 +9,9 @@
 #include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #endif
 #include "Mosapp.h"
+#include "MosMqttManager.h"
+#include "MosNetTcpManager.h"
+#include "MosSerialPortManager.h"
 
 /*
  *                    _ooOoo_
@@ -63,9 +66,12 @@ int main(int argc, char *argv[]) {
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
     engine.loadFromModule("Mosuiapp", "Main");
-    // qDebug() << MosApp::libName() << MosApp::libVersion();
 
-
+    QObject::connect(&app, &QCoreApplication::aboutToQuit, &app, []() {
+        MosMqttManager::instance()->shutdown();
+        MosNetTcpManager::instance()->shutdown();
+        MosSerialPortManager::instance()->shutdown();
+    }, Qt::DirectConnection);
 
     return app.exec();
 }

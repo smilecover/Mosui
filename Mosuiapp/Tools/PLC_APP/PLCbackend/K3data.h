@@ -17,6 +17,8 @@ class K3data : public QObject
     QML_NAMED_ELEMENT(K3data)
 
     MOSUI_PROPERTY_READONLY(QVariantList, k3data_left);
+    MOSUI_PROPERTY_READONLY(QVariantList, k3data_down);
+
 
 
 public:
@@ -25,6 +27,7 @@ public:
     static K3data *create(QQmlEngine *, QJSEngine *);
     Q_INVOKABLE bool InitK3data();
     void setK3data_left(const QVariantList &list);
+    void setK3data_down(const QVariantList &list);
 
 private:
     explicit K3data(QObject *parent = nullptr);
@@ -39,6 +42,7 @@ private:
                                 const QVariant &accent) const;
 
     void init_k3dataleftDefaults();
+    void init_k3datadownDefaults();
 
 };
 #endif // K3DATA_H

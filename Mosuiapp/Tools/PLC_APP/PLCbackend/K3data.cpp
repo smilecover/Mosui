@@ -6,6 +6,7 @@ K3data::K3data(QObject *parent)
     : QObject(parent)
 {
     init_k3dataleftDefaults();
+    init_k3datadownDefaults();
 }
 K3data::~K3data() = default;
 
@@ -25,7 +26,7 @@ void K3data::setK3data_left(const QVariantList &list)
 bool K3data::InitK3data()
 {
     init_k3dataleftDefaults();
-
+    init_k3datadownDefaults();
     emit k3data_leftChanged();
 
     return true;
@@ -94,6 +95,23 @@ void K3data::init_k3dataleftDefaults()
                 makeMonitorItem(QStringLiteral("EcdDensity"),    QStringLiteral("ECD密度"),  1.141, false),
             }
         ),
+    };
+
+}
+void K3data::setK3data_down(const QVariantList &list)
+{
+    if (m_k3data_down != list) {
+        m_k3data_down = list;
+        emit k3data_downChanged();
+    }
+}
+void K3data::init_k3datadownDefaults()
+{
+    m_k3data_down = {
+   
+        makeMonitorItem(QStringLiteral("PlateValve1_Open"), QStringLiteral("节流阀A"), 0.0, false),
+        makeMonitorItem(QStringLiteral("PlateValve2_Open"), QStringLiteral("节流阀B"), 0.0, false),
+        makeMonitorItem(QStringLiteral("PlateValve3_Open"), QStringLiteral("节流阀C"), 0.0, false),
     };
 
 }

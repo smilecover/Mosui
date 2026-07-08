@@ -527,7 +527,16 @@ MosSerialPortManager::MosSerialPortManager(QObject *parent)
 
 MosSerialPortManager::~MosSerialPortManager()
 {
+    shutdown();
+}
+
+void MosSerialPortManager::shutdown()
+{
     Q_D(MosSerialPortManager);
+
+    if (d->m_shutdownStarted)
+        return;
+    d->m_shutdownStarted = true;
 
     if (d->worker)
         invokeOperation(d->worker, SerialShutdownTimeoutMs, [worker = d->worker]() {

@@ -28,7 +28,6 @@ K3dataprocess::K3dataprocess(QObject *parent)
             stopPolling();
     });
 
-    // ── 数据分发：信号 → 命名槽（比 lambda 更可靠） ──
     QObject::connect(client, &K3Client::realDataReceived,
                      this, &K3dataprocess::onRealDataReceived);
     QObject::connect(client, &K3Client::bitDataReceived,

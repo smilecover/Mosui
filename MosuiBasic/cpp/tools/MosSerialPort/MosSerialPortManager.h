@@ -62,6 +62,7 @@ public:
     Q_INVOKABLE bool SendBytes(const QByteArray &data);
     Q_INVOKABLE bool SendBytesToPort(const QString &portName, const QByteArray &data);
     Q_INVOKABLE void clearError();
+    Q_INVOKABLE void shutdown();
     Q_INVOKABLE QString bytesToHex(const QByteArray &data) const;
 
 Q_SIGNALS:
