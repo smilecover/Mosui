@@ -119,56 +119,49 @@ void K3dataprocess::processAIData(int /*dbNumber*/, int /*start*/,
         return;
 
     // ── 索引映射 (与 WPF Read_PLC_Data 的 iValue_Single 一致) ──
-    // [0]  = AI_P_wellhead1   (井口压力1)
-    // [1]  = AI_P_wellhead2   (井口压力2)
-    // [2]  = pres_liguan      (立管压力)
-    // [3]  = pres_main        (主通道压力)
-    // [4]  = pres_second      (辅助通道压力)
-    // [5]  = pres_jieliuhou   (节流后压力)
-    // [6]  = temp_jieliuqian  (节流前温度)
-    // [7]  = pres_air         (气源压力)
-    // [8]  = pres_yeyazhan    (液压站压力)
-    // [9]  = temp_yeyazhan    (液压站温度)
-    // [10] = AI_ValvePosition1 (节流阀C位置)
-    // [11] = AI_ValvePosition2 (节流阀A位置)
-    // [12] = AI_ValvePosition3 (节流阀B位置)
-    // [13] = bilifa1          (比例阀1)
-    // [14] = bilifa2          (比例阀2)
-    // [15] = bilifa3          (比例阀3)
-    // [16] = AI_Flow          (出口流量)
-    // [17] = AI_Density       (密度)
-    // [18] = AI_T_EH          (EH温度)
+    // [0]  = AI_P_wellhead1   (井口压力1)   → WellheadPressure
+    // [1]  = AI_P_wellhead2   (井口压力2)   → AI_P_wellhead2
+    // [2]  = pres_liguan      (立管压力)     → StandpipePressure
+    // [3]  = pres_main        (主通道压力)   → MainChannelPressure
+    // [4]  = pres_second      (辅助通道压力) → AuxiliaryChannelPressure
+    // [5]  = pres_jieliuhou   (节流后压力)   → ThrottledPressure
+    // [6]  = temp_jieliuqian  (节流前温度)   → temp_jieliuqian
+    // [7]  = pres_air         (气源压力)     → pres_air
+    // [8]  = pres_yeyazhan    (液压站压力)   → pres_yeyazhan
+    // [9]  = temp_yeyazhan    (液压站温度)   → temp_yeyazhan
+    // [10] = AI_ValvePosition1 (节流阀C开度) → AI_ValvePosition1
+    // [11] = AI_ValvePosition2 (节流阀A开度) → AI_ValvePosition2
+    // [12] = AI_ValvePosition3 (节流阀B开度) → AI_ValvePosition3
+    // [13] = bilifa1          (比例阀1)      → bilifa1
+    // [14] = bilifa2          (比例阀2)      → bilifa2
+    // [15] = bilifa3          (比例阀3)      → bilifa3
+    // [16] = AI_Flow          (出口流量)     → OutletFlow
+    // [17] = AI_Density       (密度)         → OutletDensity
+    // [18] = AI_T_EH          (EH温度)       → AI_T_EH
 
     auto *data = K3data::instance();
-    auto list = data->k3data_left();
 
-    // 辅助函数：更新指定 key 的 value
-    auto updateItem = [&](const QString &key, float v) {
-        for (int gi = 0; gi < list.size(); ++gi) {
-            QVariantMap group = list[gi].toMap();
-            QVariantList metrics = group[QStringLiteral("metrics")].toList();
-            for (int mi = 0; mi < metrics.size(); ++mi) {
-                QVariantMap item = metrics[mi].toMap();
-                if (item[QStringLiteral("key")].toString() == key) {
-                    item[QStringLiteral("value")] = v;
-                    metrics[mi] = item;
-                    group[QStringLiteral("metrics")] = metrics;
-                    list[gi] = group;
-                    return;
-                }
-            }
-        }
-    };
+    data->applyUpdate(QStringLiteral("WellheadPressure"),         values[0]);
+    data->applyUpdate(QStringLiteral("AI_P_wellhead2"),          values[1]);
+    data->applyUpdate(QStringLiteral("StandpipePressure"),        values[2]);
+    data->applyUpdate(QStringLiteral("MainChannelPressure"),      values[3]);
+    data->applyUpdate(QStringLiteral("AuxiliaryChannelPressure"), values[4]);
+    data->applyUpdate(QStringLiteral("ThrottledPressure"),        values[5]);
+    data->applyUpdate(QStringLiteral("temp_jieliuqian"),          values[6]);
+    data->applyUpdate(QStringLiteral("pres_air"),                 values[7]);
+    data->applyUpdate(QStringLiteral("pres_yeyazhan"),            values[8]);
+    data->applyUpdate(QStringLiteral("temp_yeyazhan"),            values[9]);
+    data->applyUpdate(QStringLiteral("AI_ValvePosition1"),        values[10]);
+    data->applyUpdate(QStringLiteral("AI_ValvePosition2"),        values[11]);
+    data->applyUpdate(QStringLiteral("AI_ValvePosition3"),        values[12]);
+    data->applyUpdate(QStringLiteral("bilifa1"),                  values[13]);
+    data->applyUpdate(QStringLiteral("bilifa2"),                  values[14]);
+    data->applyUpdate(QStringLiteral("bilifa3"),                  values[15]);
+    data->applyUpdate(QStringLiteral("OutletFlow"),               values[16]);
+    data->applyUpdate(QStringLiteral("OutletDensity"),            values[17]);
+    data->applyUpdate(QStringLiteral("AI_T_EH"),                  values[18]);
 
-    updateItem(QStringLiteral("MainChannelPressure"),      values[3]);
-    updateItem(QStringLiteral("WellheadPressure"),         values[0]);
-    updateItem(QStringLiteral("AuxiliaryChannelPressure"), values[4]);
-    updateItem(QStringLiteral("StandpipePressure"),        values[2]);
-    updateItem(QStringLiteral("ThrottledPressure"),        values[5]);
-    updateItem(QStringLiteral("OutletFlow"),               values[16]);
-    updateItem(QStringLiteral("OutletDensity"),            values[17]);
-
-    data->setK3data_left(list);
+    data->syncToLeftAndDown();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -184,7 +177,7 @@ static bool getBitAt(quint8 byte, int bitnum)
 void K3dataprocess::processDIData(int /*dbNumber*/, int /*start*/,
                                   const QVector<quint8> &rawBytes)
 {
-    if (rawBytes.size() < 14)
+    if (rawBytes.size() < 2)
         return;
 
     // ── 位映射 (与 WPF Read_PLC_Data DI 部分一致) ──
@@ -196,8 +189,25 @@ void K3dataprocess::processDIData(int /*dbNumber*/, int /*start*/,
     //         [1]=PropValve1_Fault, [2]=PropValve2_Fault, [3]=PropValve3_Fault,
     //         [4]=Contactor1,       [5]=Contactor2
 
-    // DI 状态暂存（后续可扩展为 K3data 属性或 QML 信号）
-    Q_UNUSED(rawBytes);
+    auto *data = K3data::instance();
+
+    data->applyUpdate(QStringLiteral("PlateValve1_Open"),       getBitAt(rawBytes[0], 0));
+    data->applyUpdate(QStringLiteral("PlateValve1_Close"),      getBitAt(rawBytes[0], 1));
+    data->applyUpdate(QStringLiteral("PlateValve2_Open"),       getBitAt(rawBytes[0], 2));
+    data->applyUpdate(QStringLiteral("PlateValve2_Close"),      getBitAt(rawBytes[0], 3));
+    data->applyUpdate(QStringLiteral("PlateValve3_Open"),       getBitAt(rawBytes[0], 4));
+    data->applyUpdate(QStringLiteral("PlateValve3_Close"),      getBitAt(rawBytes[0], 5));
+    data->applyUpdate(QStringLiteral("Level_Low"),              getBitAt(rawBytes[0], 6));
+    data->applyUpdate(QStringLiteral("CentralControlId"),       getBitAt(rawBytes[0], 7));
+
+    data->applyUpdate(QStringLiteral("CabinetTemperatureHi"),   getBitAt(rawBytes[1], 0));
+    data->applyUpdate(QStringLiteral("PropValve1_Fault"),       getBitAt(rawBytes[1], 1));
+    data->applyUpdate(QStringLiteral("PropValve2_Fault"),       getBitAt(rawBytes[1], 2));
+    data->applyUpdate(QStringLiteral("PropValve3_Fault"),       getBitAt(rawBytes[1], 3));
+    data->applyUpdate(QStringLiteral("Contactor1"),             getBitAt(rawBytes[1], 4));
+    data->applyUpdate(QStringLiteral("Contactor2"),             getBitAt(rawBytes[1], 5));
+
+    data->syncToLeftAndDown();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -212,41 +222,43 @@ void K3dataprocess::processFlowData(int /*dbNumber*/, int /*start*/,
         return;
 
     // ── 索引映射 (与 WPF PLCtoText 一致) ──
-    // [0]  = depth_drill    (钻头深度)
-    // [2]  = Flow_in        (入口流量)
-    // [6]  = PumpStroke1    (泵冲1)
-    // [7]  = PumpStroke2    (泵冲2)
-    // [8]  = PumpStroke3    (泵冲3)
-    // [9]  = Friction       (环空摩阻)
-    // [11] = ECD            (ECD密度)
+    // [0]  = depth_drill    (钻头深度)   → BitDepth / WellDepth
+    // [2]  = Flow_in        (入口流量)   → InletFlow
+    // [6]  = PumpStroke1    (泵冲1)      → PumpStroke1
+    // [7]  = PumpStroke2    (泵冲2)      → PumpStroke2
+    // [8]  = PumpStroke3    (泵冲3)      → PumpStroke3
+    // [9]  = Friction       (环空摩阻)   → Friction
+    // [11] = ECD            (ECD密度)    → EcdDensity
 
     auto *data = K3data::instance();
-    auto list = data->k3data_left();
 
-    auto updateItem = [&](const QString &key, float v) {
-        for (int gi = 0; gi < list.size(); ++gi) {
-            QVariantMap group = list[gi].toMap();
-            QVariantList metrics = group[QStringLiteral("metrics")].toList();
-            for (int mi = 0; mi < metrics.size(); ++mi) {
-                QVariantMap item = metrics[mi].toMap();
-                if (item[QStringLiteral("key")].toString() == key) {
-                    item[QStringLiteral("value")] = v;
-                    metrics[mi] = item;
-                    group[QStringLiteral("metrics")] = metrics;
-                    list[gi] = group;
-                    return;
-                }
-            }
-        }
-    };
+    data->applyUpdate(QStringLiteral("BitDepth"),       values[0]);
+    data->applyUpdate(QStringLiteral("WellDepth"),      values[0]);
+    data->applyUpdate(QStringLiteral("InletFlow"),      values[2]);
+    data->applyUpdate(QStringLiteral("PumpStroke1"),    values[6]);
+    data->applyUpdate(QStringLiteral("PumpStroke2"),    values[7]);
+    data->applyUpdate(QStringLiteral("PumpStroke3"),    values[8]);
+    data->applyUpdate(QStringLiteral("Friction"),       values[9]);
+    data->applyUpdate(QStringLiteral("EcdDensity"),     values[11]);
 
-    updateItem(QStringLiteral("BitDepth"),       values[0]);
-    updateItem(QStringLiteral("WellDepth"),      values[0]);
-    updateItem(QStringLiteral("InletFlow"),      values[2]);
-    updateItem(QStringLiteral("PumpStroke1"),    values[6]);
-    updateItem(QStringLiteral("PumpStroke2"),    values[7]);
-    updateItem(QStringLiteral("PumpStroke3"),    values[8]);
-    updateItem(QStringLiteral("EcdDensity"),     values[11]);
+    data->syncToLeftAndDown();
+}
 
-    data->setK3data_left(list);
+void K3dataprocess::Flag_Auto_Hand(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    
+    if(data->flag_auto_hand())
+    {
+        // 设置为手动模式
+        data->setFlag_auto_hand(false);
+    }
+    else
+    {
+        // 设置为自动模式
+        data->setFlag_auto_hand(true);
+        client->dbWriteBit(data->flag_auto_hand(), 333, 1, 3);
+
+    }
+        
 }

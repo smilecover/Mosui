@@ -5,7 +5,6 @@ import MosuiBasic
 Item {
     id: root
     implicitHeight: 100
-
     MosRectangle {
         anchors.fill: parent
         color: "transparent"
@@ -66,7 +65,7 @@ Item {
                 anchors.fill: parent
                 Repeater{
                     model: [
-                        {name: "手动模式", color: "#FFFFC738"},
+                        {name: K3data.flag_auto_hand ? "自动模式" : "手动模式", color: "#FFFFC738"},
                         {name: "井底压力模式", color: "white"},
                         {name: "井口压力模式", color: "white"},
                         {name: "主备阀模式切换", color: "white"},
@@ -79,6 +78,12 @@ Item {
                         Layout.fillHeight: true
                         text: modelData.name
                         colorText: modelData.color
+                        onClicked: {
+                            switch(index)
+                            {
+                                case 0: K3dataprocess.Flag_Auto_Hand(); break;
+                            }
+                        }
                     }
                 }
             }

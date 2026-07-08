@@ -25,7 +25,7 @@ public:
     static K3dataprocess *create(QQmlEngine *, QJSEngine *);
 
     Q_INVOKABLE void InitK3dataprocess();
-
+    Q_INVOKABLE void Flag_Auto_Hand();
 signals:
 
 private Q_SLOTS:
