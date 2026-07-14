@@ -26,6 +26,13 @@ public:
 
     Q_INVOKABLE void InitK3dataprocess();
     Q_INVOKABLE void Flag_Auto_Hand();
+    Q_INVOKABLE void Flag_Model_Downhole();
+    Q_INVOKABLE void Flag_Model_Ground();
+    Q_INVOKABLE void Flag_Model_Mainsecond();
+    Q_INVOKABLE void Flag_Model_Profession();
+    Q_INVOKABLE void Flag_Stop();
+    Q_INVOKABLE void Flag_Board();
+    Q_INVOKABLE bool checkProfessionPassword(const QString &password);
 signals:
 
 private Q_SLOTS:

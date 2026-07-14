@@ -1,6 +1,7 @@
 #include "K3dataprocess.h"
 
 #include <QQmlEngine>
+#include <QCryptographicHash>
 #include <QTimer>
 #include <QtEndian>
 
@@ -247,18 +248,179 @@ void K3dataprocess::processFlowData(int /*dbNumber*/, int /*start*/,
 void K3dataprocess::Flag_Auto_Hand(){
     auto *data = K3data::instance();
     auto *client = K3Client::instance();
-    
+
+    // Helper: 从 k3data_all 中按 key 查找 value
+    auto valueForKey = [data](const QString &key) -> float {
+        for (const QVariant &g : data->k3data_all()) {
+            const QVariantMap group = g.toMap();
+            const QVariantList metrics = group[QStringLiteral("metrics")].toList();
+            for (const QVariant &m : metrics) {
+                QVariantMap item = m.toMap();
+                if (item[QStringLiteral("key")].toString() == key)
+                    return item[QStringLiteral("value")].toFloat();
+            }
+        }
+        return 0.0f;
+    };
+
     if(data->flag_auto_hand())
     {
-        // 设置为手动模式
+        // 设置手动模式
+        // 1. 将当前节流阀开度值写入PLC
+        client->dbWriteReal(valueForKey(QStringLiteral("AI_ValvePosition2")), 111, 3);
+        client->dbWriteReal(valueForKey(QStringLiteral("AI_ValvePosition3")), 111, 22);
+        client->dbWriteReal(valueForKey(QStringLiteral("AI_ValvePosition1")), 111, 21);
+
+        // 2. 设置标志位并写入PLC
         data->setFlag_auto_hand(false);
+        client->dbWriteBit(false, 333, 1, 3);
+
+        // 3. 关闭井底压力模式
+        client->dbWriteBit(false, 333, 2, 4);
+
+        // 4. 关闭井口压力模式
+        client->dbWriteBit(false, 333, 2, 5);
+
+        // 5. 进入井口标志位清零
+        client->dbWriteBit(false, 333, 5, 3);
+
+        // 6. 井底准备标志位清零
+        client->dbWriteBit(false, 333, 4, 6);
+        client->dbWriteBit(false, 333, 4, 5);
     }
     else
     {
-        // 设置为自动模式
+        // 设置为自动模式 
         data->setFlag_auto_hand(true);
         client->dbWriteBit(data->flag_auto_hand(), 333, 1, 3);
-
     }
-        
+}
+void K3dataprocess::Flag_Model_Downhole(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+
+    if(data->flag_model_downhole())
+    {
+        // 关闭井底压力模式 
+        data->setflag_model_downhole(false);
+        client->dbWriteBit(false, 333, 2, 4);
+    }
+    else
+    {
+        // 开启井底压力模式 
+        data->setflag_model_downhole(true);
+        client->dbWriteBit(true, 333, 2, 4);
+        client->dbWriteBit(false, 333, 2, 5);
+    }
+}
+void K3dataprocess::Flag_Model_Ground(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    if (data->flag_model_ground()) {
+        // 关闭井口压力模式 
+        data->setflag_model_ground(false);
+        client->dbWriteBit(false, 333, 2, 5);
+    }
+    else {
+        // 开启井口压力模式
+        data->setflag_model_ground(true);
+        client->dbWriteBit(true, 333, 2, 5);
+        client->dbWriteBit(false, 333, 2, 4);
+    }   
+}
+void K3dataprocess::Flag_Model_Mainsecond(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    if(data->flag_model_mainsecond())
+    {
+        // 关闭主备阀切换模式 (参照 WPF Close_Model_MainSecond)
+        data->setflag_model_mainsecond(false);
+        client->dbWriteBit(false, 333, 2, 3);
+    }
+    else
+    {
+        // 打开主备阀切换模式 (参照 WPF Open_Model_MainSecond)
+        data->setflag_model_mainsecond(true);
+        client->dbWriteBit(true, 333, 2, 3);
+    }
+}
+void K3dataprocess::Flag_Model_Profession(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    if(data->flag_model_profession())
+    {
+        // 关闭专家模式
+        data->setflag_model_profession(false);
+        client->dbWriteBit(false, 333, 1, 2);
+    }
+    else
+    {
+        // 打开专家模式 (参照 WPF Open_model_profession)
+        data->setflag_model_profession(true);
+        client->dbWriteBit(true, 333, 1, 2);
+    }
+}
+
+bool K3dataprocess::checkProfessionPassword(const QString &password)
+{
+    // SHA-256 哈希比对，二进制中不存储明文密码
+    // 预计算 "123456" 的 SHA-256，static 确保只解析一次
+    static const QByteArray kExpected = QByteArray::fromHex(
+        "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92");
+
+    return QCryptographicHash::hash(
+        password.toUtf8(), QCryptographicHash::Sha256) == kExpected;
+}
+void K3dataprocess::Flag_Stop(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    if (data->flag_stop()) {
+        // ── 开车 / 恢复正常
+        client->dbWriteBit(false, 333, 2, 1);   // 清除停车标志位
+        data->setflag_stop(false);
+    }
+    else
+    {
+        // ── 停车
+        // 1. 强制切换到手动模式
+        data->setFlag_auto_hand(false);
+        client->dbWriteBit(false, 333, 1, 3);
+
+        // 2. 关闭井底/井口压力模式
+        client->dbWriteBit(false, 333, 2, 4);
+        client->dbWriteBit(false, 333, 2, 5);
+
+        // 3. 清零标志位
+        client->dbWriteBit(false, 333, 5, 3);
+        client->dbWriteBit(false, 333, 4, 6);
+        client->dbWriteBit(false, 333, 4, 5);
+
+        // 4. 打开平板阀 A / B
+        client->dbWriteBit(true, 333, 2, 8);    // ValveA_Chose
+        client->dbWriteBit(true, 333, 3, 1);    // ValveB_Chose
+
+        // 5. 阀门开度设 100%
+        client->dbWriteReal(100.0f, 111, 3);
+        client->dbWriteReal(100.0f, 111, 22);
+
+        // 6. 停车标志位写入 PLC
+        client->dbWriteBit(true, 333, 2, 1);
+        data->setflag_stop(true);
+    }
+}
+
+void K3dataprocess::Flag_Board(){
+    auto *data = K3data::instance();
+    auto *client = K3Client::instance();
+    if (data->flag_board()) {
+        // 当前板A → 切换到板B 
+        client->dbWriteBit(false, 335, 1, 3);
+        data->setflag_board(false);
+    }
+    else
+    {
+        // 当前板B → 切换到板A
+        client->dbWriteBit(true, 335, 1, 3);
+        data->setflag_board(true);
+    }
 }

@@ -35,6 +35,7 @@ MosWindow{
     Component.onCompleted: {
         K3data.InitK3data()
         K3dataprocess.InitK3dataprocess()
+        ReportOutput.startRecording()
     }
 
     Loader {

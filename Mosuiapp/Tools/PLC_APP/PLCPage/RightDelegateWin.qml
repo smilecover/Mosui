@@ -24,6 +24,18 @@ Item {
         }
     }
 
+    // ── 参数设置弹窗 ──
+    ParamSettingsWin { id: paramSettingsWin }
+
+    // ── 硬件监控弹窗 ──
+    HardwareMonitorWin { id: hardwareMonitorWin }
+
+    // ── 报告输出弹窗 ──
+    ReportOutputWin { id: reportOutputWin }
+
+    // ── 节流阀校准弹窗 ──
+    CalibrationWin { id: calibrationWin }
+
     Timer {
         id: connectDeferTimer
         interval: 1
@@ -272,6 +284,14 @@ Item {
                         text: modelData.name
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                         radiusBg: MosRadius { all: 0 }
+                        onClicked: {
+                            switch (index) {
+                            case 0: paramSettingsWin.open(); break
+                            case 1: hardwareMonitorWin.open(); break
+                            case 2: reportOutputWin.open(); break
+                            case 3: calibrationWin.open(); break
+                            }
+                        }
                     }
                 }
             }
