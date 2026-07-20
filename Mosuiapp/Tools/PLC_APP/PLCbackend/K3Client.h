@@ -96,9 +96,9 @@ private:
 
     void tryConnectPrimary();
     void tryConnectSecondary();
-    QString m_host          = QStringLiteral("192.168.0.108");
+    QString m_host          = QStringLiteral("192.168.1.6");
     int     m_port          = 50002;
-    QString m_secondaryHost = QStringLiteral("192.168.0.108");
+    QString m_secondaryHost = QStringLiteral("192.168.1.7");
     int     m_secondaryPort = 50000;
     bool    m_connected        = false;
     bool    m_reconnecting     = false;  // 防重入：防止主备切换时的无限递归

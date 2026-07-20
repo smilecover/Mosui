@@ -216,14 +216,14 @@ Item {
                 uniformCellSizes: true
                 Repeater {
                     model: [
-                        { name: "井底压力模式" , value: false },
-                        { name: "井口压力模式" , value: false },
-                        { name: "回压过高保护" , value: false },
-                        { name: "启用A阀" , value: false },
-                        { name: "启用B阀" , value: false },
-                        { name: "启用C阀" , value: false },
-                        { name: "启用板A" , value: false },
-                        { name: "启用板B" , value: false }
+                        { name: "井底压力模式" , value: K3data.flag_model_downhole },
+                        { name: "井口压力模式" , value: K3data.flag_model_ground },
+                        { name: "回压过高保护" , value: K3data. },
+                        { name: "启用A阀" , value: K3data. },
+                        { name: "启用B阀" , value: K3data. },
+                        { name: "启用C阀" , value: K3data. },
+                        { name: "启用板A" , value: K3data. },
+                        { name: "启用板B" , value: K3data. }
                     ]
                     delegate: RowLayout {
                         Layout.fillWidth: true

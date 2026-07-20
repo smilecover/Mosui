@@ -73,7 +73,7 @@ Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             Layout.minimumHeight: 50
-                            text: modelData.name + "\n" + modelData.value
+                            text: modelData.name + "\n" + Number(modelData.value)//.toFixed(2)
                             colorBorder: root.borderColor
                             colorText: modelData.accent ? root.accentColor : root.textColor
                             borderWidth: 1

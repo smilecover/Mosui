@@ -7,6 +7,7 @@
 #include <QFileSystemWatcher>
 #include <QHash>
 #include <QMetaObject>
+#include <QNetworkProxy>
 #include <QPointer>
 #include <QQmlEngine>
 #include <QQueue>
@@ -241,12 +242,15 @@ public:
             return result;
         }
 
-        if (clientSocket_ && clientSocket_->state() == QAbstractSocket::ConnectedState) {
-            intentionalDisconnect_ = true;
-            clientSocket_->disconnectFromHost();
-            if (clientSocket_->state() != QAbstractSocket::UnconnectedState)
-                clientSocket_->waitForDisconnected(1000);
-            intentionalDisconnect_ = false;
+        if (clientSocket_) {
+            // ★ 修复：abort 所有非干净状态的 socket，避免复用脏 socket 导致
+            //    Windows 底层报 "对于这个操作代理类型时无效的" 错误。
+            const auto state = clientSocket_->state();
+            if (state != QAbstractSocket::UnconnectedState) {
+                intentionalDisconnect_ = true;
+                clientSocket_->abort();
+                intentionalDisconnect_ = false;
+            }
         }
 
         autoReconnect_ = autoReconnect;
@@ -272,6 +276,7 @@ public:
 
         ensureClientSocket();
         applySocketOptions(clientSocket_.data());
+        clientSocket_->setProxy(QNetworkProxy::NoProxy);  // ★ 防御系统代理干扰
 
         if (sslEnabled_) {
             QSslConfiguration sslConfig = buildSslConfiguration();
@@ -605,6 +610,7 @@ private:
         } else {
             clientSocket_ = new QTcpSocket(this);
         }
+        clientSocket_->setProxy(QNetworkProxy::NoProxy);  // ★ 防御系统代理干扰
 
         applySocketOptions(clientSocket_.data());
         setupClientSocketConnections();
@@ -900,11 +906,18 @@ private:
         if (!autoReconnect_ || mode_ != MosNetTcpManager::Client)
             return;
 
-        if (!clientSocket_) {
+        // ★ 修复：abort 所有非干净状态的 socket，与 connectToHost 保持一致
+        if (clientSocket_) {
+            const auto state = clientSocket_->state();
+            if (state != QAbstractSocket::UnconnectedState) {
+                clientSocket_->abort();
+            }
+        } else {
             ensureClientSocket();
         }
 
         applySocketOptions(clientSocket_.data());
+        clientSocket_->setProxy(QNetworkProxy::NoProxy);  // ★ 防御系统代理干扰
 
         if (sslEnabled_) {
             QSslConfiguration sslConfig = buildSslConfiguration();

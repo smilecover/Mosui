@@ -16,8 +16,8 @@ MosModal {
     implicitHeight: 400
 
     // ── 当前输入的 IP ──
-    property string mainIp: "192.168.100.18"
-    property string secondaryIp: "192.168.100.18"
+    property string mainIp: "192.168.1.6"
+    property string secondaryIp: "192.168.1.7"
     property string statusText: ""
     property bool isConnecting: false
 

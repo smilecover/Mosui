@@ -414,7 +414,7 @@ void K3dataprocess::Flag_Board(){
     auto *client = K3Client::instance();
     if (data->flag_board()) {
         // 当前板A → 切换到板B 
-        client->dbWriteBit(false, 335, 1, 3);
+        client->dbWriteBit(true, 335, 1, 3);
         data->setflag_board(false);
     }
     else

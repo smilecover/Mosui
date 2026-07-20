@@ -1,6 +1,7 @@
 #include "K3data.h"
 
 #include <QQmlEngine>
+#include <cmath>
 
 K3data::K3data(QObject *parent)
     : QObject(parent)
@@ -149,13 +150,20 @@ QVariantMap K3data::findItemInAll(const QString &key) const
 
 void K3data::applyUpdate(const QString &key, const QVariant &newValue)
 {
+    // 数值类型保留两位小数
+    QVariant roundedValue = newValue;
+    if (newValue.canConvert<double>()) {
+        double v = newValue.toDouble();
+        roundedValue = QVariant(std::round(v * 100.0) / 100.0);
+    }
+
     for (int gi = 0; gi < m_k3data_all.size(); ++gi) {
         QVariantMap group = m_k3data_all[gi].toMap();
         QVariantList metrics = group[QStringLiteral("metrics")].toList();
         for (int mi = 0; mi < metrics.size(); ++mi) {
             QVariantMap item = metrics[mi].toMap();
             if (item[QStringLiteral("key")].toString() == key) {
-                item[QStringLiteral("value")] = newValue;
+                item[QStringLiteral("value")] = roundedValue;
                 metrics[mi] = item;
                 group[QStringLiteral("metrics")] = metrics;
                 m_k3data_all[gi] = group;

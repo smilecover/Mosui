@@ -43,7 +43,7 @@ Item {
                         Layout.fillHeight: true
                         Layout.minimumWidth: 120
                         Layout.preferredWidth: 130
-                        text: modelData.name + "\n" + modelData.value
+                        text: modelData.name + "\n" + Number(modelData.value)//.toFixed(2)
                         font.pixelSize: 16
                         colorText: "white"
                         horizontalAlignment: Text.AlignHCenter
