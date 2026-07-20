@@ -27,6 +27,13 @@ class K3data : public QObject
     MOSUI_PROPERTY_INIT(bool, flag_model_profession, setflag_model_profession, false);/* flast : 关闭专业模式 ; true : 打开专业模式*/
     MOSUI_PROPERTY_INIT(bool, flag_stop, setflag_stop, false);/* flast : 停机(关闭) ; true : 停机（打开）*/
     MOSUI_PROPERTY_INIT(bool, flag_board, setflag_board, true);/* true : 板A ; false : 板B*/
+    MOSUI_PROPERTY_INIT(bool, flag_high_backpressure, setFlag_high_backpressure, false);/* 回压过高保护 */
+    MOSUI_PROPERTY_INIT(bool, flag_valve_a, setFlag_valve_a, true);/* 启用A阀 */
+    MOSUI_PROPERTY_INIT(bool, flag_valve_b, setFlag_valve_b, true);/* 启用B阀 */
+    MOSUI_PROPERTY_INIT(bool, flag_valve_c, setFlag_valve_c, true);/* 启用C阀 */
+    MOSUI_PROPERTY_INIT(bool, flag_global_local_a, setFlag_global_local_a, false);/* A阀全局追压 */
+    MOSUI_PROPERTY_INIT(bool, flag_global_local_b, setFlag_global_local_b, false);/* B阀全局追压 */
+    MOSUI_PROPERTY_INIT(bool, flag_global_local_c, setFlag_global_local_c, false);/* C阀全局追压 */
 public:
     ~K3data() override;
     static K3data *instance();

@@ -218,12 +218,12 @@ Item {
                     model: [
                         { name: "井底压力模式" , value: K3data.flag_model_downhole },
                         { name: "井口压力模式" , value: K3data.flag_model_ground },
-                        { name: "回压过高保护" , value: K3data. },
-                        { name: "启用A阀" , value: K3data. },
-                        { name: "启用B阀" , value: K3data. },
-                        { name: "启用C阀" , value: K3data. },
-                        { name: "启用板A" , value: K3data. },
-                        { name: "启用板B" , value: K3data. }
+                        { name: "回压过高保护" , value: K3data.flag_high_backpressure },
+                        { name: "启用A阀" , value: K3data.flag_valve_a },
+                        { name: "启用B阀" , value: K3data.flag_valve_b },
+                        { name: "启用C阀" , value: K3data.flag_valve_c },
+                        { name: "启用板A" , value: K3data.flag_board },
+                        { name: "启用板B" , value: !K3data.flag_board }
                     ]
                     delegate: RowLayout {
                         Layout.fillWidth: true
