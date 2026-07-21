@@ -61,11 +61,14 @@ Item {
             progressWidth: 488
             progressHeight: 70
             progressY: 5
-            fillX: 15
+            fillX: 6
             fillY: 7
             fillHeight: 65
             controlsX: 8
             controlsY: 74
+
+        
+            onAdjustClicked:  (flag) => K3dataprocess.ValveC_Adjust(flag)
         }
 
         ValvePanel {
@@ -78,11 +81,12 @@ Item {
             progressWidth: 488
             progressHeight: 70
             progressY: 5
-            fillX: 15
+            fillX: 6
             fillY: 7
             fillHeight: 65
             controlsX: 8
             controlsY: 74
+            onAdjustClicked:  (flag) => K3dataprocess.ValveA_Adjust(flag)
         }
 
         ValvePanel {
@@ -95,11 +99,13 @@ Item {
             progressY: 5
             progressWidth: 488
             progressHeight: 70
-            fillX: 15
+            fillX: 6
             fillY: 7
             fillHeight: 65
             controlsX: 8
             controlsY: 74
+        
+            onAdjustClicked:  (flag) => K3dataprocess.ValveB_Adjust(flag)
         }
 
         PipeImage { x: 462; y: 327; width: 16; height: 255; source: root.asset("pipe_vertical.png") }
@@ -166,6 +172,7 @@ Item {
         PipeImage { x: 690; y: 356; width: 40; height: 40; source: root.asset("pipe_sdv_closed.png"); clickable: true }
         PipeImage { x: 379; y: 255; width: 45; height: 62; source: root.asset("pipe_choke.png") }
         PipeImage { x: 414; y: 303; width: 33; height: 16; source: root.asset("pipe_horizontal.png") }
+
     }
 
     component PipeImage: MosImage {
@@ -204,13 +211,14 @@ Item {
 
         property alias source: icon.source
         property real iconRotation: 0
+        colorBorder : "#ff1d6597"
 
         width: 35
         height: 40
         padding: 0
         text: ""
-        effectEnabled: false
-        hoverCursorShape: Qt.ArrowCursor
+        colorBg  : "#c0c0c0"
+        radiusBg: MosRadius {all: 0}
 
         contentItem: MosImage {
             id: icon
@@ -218,19 +226,14 @@ Item {
             mipmap: true
             fillMode: Image.PreserveAspectFit
             previewEnabled: false
-            hoverCursorShape: Qt.ArrowCursor
             rotation: panelIcon.iconRotation
             transformOrigin: Item.Center
-        }
-
-        background: MosRectangle {
-            color: "#c0c0c0"
-            border.color: "#ff1d6597"
-            border.width: 1
         }
     }
 
     component ValvePanel: Item {
+        id: vp
+        property string valveId
         property string title
         property string valueText
         property real frameX: 0
@@ -243,12 +246,21 @@ Item {
         property real progressY: 4
         property real fillX: 15
         property real fillY: 10
-        property real fillWidth: 230
+        property real fillWidth: {
+            var num = parseFloat(valueText)
+            return isNaN(num) ? 0 : (progressWidth - 12) * num / 100
+        }
         property real fillHeight: 54
         property real controlsX: 0
         property real controlsY: 70
         property real controlsSpacing: 3
         property real rewindWidth: 35
+
+        // ═══ MosuiBasic 风格 typed signals ═══
+        signal settingClicked()
+        signal autoClicked()
+        signal cvClicked()
+        signal adjustClicked(int flag)  // 1=快减 2=快加 3=慢减 4=慢加
 
         width: frameWidth
         height: frameHeight
@@ -305,17 +317,31 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            PanelIcon { source: root.asset("pipe_setting.png") }
-            PanelIcon { source: root.asset("pipe_auto.png") }
-            PanelIcon { source: root.asset("pipe_cv.png") }
+            PanelIcon {
+                source: root.asset("pipe_setting.png")
+                onClicked: vp.settingClicked()
+            }
+            PanelIcon {
+                source: root.asset("pipe_auto.png")
+                onClicked: vp.autoClicked()
+            }
+            PanelIcon {
+                source: root.asset("pipe_cv.png")
+                onClicked: vp.cvClicked()
+            }
             PanelIcon {
                 width: parent.parent.rewindWidth
                 source: root.asset("pipe_rewind.png")
+                onClicked: vp.adjustClicked(1)
             }
-            PanelIcon { source: root.asset("pipe_forward.png") }
+            PanelIcon {
+                source: root.asset("pipe_forward.png")
+                onClicked: vp.adjustClicked(2)
+            }
             PanelIcon {
                 source: root.asset("pipe_slow.png")
                 iconRotation: 180
+                onClicked: vp.adjustClicked(3)
             }
 
             MosText {
@@ -329,7 +355,20 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            PanelIcon { source: root.asset("pipe_slow.png") }
+            PanelIcon {
+                source: root.asset("pipe_slow.png")
+                onClicked: vp.adjustClicked(4)
+            }
         }
     }
+    component ValveSettingPopup: MosPopover {
+        id: popup
+        property string valveId: ""
+
+        footerDelegate: Item {
+            
+        }
+
+    }
 }
+
