@@ -9,9 +9,10 @@ Item {
     property real designHeight: 650
     property real viewportPadding: 8
 
-    property string valveAValue: "50.0%"
-    property string valveBValue: "50.0%"
-    property string valveCValue: "50.0%"
+    property string valveAValue: "70.0%"
+    property string valveBValue: "60.0%"
+    property string valveCValue: "20.0%"
+
     property string mainPressure: "0MPa"
     property string auxiliaryPressure: "0MPa"
     property string pipePressure: "0MPa"
