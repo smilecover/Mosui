@@ -1,3 +1,4 @@
+pragma ComponentBehavior: Bound
 import QtQuick
 import MosuiBasic
 
@@ -67,8 +68,6 @@ Item {
             controlsX: 8
             controlsY: 74
 
-        
-            onAdjustClicked:  (flag) => K3dataprocess.ValveC_Adjust(flag)
         }
 
         ValvePanel {
@@ -86,7 +85,6 @@ Item {
             fillHeight: 65
             controlsX: 8
             controlsY: 74
-            onAdjustClicked:  (flag) => K3dataprocess.ValveA_Adjust(flag)
         }
 
         ValvePanel {
@@ -104,8 +102,7 @@ Item {
             fillHeight: 65
             controlsX: 8
             controlsY: 74
-        
-            onAdjustClicked:  (flag) => K3dataprocess.ValveB_Adjust(flag)
+    
         }
 
         PipeImage { x: 462; y: 327; width: 16; height: 255; source: root.asset("pipe_vertical.png") }
@@ -256,11 +253,6 @@ Item {
         property real controlsSpacing: 3
         property real rewindWidth: 35
 
-        // ═══ MosuiBasic 风格 typed signals ═══
-        signal settingClicked()
-        signal autoClicked()
-        signal cvClicked()
-        signal adjustClicked(int flag)  // 1=快减 2=快加 3=慢减 4=慢加
 
         width: frameWidth
         height: frameHeight
@@ -299,6 +291,13 @@ Item {
             previewEnabled: false
             hoverCursorShape: Qt.ArrowCursor
         }
+        ValveSettingPopup {
+            id: valvesetPopup
+            x: -10
+            y: frameHeight + 5
+            width: parent.frameWidth * parent.parent.scale
+            valveId: parent.valveId
+        }
 
         Row {
             x: parent.controlsX
@@ -318,8 +317,11 @@ Item {
             }
 
             PanelIcon {
+                id: valveSetting
                 source: root.asset("pipe_setting.png")
-                onClicked: vp.settingClicked()
+                onClicked: {
+                    valvesetPopup.open()
+                }
             }
             PanelIcon {
                 source: root.asset("pipe_auto.png")
@@ -343,7 +345,6 @@ Item {
                 iconRotation: 180
                 onClicked: vp.adjustClicked(3)
             }
-
             MosText {
                 width: 100
                 height: 40
@@ -359,16 +360,45 @@ Item {
                 source: root.asset("pipe_slow.png")
                 onClicked: vp.adjustClicked(4)
             }
+       
         }
     }
     component ValveSettingPopup: MosPopover {
         id: popup
         property string valveId: ""
+        property real sliderValue: 0
+        signal valueConfirmed(real value)
 
-        footerDelegate: Item {
-            
+        width: 280
+        colorBg: 'transparent'
+        closePolicy: MosPopover.CloseOnPressOutside | MosPopover.CloseOnEscape
+
+        contentDelegate: Item {
+            implicitHeight: footerLoader.implicitHeight
+
+            Loader {
+                id: footerLoader
+                anchors.fill: parent
+                sourceComponent: popup.footerDelegate
+            }
         }
 
+        footerDelegate: Item {
+            implicitWidth: 280
+            implicitHeight: 20
+
+            MosSlider {
+                id: valveSlider
+                anchors.centerIn: parent
+                width: parent.width - 24
+                height: 30
+                min: 0
+                max: 100
+                stepSize: 1
+                value: popup.sliderValue
+                onFirstMoved: popup.sliderValue = currentValue
+            }
+        }
     }
 }
 
